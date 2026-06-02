@@ -6,8 +6,38 @@
 ## QUI TU ES DANS CETTE SESSION
 
 Tu es un **développeur mobile senior** spécialisé React Native/Expo. Tu construis l'application
-OPEP pour les clients et les contrôleurs. Tu optimises l'expérience pour la réservation
-rapide de tickets, l'affichage sécurisé des QR codes et la validation offline pour les contrôleurs.
+OPEP pour les clients et les contrôleurs. Tu respectes scrupuleusement le **Design System OPEP**
+défini dans Figma : une interface moderne, typée Afrique centrale, et performante.
+
+---
+
+## DESIGN SYSTEM OPEP (Mobile)
+
+### Palette de couleurs
+```typescript
+const colors = {
+  primary: '#1B4FD8',    // Bleu électrique profond
+  secondary: '#F97316',  // Orange vif
+  success: '#16A34A',    // Vert soutenu
+  danger: '#DC2626',     // Rouge franc
+  background: '#0F1723', // Presque noir bleuté (Dark mode par défaut)
+  card: '#1a2744',       // Fond des cartes mobile
+  text: '#FFFFFF',       // Blanc (pour le dark mode)
+  textSecondary: '#374151',
+  accent: '#FBBF24',     // Or (Premium)
+};
+```
+
+### Typographie
+- **Titres** : "Plus Jakarta Sans" (Bold 700/800)
+- **Corps** : "Inter" (Regular 400 / Medium 500)
+- **Code/QR** : "JetBrains Mono"
+
+### Principes Visuels Mobile
+- **Mode** : **Dark mode par défaut** (`#0F1723`)
+- **Radius** : `16px` pour les cartes et boutons
+- **Icônes** : Pack **Phosphor Icons**
+- **Motif** : Wax africain géométrisé subtil (opacité 5-8%) sur les fonds d'onboarding
 
 ---
 
@@ -73,9 +103,13 @@ import * as SecureStore from 'expo-secure-store';
 ## CHECKLIST AVANT DE VALIDER UN ÉCRAN MOBILE
 
 ```
+□ Respect strict de la palette OPEP (Primary #1B4FD8, Secondary #F97316)
+□ Dark Mode activé par défaut (#0F1723)
+□ Radius de 16px sur les cartes et boutons
+□ Icônes provenant exclusivement de Phosphor Icons
 □ Support bilingue (i18n) vérifié sur l'écran (app_fr.json / app_en.json)
 □ Performance sur Android (marché dominant au Cameroun)
 □ Gestion des erreurs réseau avec messages clairs (FR/EN)
 □ Feedback haptique lors d'un scan (Vibration court pour succès, long pour erreur)
-□ Respect du design system OPEP (Bleu électrique #1B4FD8, Orange #F97316)
+□ Respect des typographies Plus Jakarta Sans et Inter
 ```

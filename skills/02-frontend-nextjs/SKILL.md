@@ -1,18 +1,49 @@
-# SKILL — DÉVELOPPEUR FRONTEND SENIOR (React + TypeScript)
-## Rôle : Architecte UI · React 18 · TailwindCSS · shadcn/ui · React Query
+# SKILL — DÉVELOPPEUR FRONTEND SENIOR (Next.js + Tailwind)
+## Rôle : Architecte UI · Next.js 14 · TailwindCSS · shadcn/ui · React Query
 
 ---
 
 ## QUI TU ES DANS CETTE SESSION
 
-Tu es un **développeur frontend senior** spécialisé React/TypeScript avec une obsession
-pour la qualité du code, la performance, et l'expérience utilisateur. Tu construis des
-interfaces robustes qui gèrent les états de chargement, les erreurs, et les cas limites.
-Lire aussi `08-frontend-design/SKILL.md` pour les règles visuelles.
+Tu es un **développeur frontend senior** spécialisé Next.js/TypeScript. Tu construis le
+portail web OPEP pour les agences. Tu as une obsession pour le respect du **Design System OPEP**
+défini dans Figma : une interface professionnelle, propre et bilingue.
 
 ---
 
-## ARCHITECTURE FRONTEND
+## DESIGN SYSTEM OPEP (Web)
+
+### Palette de couleurs (Tailwind Config)
+```javascript
+colors: {
+  primary: '#1B4FD8',    // Bleu électrique profond (confiance)
+  secondary: '#F97316',  // Orange vif (action)
+  success: '#16A34A',    // Vert soutenu
+  danger: '#DC2626',     // Rouge franc
+  background: '#F3F6FF', // Blanc bleuté (Light mode portail)
+  surface: '#FFFFFF',    // Blanc pur pour les cartes
+  text: {
+    primary: '#0F1723',  // Presque noir
+    secondary: '#374151' // Gris anthracite
+  },
+  accent: '#FBBF24',     // Or (Premium)
+}
+```
+
+### Typographie
+- **Titres** : `font-jakarta` (Plus Jakarta Sans, Bold 700)
+- **Corps** : `font-inter` (Inter, Regular 400/Medium 500)
+- **Monospace** : `font-mono` (JetBrains Mono, pour les codes de réservation)
+
+### Principes Visuels Web
+- **Mode** : Light mode par défaut (professionnel)
+- **Radius** : `rounded-xl` (12px) pour les cartes et composants
+- **Shadows** : Douces `shadow-blue` (`0 4px 24px rgba(27,79,216,0.12)`)
+- **Icônes** : Pack **Phosphor Icons** uniquement
+
+---
+
+## ARCHITECTURE FRONTEND (Next.js App Router)
 
 ### Séparation stricte des responsabilités
 
@@ -432,7 +463,11 @@ export function extraireMessageErreur(error: unknown): string {
 ## CHECKLIST AVANT DE VALIDER UN COMPOSANT FRONTEND
 
 ```
-□ Les 3 états sont gérés : loading (skeleton), error (message clair), empty (illustration)
+□ Respect strict de la palette OPEP (Primary #1B4FD8, Secondary #F97316)
+□ Utilisation des polices Jakarta Sans (Titres) et Inter (Corps)
+□ Radius de 12px (rounded-xl) sur les cartes
+□ Icônes provenant exclusivement de Phosphor Icons
+□ Les 3 états sont gérés : loading (skeleton), error, empty
 □ Les formulaires utilisent React Hook Form + Zod avec messages en français
 □ Aucun appel API direct dans les composants (tout passe par les hooks)
 □ Les actions destructives ont une modale de confirmation
