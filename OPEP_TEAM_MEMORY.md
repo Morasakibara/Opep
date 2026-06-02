@@ -31,17 +31,17 @@
   - Migrations
   - Seeds
   - Relations
-- [ ] **Carte 10 — Authentification**
+- [x] **Carte 10 — Authentification**
   - Login
   - Register
   - JWT
   - Refresh Token
   - OTP
-- [ ] **Carte 11 — Gestion Utilisateurs**
+- [x] **Carte 11 — Gestion Utilisateurs**
   - CRUD Users
   - Rôles
   - Permissions
-- [ ] **Carte 12 — Gestion Agences**
+- [x] **Carte 12 — Gestion Agences**
   - CRUD Agence
   - BASIC/PREMIUM
   - Subscription Guard

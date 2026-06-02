@@ -5,6 +5,9 @@ import { dataSourceOptions } from './config/typeorm.config';
 import { BusesModule } from './modules/buses/buses.module';
 import { RoutesModule } from './modules/routes/routes.module';
 import { TripsModule } from './modules/trips/trips.module';
+import { AgenciesModule } from './modules/agencies/agencies.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { TripsModule } from './modules/trips/trips.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
+    AgenciesModule,
+    UsersModule,
+    AuthModule,
     BusesModule,
     RoutesModule,
     TripsModule,
