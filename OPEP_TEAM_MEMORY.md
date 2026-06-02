@@ -10,7 +10,7 @@
 
 ## 👤 UTILISATEUR 1 - TECH LEAD & BACKEND CORE
 ### 🎨 MAQUETTES (JOUR 1-2)
-- [ ] **Carte 1 — Design System OPEP**
+- [x] **Carte 1 — Design System OPEP**
   - Palette de couleurs
   - Logo
   - Typographie
@@ -26,7 +26,7 @@
 
 ### 🚧 DÉVELOPPEMENT BACKEND
 - [x] **Carte 8 — Initialisation Monorepo**
-- [ ] **Carte 9 — Base de Données**
+- [x] **Carte 9 — Base de Données**
   - Entités TypeORM
   - Migrations
   - Seeds
