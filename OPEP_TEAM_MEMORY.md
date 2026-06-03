@@ -69,7 +69,7 @@
 - [x] **Carte 14 — Gestion Lignes**
   - CRUD Routes
   - Recherche trajets
-- [ ] **Carte 15 — Gestion Voyages**
+- [x] **Carte 15 — Gestion Voyages**
   - CRUD Trips
   - Disponibilités
   - Statuts
