@@ -20,7 +20,7 @@
   - Inputs
   - Cards
   - Icônes
-- [ ] **Carte 2 — Maquettes Authentification**
+- [x] **Carte 2 — Maquettes Authentification**
   - Login
   - Inscription
   - Mot de passe oublié
