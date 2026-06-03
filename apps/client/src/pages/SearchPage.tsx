@@ -21,8 +21,11 @@ const SearchPage = () => {
       <header className="bg-opep-blue text-white p-4 shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold italic tracking-tighter">OPEP</Link>
-          <nav className="space-x-4">
-            <Link to="/login" className="hover:text-opep-orange transition">Mes Réservations</Link>
+          <nav className="flex items-center space-x-6">
+            <Link to="/profile" className="hover:text-opep-orange transition flex items-center">
+              <User size={20} className="mr-2" />
+              <span>Profil</span>
+            </Link>
             <Link to="/login" className="bg-opep-orange px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-opep-orange transition">Connexion</Link>
           </nav>
         </div>

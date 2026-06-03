@@ -125,7 +125,7 @@
   - Affichage QR
   - PDF
   - Historique
-- [ ] **Carte 25 — Profil Utilisateur**
+- [x] **Carte 25 — Profil Utilisateur**
   - Langues
   - Notifications
   - Profil
