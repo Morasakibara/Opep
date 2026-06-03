@@ -25,4 +25,13 @@ export class AgenciesService {
     if (!agency) throw new NotFoundException('Agence non trouvée');
     return agency;
   }
+
+  async update(id: string, updateAgencyDto: any): Promise<Agency> {
+    await this.agencyRepository.update(id, updateAgencyDto);
+    return this.findOne(id);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.agencyRepository.update(id, { isActive: false });
+  }
 }

@@ -41,4 +41,17 @@ export class UsersService {
   async findById(id: string): Promise<User | undefined> {
     return this.userRepository.findOneBy({ id });
   }
+
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
+  async update(id: string, updateUserDto: any): Promise<User> {
+    await this.userRepository.update(id, updateUserDto);
+    return this.findById(id);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.userRepository.delete(id);
+  }
 }
