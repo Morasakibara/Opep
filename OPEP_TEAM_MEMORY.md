@@ -82,13 +82,11 @@
   - Orange Mock
   - Stripe
   - Cash
-- [ ] **Carte 18 — Tickets QR**
+- [x] **Carte 18 — Tickets QR**
   - Génération QR
   - Validation RSA
   - PDF
-
 ---
-
 ## 👤 UTILISATEUR 3 - FRONTEND CLIENT (REACT)
 ### 🎨 MAQUETTES (JOUR 1-2)
 - [ ] **Carte 5 — Dashboard Agence**
