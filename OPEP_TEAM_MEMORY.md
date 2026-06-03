@@ -105,23 +105,23 @@
   - Tailwind
   - Routing
   - Axios
-- [ ] **Carte 20 — Authentification Client**
+- [x] **Carte 20 — Authentification Client**
   - Login
   - Register
   - OTP
-- [ ] **Carte 21 — Recherche de Voyage**
+- [x] **Carte 21 — Recherche de Voyage**
   - Recherche
   - Filtres
   - Liste résultats
-- [ ] **Carte 22 — Réservation**
+- [x] **Carte 22 — Réservation**
   - Choix sièges
   - Passagers
   - Validation
-- [ ] **Carte 23 — Paiement Client**
+- [x] **Carte 23 — Paiement Client**
   - MTN
   - Orange
   - Stripe
-- [ ] **Carte 24 — Tickets**
+- [x] **Carte 24 — Tickets**
   - Affichage QR
   - PDF
   - Historique

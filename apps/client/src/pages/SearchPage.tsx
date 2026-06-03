@@ -1,16 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Search, MapPin, Calendar, Users } from 'lucide-react';
 
 const SearchPage = () => {
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [date, setDate] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (from && to) {
+      navigate(`/results?from=${from}&to=${to}&date=${date}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-opep-blue text-white p-4 shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold italic tracking-tighter">OPEP</h1>
+          <Link to="/" className="text-2xl font-bold italic tracking-tighter">OPEP</Link>
           <nav className="space-x-4">
-            <a href="#" className="hover:text-opep-orange transition">Mes Réservations</a>
-            <button className="bg-opep-orange px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-opep-orange transition">Connexion</button>
+            <Link to="/login" className="hover:text-opep-orange transition">Mes Réservations</Link>
+            <Link to="/login" className="bg-opep-orange px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-opep-orange transition">Connexion</Link>
           </nav>
         </div>
       </header>
@@ -22,13 +35,20 @@ const SearchPage = () => {
           <p className="text-xl opacity-90">Réservez votre place en quelques clics</p>
         </div>
 
-        <div className="container mx-auto max-w-4xl bg-white p-6 rounded-2xl shadow-2xl">
+        <form onSubmit={handleSearch} className="container mx-auto max-w-4xl bg-white p-6 rounded-2xl shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Départ</label>
               <div className="flex items-center border rounded-lg p-2 focus-within:border-opep-blue">
                 <MapPin size={18} className="text-gray-400 mr-2" />
-                <input type="text" placeholder="Ville de départ" className="w-full outline-none text-gray-800" />
+                <input 
+                  type="text" 
+                  placeholder="Yaoundé" 
+                  className="w-full outline-none text-gray-800"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  required
+                />
               </div>
             </div>
             
@@ -36,7 +56,14 @@ const SearchPage = () => {
               <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Arrivée</label>
               <div className="flex items-center border rounded-lg p-2 focus-within:border-opep-blue">
                 <MapPin size={18} className="text-gray-400 mr-2" />
-                <input type="text" placeholder="Ville d'arrivée" className="w-full outline-none text-gray-800" />
+                <input 
+                  type="text" 
+                  placeholder="Douala" 
+                  className="w-full outline-none text-gray-800"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  required
+                />
               </div>
             </div>
 
@@ -44,18 +71,24 @@ const SearchPage = () => {
               <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Date</label>
               <div className="flex items-center border rounded-lg p-2 focus-within:border-opep-blue">
                 <Calendar size={18} className="text-gray-400 mr-2" />
-                <input type="date" className="w-full outline-none text-gray-800" />
+                <input 
+                  type="date" 
+                  className="w-full outline-none text-gray-800"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
               </div>
             </div>
 
             <div className="flex items-end">
-              <button className="w-full bg-opep-orange text-white py-3 rounded-lg font-bold flex items-center justify-center hover:opacity-90 transition shadow-lg">
+              <button type="submit" className="w-full bg-opep-orange text-white py-3 rounded-lg font-bold flex items-center justify-center hover:opacity-90 transition shadow-lg">
                 <Search size={20} className="mr-2" />
                 Rechercher
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </section>
 
       {/* Results / Featured */}
