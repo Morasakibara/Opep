@@ -52,7 +52,7 @@
 
 ## 👤 UTILISATEUR 2 - BACKEND BUSINESS & MOBILE EXPERT
 ### 🎨 MAQUETTES (JOUR 1-2)
-- [ ] **Carte 3 — Maquettes Client React**
+- [x] **Carte 3 — Maquettes Client React**
   - Accueil
   - Recherche trajet
   - Liste voyages
@@ -100,7 +100,7 @@
   - Header
 
 ### ⚛️ APPLICATION CLIENT REACT
-- [ ] **Carte 19 — Initialisation React**
+- [x] **Carte 19 — Initialisation React**
   - Vite
   - Tailwind
   - Routing
