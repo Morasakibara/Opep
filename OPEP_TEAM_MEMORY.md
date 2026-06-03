@@ -51,18 +51,6 @@
 ---
 
 ## 👤 UTILISATEUR 2 - BACKEND BUSINESS & MOBILE EXPERT
-### 🎨 MAQUETTES (JOUR 1-2)
-- [x] **Carte 3 — Maquettes Client React**
-  - Accueil
-  - Recherche trajet
-  - Liste voyages
-  - Détail voyage
-- [ ] **Carte 4 — Réservation Client**
-  - Sélection sièges
-  - Informations passagers
-  - Paiement
-  - Confirmation
-
 ### 🚧 DÉVELOPPEMENT BACKEND
 - [ ] **Carte 13 — Gestion Bus**
   - CRUD Bus
@@ -93,11 +81,16 @@
 
 ## 👤 UTILISATEUR 3 - FRONTEND CLIENT (REACT)
 ### 🎨 MAQUETTES (JOUR 1-2)
-- [ ] **Carte 5 — Dashboard Agence**
-  - Dashboard principal
-  - Statistiques
-  - Navigation
-  - Header
+- [x] **Carte 3 — Maquettes Client React**
+  - Accueil
+  - Recherche trajet
+  - Liste voyages
+  - Détail voyage
+- [x] **Carte 4 — Réservation Client**
+  - Sélection sièges
+  - Informations passagers
+  - Paiement
+  - Confirmation
 
 ### ⚛️ APPLICATION CLIENT REACT
 - [x] **Carte 19 — Initialisation React**
@@ -134,18 +127,23 @@
 
 ## 👤 UTILISATEUR 4 - PORTAIL AGENCE (NEXT.JS) & QA
 ### 🎨 MAQUETTES (JOUR 1-2)
-- [ ] **Carte 6 — Gestion Transport**
+- [x] **Carte 5 — Dashboard Agence**
+  - Dashboard principal
+  - Statistiques
+  - Navigation
+  - Header
+- [x] **Carte 6 — Gestion Transport**
   - Gestion Bus
   - Gestion Voyages
   - Gestion Lignes
-- [ ] **Carte 7 — Contrôleur & Rapports**
+- [x] **Carte 7 — Contrôleur & Rapports**
   - Scanner QR
   - Historique validations
   - Rapports
   - Paramètres
 
 ### 🌐 PORTAIL AGENCE NEXT.JS
-- [ ] **Carte 26 — Initialisation Next.js**
+- [x] **Carte 26 — Initialisation Next.js**
   - Next.js 14
   - Tailwind
   - next-intl
