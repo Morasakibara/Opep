@@ -66,7 +66,7 @@
   - CRUD Bus
   - Plan sièges
   - Validation
-- [ ] **Carte 14 — Gestion Lignes**
+- [x] **Carte 14 — Gestion Lignes**
   - CRUD Routes
   - Recherche trajets
 - [ ] **Carte 15 — Gestion Voyages**
