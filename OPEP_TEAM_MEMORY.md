@@ -1,5 +1,7 @@
 # OPEP - MEMORY FILE (TEAMS)
 
+> **IMPORTANT :** Toujours mettre à jour la branche principale (`git pull origin main`) avant de commencer une tâche pour intégrer le travail collectif.
+
 ## ÉQUIPE
 - **Utilisateur 1**: Tech Lead & Backend Core
 - **Utilisateur 2**: Backend Business & Mobile Expert

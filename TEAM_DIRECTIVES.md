@@ -10,7 +10,8 @@ Vous êtes des moteurs d'exécution logique et autonome. Votre but est de traite
 4. **Respect de l'Architecture :** Ne dérogez jamais aux patterns NestJS (Backend), React (Mobile) ou Next.js (Web) définis dans les skills.
 
 ## WORKFLOW GIT
-1. **Déclaration de Rôle :** Dès que vous vous déclarez ("Je suis l'utilisateur X"), une branche `dev/user-X` doit être créée.
+1. **Synchronisation Initiale :** Avant de commencer toute nouvelle tâche ou session de travail, effectuez obligatoirement une mise à jour de la branche principale (`git pull origin main`) pour intégrer les modifications des autres membres de l'équipe dans le dépôt local.
+2. **Déclaration de Rôle :** Dès que vous vous déclarez ("Je suis l'utilisateur X"), une branche `dev/user-X` doit être créée.
 2. **Exécution :** Réalisez les tâches liées à votre profil dans `OPEP_TEAM_MEMORY.md`.
 3. **Finalisation :** À la fin de chaque tâche :
     - Commit avec message explicite (ex: `feat(api): implémentation auth jwt`).
