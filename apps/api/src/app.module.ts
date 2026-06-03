@@ -8,6 +8,7 @@ import { TripsModule } from './modules/trips/trips.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './modules/auth/auth.module';
     BusesModule,
     RoutesModule,
     TripsModule,
+    ReservationsModule,
   ],
 })
 export class AppModule {}

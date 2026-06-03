@@ -73,7 +73,7 @@
   - CRUD Trips
   - Disponibilités
   - Statuts
-- [ ] **Carte 16 — Réservations**
+- [x] **Carte 16 — Réservations**
   - Création réservation
   - Verrou Redis
   - Expiration
