@@ -5,19 +5,21 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 
+import { UserRole } from '@opep/shared-types';
+
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN_PLATFORM)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @Roles('ADMIN', 'AGENCY_ADMIN')
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
   findAll() {
     return this.usersService.findAll();
   }
@@ -33,7 +35,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN_PLATFORM)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }

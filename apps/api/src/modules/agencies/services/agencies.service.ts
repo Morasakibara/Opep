@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Agency } from '../entities/agency.entity';
@@ -12,6 +12,13 @@ export class AgenciesService {
   ) {}
 
   async create(createAgencyDto: CreateAgencyDto): Promise<Agency> {
+    const existing = await this.agencyRepository.findOne({
+      where: { name: createAgencyDto.name },
+    });
+    if (existing) {
+      throw new ConflictException('Une agence avec ce nom existe déjà');
+    }
+
     const agency = this.agencyRepository.create(createAgencyDto);
     return this.agencyRepository.save(agency);
   }

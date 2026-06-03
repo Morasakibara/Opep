@@ -18,7 +18,7 @@ export class AgencyOwnershipGuard implements CanActivate {
     }
 
     // Si la requête contient un agencyId en paramètre ou body, on compare
-    const resourceAgencyId = request.params.agencyId || request.body.agencyId;
+    const resourceAgencyId = request.params.agencyId || request.body.agencyId || request.query.agencyId;
     
     if (resourceAgencyId && resourceAgencyId !== user.agencyId) {
       throw new ForbiddenException('Accès refusé : ressource appartenant à une autre agence');
