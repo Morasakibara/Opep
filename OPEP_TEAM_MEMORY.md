@@ -62,7 +62,7 @@
   - Confirmation
 
 ### 🚧 DÉVELOPPEMENT BACKEND
-- [ ] **Carte 13 — Gestion Bus**
+- [x] **Carte 13 — Gestion Bus**
   - CRUD Bus
   - Plan sièges
   - Validation
