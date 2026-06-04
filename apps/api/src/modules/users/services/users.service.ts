@@ -38,6 +38,13 @@ export class UsersService {
     });
   }
 
+  async findByIdentifier(identifier: string): Promise<User | undefined> {
+    return this.userRepository.findOne({
+      where: [{ email: identifier }, { phone: identifier }],
+      select: ['id', 'firstName', 'lastName', 'phone', 'email', 'passwordHash', 'role', 'agencyId'],
+    });
+  }
+
   async findById(id: string): Promise<User | undefined> {
     return this.userRepository.findOneBy({ id });
   }

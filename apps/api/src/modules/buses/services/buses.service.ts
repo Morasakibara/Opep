@@ -32,4 +32,16 @@ export class BusesService {
     if (!bus) throw new NotFoundException('Bus non trouvé');
     return bus;
   }
+
+  async update(agencyId: string, id: string, updateBusDto: any): Promise<Bus> {
+    const bus = await this.findOne(agencyId, id);
+    Object.assign(bus, updateBusDto);
+    return this.busRepository.save(bus);
+  }
+
+  async remove(agencyId: string, id: string): Promise<void> {
+    const bus = await this.findOne(agencyId, id);
+    bus.isActive = false;
+    await this.busRepository.save(bus);
+  }
 }

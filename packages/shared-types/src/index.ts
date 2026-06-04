@@ -20,6 +20,28 @@ export enum NotificationChannel {
   EMAIL = 'EMAIL',
 }
 
+export enum ReservationStatus {
+  PENDING_PAYMENT = 'PENDING_PAYMENT',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+  USED = 'USED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum TicketStatus {
+  VALID = 'VALID',
+  USED = 'USED',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum PaymentProvider {
+  MTN_MOMO = 'MTN_MOMO',
+  ORANGE_MONEY = 'ORANGE_MONEY',
+  STRIPE = 'STRIPE',
+  CASH = 'CASH',
+}
+
 export const UserSchema = z.object({
   id: z.string().uuid(),
   firstName: z.string(),
@@ -34,4 +56,9 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 
-// ... other types will be added as needed
+export interface TripSearchCriteria {
+  departureCity: string;
+  arrivalCity: string;
+  date: string;
+  passengers: number;
+}

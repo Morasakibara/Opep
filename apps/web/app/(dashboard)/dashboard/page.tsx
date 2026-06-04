@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { 
   Users, 
   TrendingUp, 
@@ -6,7 +7,8 @@ import {
   Bus, 
   ArrowUpRight, 
   ArrowDownRight,
-  Clock
+  Clock,
+  QrCode
 } from 'lucide-react';
 
 export default function DashboardPage() {

@@ -24,4 +24,24 @@ export class RoutesService {
       where: { agencyId, isActive: true },
     });
   }
+
+  async findOne(agencyId: string, id: string): Promise<Route> {
+    const route = await this.routeRepository.findOne({
+      where: { id, agencyId },
+    });
+    if (!route) throw new NotFoundException('Ligne non trouvée');
+    return route;
+  }
+
+  async update(agencyId: string, id: string, updateRouteDto: any): Promise<Route> {
+    const route = await this.findOne(agencyId, id);
+    Object.assign(route, updateRouteDto);
+    return this.routeRepository.save(route);
+  }
+
+  async remove(agencyId: string, id: string): Promise<void> {
+    const route = await this.findOne(agencyId, id);
+    route.isActive = false;
+    await this.routeRepository.save(route);
+  }
 }

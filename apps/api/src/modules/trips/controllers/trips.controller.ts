@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Param, Patch, Delete } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
@@ -19,6 +19,13 @@ export class TripsController {
     return this.tripsService.create(agencyId, createTripDto);
   }
 
+  @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
+  async findAll(@GetUser('agencyId') agencyId: string) {
+    return this.tripsService.findAll(agencyId);
+  }
+
   @Get('search')
   async search(
     @Query('departureCity') departureCity: string,
@@ -32,5 +39,30 @@ export class TripsController {
       date,
       passengers: +passengers,
     });
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
+  async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
+    return this.tripsService.findOne(agencyId, id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  async update(
+    @Param('id') id: string, 
+    @Body() updateTripDto: any, 
+    @GetUser('agencyId') agencyId: string
+  ) {
+    return this.tripsService.update(agencyId, id, updateTripDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
+    return this.tripsService.remove(agencyId, id);
   }
 }

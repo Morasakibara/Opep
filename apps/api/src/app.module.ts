@@ -3,12 +3,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import { dataSourceOptions } from './config/typeorm.config';
+import { AppController } from './app.controller';
 import { BusesModule } from './modules/buses/buses.module';
 import { RoutesModule } from './modules/routes/routes.module';
 import { TripsModule } from './modules/trips/trips.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { TicketsModule } from './modules/tickets/tickets.module';
 
 @Module({
   imports: [
@@ -32,6 +36,10 @@ import { AuthModule } from './modules/auth/auth.module';
     BusesModule,
     RoutesModule,
     TripsModule,
+    ReservationsModule,
+    PaymentsModule,
+    TicketsModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

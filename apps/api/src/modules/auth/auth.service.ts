@@ -32,7 +32,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.usersService.findByPhone(loginDto.phone);
+    const user = await this.usersService.findByIdentifier(loginDto.identifier);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
