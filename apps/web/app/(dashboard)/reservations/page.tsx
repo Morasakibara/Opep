@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { 
   Search, 
   Filter, 
@@ -11,11 +13,13 @@ import {
 } from 'lucide-react';
 
 export default function ReservationsPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+
   const reservations = [
     { 
       id: 'RES-001', 
       code: 'OP-X8Y2', 
-      client: 'Adrian Doe', 
+      client: 'Samuel Eto\'o', 
       trip: 'Yaoundé - Douala', 
       date: '24 Juin 2024', 
       time: '14:30', 
@@ -47,6 +51,12 @@ export default function ReservationsPage() {
     },
   ];
 
+  const filteredReservations = reservations.filter(res => 
+    res.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    res.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    res.trip.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
@@ -68,7 +78,7 @@ export default function ReservationsPage() {
           <p className="text-gray-500">Consultez et gérez les réservations de vos clients.</p>
         </div>
         <div className="flex space-x-3">
-          <button className="flex items-center bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition">
+          <button className="flex items-center bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition shadow-sm">
             <Download size={18} className="mr-2" />
             Exporter CSV
           </button>
@@ -82,7 +92,9 @@ export default function ReservationsPage() {
           <input 
             type="text" 
             placeholder="Rechercher par code, client ou trajet..." 
-            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-0 rounded-xl text-sm transition"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-0 rounded-xl text-sm transition outline-none"
           />
         </div>
         <button className="flex items-center bg-gray-50 px-6 py-3 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition w-full md:w-auto">
@@ -107,7 +119,7 @@ export default function ReservationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {reservations.map((res) => (
+              {filteredReservations.map((res) => (
                 <tr key={res.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-5">
                     <span className="text-sm font-black text-blue-600">{res.code}</span>
@@ -147,7 +159,7 @@ export default function ReservationsPage() {
           </table>
         </div>
         <div className="p-4 border-t border-gray-50 flex justify-between items-center bg-gray-50/50">
-          <p className="text-xs text-gray-500 font-medium">Affichage de 1-3 sur 3 réservations</p>
+          <p className="text-xs text-gray-500 font-medium">Affichage de 1-{filteredReservations.length} sur {reservations.length} réservations</p>
           <div className="flex space-x-2">
             <button className="px-3 py-1 border border-gray-200 rounded-lg text-xs font-bold disabled:opacity-50" disabled>Précédent</button>
             <button className="px-3 py-1 border border-gray-200 rounded-lg text-xs font-bold disabled:opacity-50" disabled>Suivant</button>

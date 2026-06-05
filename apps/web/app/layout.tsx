@@ -1,22 +1,13 @@
-import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "OPEP - Portail Agence",
-  description: "Plateforme de gestion de transport interurbain",
-  icons: {
-    icon: '/favicon.png',
-  },
+export const metadata = {
+  title: "OPEP Agence",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
+    <html lang="fr">
+      <body>{children}</body>
     </html>
   );
 }
