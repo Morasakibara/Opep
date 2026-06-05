@@ -11,6 +11,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const handleDemoLogin = (role: 'ADMIN_PLATFORM' | 'AGENCY_MANAGER') => {
+    const demoUser = {
+      id: 'demo-1',
+      firstName: role === 'ADMIN_PLATFORM' ? 'Admin' : 'Manager',
+      lastName: 'OPEP',
+      role: role,
+      email: 'demo@opep.com'
+    };
+    localStorage.setItem('token', 'demo-token');
+    localStorage.setItem('user', JSON.stringify(demoUser));
+    router.push('/dashboard');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -31,18 +44,16 @@ export default function LoginPage() {
         throw new Error(data.message || 'Erreur de connexion');
       }
 
-      // Store tokens (for demo, in localStorage)
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Redirect based on role
       if (data.user.role === 'ADMIN_PLATFORM' || data.user.role === 'AGENCY_MANAGER') {
         router.push('/dashboard');
       } else {
         router.push('/');
       }
     } catch (err: any) {
-      setError(err.message);
+      setError("Serveur indisponible. Utilisez le mode démo pour la présentation.");
     } finally {
       setLoading(false);
     }
@@ -66,8 +77,12 @@ export default function LoginPage() {
         </div>
         
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-xl">
-            <p className="text-red-700 text-xs font-bold">{error}</p>
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-4 rounded-r-xl">
+            <p className="text-orange-700 text-xs font-bold">{error}</p>
+            <div className="mt-3 flex space-x-2">
+               <button onClick={() => handleDemoLogin('ADMIN_PLATFORM')} className="text-[10px] bg-blue-600 text-white px-2 py-1 rounded-lg font-black">MODE DÉMO ADMIN</button>
+               <button onClick={() => handleDemoLogin('AGENCY_MANAGER')} className="text-[10px] bg-purple-600 text-white px-2 py-1 rounded-lg font-black">MODE DÉMO MANAGER</button>
+            </div>
           </div>
         )}
 
@@ -132,13 +147,17 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="text-center mt-6">
+          <div className="text-center mt-6 space-y-3">
             <p className="text-xs text-gray-500">
               Pas encore de compte ?{' '}
               <Link href="/register" className="font-black text-blue-600 hover:text-blue-500">
                 S'enregistrer
               </Link>
             </p>
+            <div className="pt-2 border-t border-gray-100 flex justify-center space-x-4">
+               <button type="button" onClick={() => handleDemoLogin('ADMIN_PLATFORM')} className="text-[9px] font-black text-gray-400 hover:text-blue-600 transition uppercase tracking-widest">Démo Admin</button>
+               <button type="button" onClick={() => handleDemoLogin('AGENCY_MANAGER')} className="text-[9px] font-black text-gray-400 hover:text-purple-600 transition uppercase tracking-widest">Démo Manager</button>
+            </div>
           </div>
         </form>
       </div>
