@@ -11,19 +11,21 @@ import {
   Calendar,
   ArrowRight,
   Filter,
-  ChevronRight
+  ChevronRight,
+  Bus
 } from 'lucide-react';
 
 export default function TripsPage() {
   const [activeTab, setActiveTab] = useState<'trajets' | 'lignes'>('trajets');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const routes = [
+  const initialRoutes = [
     { id: 'R-001', origin: 'Yaoundé', destination: 'Douala', duration: '4h 30min', distance: '240 km', tripsCount: 12 },
     { id: 'R-002', origin: 'Yaoundé', destination: 'Bafoussam', duration: '5h 00min', distance: '290 km', tripsCount: 8 },
     { id: 'R-003', origin: 'Douala', destination: 'Kribi', duration: '3h 00min', distance: '170 km', tripsCount: 5 },
   ];
 
-  const trips = [
+  const initialTrips = [
     { 
       id: 'T-882', 
       route: 'Yaoundé → Douala', 
@@ -59,6 +61,18 @@ export default function TripsPage() {
     },
   ];
 
+  const filteredRoutes = initialRoutes.filter(r => 
+    r.origin.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    r.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredTrips = initialTrips.filter(t => 
+    t.route.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    t.bus.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-end">
@@ -92,7 +106,13 @@ export default function TripsPage() {
       <div className="flex space-x-4">
         <div className="flex-1 bg-white rounded-xl border border-gray-100 flex items-center px-4 shadow-sm">
           <Search size={18} className="text-gray-400 mr-2" />
-          <input type="text" placeholder="Rechercher..." className="py-3 bg-transparent border-none outline-none text-sm w-full" />
+          <input 
+            type="text" 
+            placeholder="Rechercher..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="py-3 bg-transparent border-none outline-none text-sm w-full" 
+          />
         </div>
         <button className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 flex items-center shadow-sm hover:bg-gray-50 transition">
           <Filter size={18} className="mr-2 text-gray-400" />
@@ -102,7 +122,7 @@ export default function TripsPage() {
 
       {activeTab === 'lignes' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {routes.map((route) => (
+          {filteredRoutes.map((route) => (
             <div key={route.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-200 transition group">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-6">
@@ -163,7 +183,7 @@ export default function TripsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {trips.map((trip) => (
+                {filteredTrips.map((trip) => (
                   <tr key={trip.id} className="hover:bg-gray-50 transition group">
                     <td className="px-6 py-5">
                       <div>

@@ -16,8 +16,9 @@ import {
 
 export default function EmployeesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const employees = [
+  const initialEmployees = [
     { 
       id: 'EMP-001', 
       name: 'Samuel Eto\'o', 
@@ -43,6 +44,12 @@ export default function EmployeesPage() {
       status: 'INACTIVE' 
     },
   ];
+
+  const filteredEmployees = initialEmployees.filter(emp => 
+    emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const getRoleBadge = (role: string) => {
     const colors: any = {
@@ -73,11 +80,11 @@ export default function EmployeesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <p className="text-sm font-medium text-gray-400 mb-1">Total Employés</p>
-          <p className="text-2xl font-black text-gray-900">12</p>
+          <p className="text-2xl font-black text-gray-900">{initialEmployees.length}</p>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <p className="text-sm font-medium text-gray-400 mb-1">Contrôleurs Actifs</p>
-          <p className="text-2xl font-black text-blue-600">8</p>
+          <p className="text-2xl font-black text-blue-600">{initialEmployees.filter(e => e.role === 'CONTROLLER' && e.status === 'ACTIVE').length}</p>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <p className="text-sm font-medium text-gray-400 mb-1">En service aujourd'hui</p>
@@ -93,7 +100,9 @@ export default function EmployeesPage() {
             <input 
               type="text" 
               placeholder="Rechercher un employé..." 
-              className="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm outline-none"
             />
           </div>
         </div>
@@ -109,7 +118,7 @@ export default function EmployeesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {employees.map((emp) => (
+              {filteredEmployees.map((emp) => (
                 <tr key={emp.id} className="hover:bg-gray-50 transition group">
                   <td className="px-6 py-5">
                     <div className="flex items-center space-x-3">

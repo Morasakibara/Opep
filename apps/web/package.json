@@ -13,20 +13,20 @@
     "@opep/shared-types": "*",
     "clsx": "^2.1.0",
     "lucide-react": "^0.479.0",
-    "next": "^16.2.7",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
-    "@types/node": "^24.12.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/node": "^20.11.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
     "autoprefixer": "^10.4.26",
-    "eslint": "^10.3.0",
-    "eslint-config-next": "16.2.7",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.19",
-    "typescript": "^6.0.2"
+    "typescript": "~5.3.3"
   }
 }

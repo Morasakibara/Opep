@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
@@ -29,6 +29,35 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Failed to parse user', e);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    router.push('/login');
+  };
+
+  // Prevent hydration mismatch by rendering a consistent initial UI
+  if (!mounted) {
+    return <div className="flex h-screen bg-gray-50 items-center justify-center">Chargement...</div>;
+  }
+
+  const bgClass = user?.role === 'ADMIN_PLATFORM' ? 'bg-admin' : 'bg-manager';
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Tableau de bord', href: '/dashboard' },
@@ -40,28 +69,12 @@ export default function DashboardLayout({
     { icon: <BarChart3 size={20} />, label: 'Rapports', href: '/reports' },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // Clear cookies if any (mocking here)
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    router.push('/login');
-  };
-
-  const notifications = [
-    { id: 1, title: 'Nouveau bus ajouté', time: 'Il y a 2 min', read: false },
-    { id: 2, title: 'Réservation VIP confirmée', time: 'Il y a 15 min', read: false },
-    { id: 3, title: 'Alerte maintenance STD-012', time: 'Il y a 1 heure', read: true },
-  ];
-
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${bgClass} relative`}>
+      <div className="absolute inset-0 overlay-white z-0"></div>
+      
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white flex flex-col">
+      <aside className="w-64 bg-slate-900/95 text-white flex flex-col relative z-20 backdrop-blur-md">
         <div className="p-6">
           <h1 className="text-2xl font-black italic tracking-tighter text-blue-400">OPEP AGENCE</h1>
         </div>
@@ -73,7 +86,7 @@ export default function DashboardLayout({
               href={item.href}
               className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition font-medium text-sm ${
                 pathname === item.href 
-                  ? 'bg-blue-600 text-white' 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
                   : 'text-gray-300 hover:bg-white/10 hover:text-white'
               }`}
             >
@@ -106,10 +119,10 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden relative z-10">
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 relative z-50">
-          <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2 w-96">
+        <header className="h-16 bg-white/50 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 relative z-50">
+          <div className="flex items-center bg-gray-100/50 rounded-lg px-3 py-2 w-96 border border-gray-200/50">
             <Search size={18} className="text-gray-400 mr-2" />
             <input type="text" placeholder="Rechercher un ticket, un passager..." className="bg-transparent border-none outline-none text-sm w-full" />
           </div>
@@ -118,7 +131,7 @@ export default function DashboardLayout({
             <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition"
+                className="relative text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-white transition"
               >
                 <Bell size={20} />
                 <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold border-2 border-white">2</span>
@@ -131,7 +144,11 @@ export default function DashboardLayout({
                     <button onClick={() => setShowNotifications(false)}><X size={14} className="text-gray-400" /></button>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {notifications.map((n) => (
+                    {[
+                      { id: 1, title: 'Nouveau bus ajouté', time: 'Il y a 2 min', read: false },
+                      { id: 2, title: 'Réservation VIP confirmée', time: 'Il y a 15 min', read: false },
+                      { id: 3, title: 'Alerte maintenance STD-012', time: 'Il y a 1 heure', read: true },
+                    ].map((n) => (
                       <div key={n.id} className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition ${!n.read ? 'bg-blue-50/30' : ''}`}>
                         <p className="text-xs font-bold text-gray-900">{n.title}</p>
                         <p className="text-[10px] text-gray-500 mt-1">{n.time}</p>
@@ -148,14 +165,14 @@ export default function DashboardLayout({
             <div className="relative">
               <button 
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-3 p-1 rounded-xl hover:bg-gray-50 transition"
+                className="flex items-center space-x-3 p-1 rounded-xl hover:bg-white transition"
               >
                 <div className="text-right hidden md:block">
-                  <p className="text-sm font-bold text-gray-900">Finexs Voyages</p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase">Administrateur</p>
+                  <p className="text-sm font-bold text-gray-900">{user?.firstName || 'Finexs'} Voyages</p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase">{user?.role || 'Administrateur'}</p>
                 </div>
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold relative">
-                  FV
+                  {(user?.firstName?.[0] || 'F') + (user?.lastName?.[0] || 'V')}
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />

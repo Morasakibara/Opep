@@ -3,50 +3,56 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-register relative overflow-hidden">
+      <div className="absolute inset-0 overlay-dark z-0"></div>
+      
+      <div className="w-full max-w-md space-y-8 bg-white/95 p-10 rounded-[2.5rem] shadow-2xl relative z-10 hover-float">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Créer votre compte OPEP
+          <div className="flex justify-center mb-6">
+            <h1 className="text-4xl font-black italic tracking-tighter text-blue-600">OPEP</h1>
+          </div>
+          <h2 className="text-center text-3xl font-black tracking-tight text-gray-900">
+            Créer un compte
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Déjà inscrit ?{' '}
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              Connectez-vous ici
-            </Link>
+          <p className="mt-2 text-center text-sm text-gray-500 font-medium">
+            Rejoignez la plateforme OPEP dès aujourd'hui
           </p>
         </div>
+
         <form className="mt-8 space-y-6" action="#" method="POST">
-          <div className="-space-y-px rounded-md shadow-sm">
+          <div className="space-y-4">
             <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nom complet</label>
               <input
                 id="name"
                 name="name"
                 type="text"
                 required
-                className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Nom complet"
+                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="Jean Dupont"
               />
             </div>
             <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Adresse email</label>
               <input
                 id="email-address"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Adresse email"
+                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="jean@exemple.com"
               />
             </div>
             <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mot de passe</label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Mot de passe"
+                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="••••••••"
               />
             </div>
           </div>
@@ -54,10 +60,19 @@ export default function RegisterPage() {
           <div>
             <button
               type="submit"
-              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              className="group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all"
             >
-              S'inscrire
+              S'INSCRIRE
             </button>
+          </div>
+
+          <div className="text-center mt-6">
+            <p className="text-xs text-gray-500 font-medium">
+              Déjà inscrit ?{' '}
+              <Link href="/login" className="font-black text-blue-600 hover:text-blue-500">
+                Se connecter
+              </Link>
+            </p>
           </div>
         </form>
       </div>

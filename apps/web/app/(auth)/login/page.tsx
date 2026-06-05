@@ -36,7 +36,7 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user));
 
       // Redirect based on role
-      if (data.user.role === 'ADMIN_PLATFORM') {
+      if (data.user.role === 'ADMIN_PLATFORM' || data.user.role === 'AGENCY_MANAGER') {
         router.push('/dashboard');
       } else {
         router.push('/');
@@ -49,30 +49,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-login relative overflow-hidden">
+      <div className="absolute inset-0 overlay-dark z-0"></div>
+      
+      <div className="w-full max-w-md space-y-8 bg-white/95 p-10 rounded-[2.5rem] shadow-2xl relative z-10 hover-float">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Connexion à OPEP
+          <div className="flex justify-center mb-6">
+            <h1 className="text-4xl font-black italic tracking-tighter text-blue-600">OPEP</h1>
+          </div>
+          <h2 className="text-center text-3xl font-black tracking-tight text-gray-900">
+            Connexion Agence
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{' '}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              créez un compte gratuitement
-            </Link>
+          <p className="mt-2 text-center text-sm text-gray-500 font-medium">
+            Accédez à votre espace de gestion
           </p>
         </div>
         
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-xl">
+            <p className="text-red-700 text-xs font-bold">{error}</p>
           </div>
         )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="identifier" className="sr-only">Email ou Téléphone</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email ou Téléphone</label>
               <input
                 id="identifier"
                 name="identifier"
@@ -80,12 +82,12 @@ export default function LoginPage() {
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="relative block w-full rounded-t-md border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Email ou Téléphone"
+                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="votre@email.com"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Mot de passe</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mot de passe</label>
               <input
                 id="password"
                 name="password"
@@ -94,8 +96,8 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="relative block w-full rounded-b-md border-0 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Mot de passe"
+                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="••••••••"
               />
             </div>
           </div>
@@ -108,14 +110,14 @@ export default function LoginPage() {
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Se souvenir de moi
+              <label htmlFor="remember-me" className="ml-2 block text-xs font-bold text-gray-600">
+                Rester connecté
               </label>
             </div>
 
-            <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                Mot de passe oublié ?
+            <div className="text-xs">
+              <a href="#" className="font-bold text-blue-600 hover:text-blue-500">
+                Oublié ?
               </a>
             </div>
           </div>
@@ -124,10 +126,19 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loading ? 'Connexion...' : 'Se connecter'}
+              {loading ? 'Connexion en cours...' : 'SE CONNECTER'}
             </button>
+          </div>
+
+          <div className="text-center mt-6">
+            <p className="text-xs text-gray-500">
+              Pas encore de compte ?{' '}
+              <Link href="/register" className="font-black text-blue-600 hover:text-blue-500">
+                S'enregistrer
+              </Link>
+            </p>
           </div>
         </form>
       </div>
