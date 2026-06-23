@@ -20,11 +20,7 @@ import { User } from '../users/entities/user.entity';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-<<<<<<< HEAD
-        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1h') as any },
-=======
-        signOptions: { expiresIn: configService.get<any>('JWT_EXPIRES_IN', '1h') },
->>>>>>> 012d735 (fix:correctif d'erreur)
+        signOptions: { expiresIn: configService.get('JWT_EXPIRES_IN', '1h') },
       }),
       inject: [ConfigService],
     }),
