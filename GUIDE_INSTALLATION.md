@@ -38,7 +38,7 @@ npm install
 ## 5. Préparation de la Base de Données
 Exécutez les migrations pour créer les tables :
 ```bash
-npm run typeorm:run -w apps/api
+npm run migration:run -w apps/api
 ```
 
 ## 6. Lancement du Projet en Développement
