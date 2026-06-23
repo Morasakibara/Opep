@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 'use client';
 
 import React, { useState } from 'react';
+=======
+import React from 'react';
+>>>>>>> 012d735 (fix:correctif d'erreur)
 import { 
   UserPlus, 
   Search, 
@@ -9,6 +13,7 @@ import {
   Shield, 
   MoreVertical,
   Edit2,
+<<<<<<< HEAD
   Trash2,
   X,
   Check
@@ -19,6 +24,13 @@ export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const initialEmployees = [
+=======
+  Trash2
+} from 'lucide-react';
+
+export default function EmployeesPage() {
+  const employees = [
+>>>>>>> 012d735 (fix:correctif d'erreur)
     { 
       id: 'EMP-001', 
       name: 'Samuel Eto\'o', 
@@ -45,12 +57,15 @@ export default function EmployeesPage() {
     },
   ];
 
+<<<<<<< HEAD
   const filteredEmployees = initialEmployees.filter(emp => 
     emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     emp.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+=======
+>>>>>>> 012d735 (fix:correctif d'erreur)
   const getRoleBadge = (role: string) => {
     const colors: any = {
       'MANAGER': 'bg-purple-100 text-purple-700',
@@ -67,10 +82,14 @@ export default function EmployeesPage() {
           <h2 className="text-2xl font-black text-gray-900">Gestion du Personnel</h2>
           <p className="text-gray-500">Gérez les comptes de vos employés et leurs permissions.</p>
         </div>
+<<<<<<< HEAD
         <button 
           onClick={() => setShowAddModal(true)}
           className="flex items-center bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200"
         >
+=======
+        <button className="flex items-center bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+>>>>>>> 012d735 (fix:correctif d'erreur)
           <UserPlus size={20} className="mr-2" />
           Ajouter un employé
         </button>
@@ -80,11 +99,19 @@ export default function EmployeesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <p className="text-sm font-medium text-gray-400 mb-1">Total Employés</p>
+<<<<<<< HEAD
           <p className="text-2xl font-black text-gray-900">{initialEmployees.length}</p>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <p className="text-sm font-medium text-gray-400 mb-1">Contrôleurs Actifs</p>
           <p className="text-2xl font-black text-blue-600">{initialEmployees.filter(e => e.role === 'CONTROLLER' && e.status === 'ACTIVE').length}</p>
+=======
+          <p className="text-2xl font-black text-gray-900">12</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <p className="text-sm font-medium text-gray-400 mb-1">Contrôleurs Actifs</p>
+          <p className="text-2xl font-black text-blue-600">8</p>
+>>>>>>> 012d735 (fix:correctif d'erreur)
         </div>
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <p className="text-sm font-medium text-gray-400 mb-1">En service aujourd'hui</p>
@@ -100,9 +127,13 @@ export default function EmployeesPage() {
             <input 
               type="text" 
               placeholder="Rechercher un employé..." 
+<<<<<<< HEAD
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm outline-none"
+=======
+              className="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm"
+>>>>>>> 012d735 (fix:correctif d'erreur)
             />
           </div>
         </div>
@@ -118,7 +149,11 @@ export default function EmployeesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
+<<<<<<< HEAD
               {filteredEmployees.map((emp) => (
+=======
+              {employees.map((emp) => (
+>>>>>>> 012d735 (fix:correctif d'erreur)
                 <tr key={emp.id} className="hover:bg-gray-50 transition group">
                   <td className="px-6 py-5">
                     <div className="flex items-center space-x-3">
@@ -166,6 +201,7 @@ export default function EmployeesPage() {
           </table>
         </div>
       </div>
+<<<<<<< HEAD
 
       {/* Add Employee Modal */}
       {showAddModal && (
@@ -210,6 +246,8 @@ export default function EmployeesPage() {
           </div>
         </div>
       )}
+=======
+>>>>>>> 012d735 (fix:correctif d'erreur)
     </div>
   );
 }

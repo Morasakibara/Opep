@@ -14,8 +14,11 @@
     "test": "npm run test --workspaces"
   },
   "overrides": {
+<<<<<<< HEAD
     "react": "18.2.0",
     "react-dom": "18.2.0",
+=======
+>>>>>>> 012d735 (fix:correctif d'erreur)
     "postcss": "^8.5.15",
     "tar": "^7.5.11",
     "uuid": "^11.1.1"

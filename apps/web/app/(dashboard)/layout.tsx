@@ -14,10 +14,14 @@ import {
   QrCode,
   Bell,
   Search,
+<<<<<<< HEAD
   BarChart3,
   X,
   User,
   ChevronDown
+=======
+  BarChart3
+>>>>>>> 012d735 (fix:correctif d'erreur)
 } from 'lucide-react';
 
 export default function DashboardLayout({

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client';
 
 import React, { useState } from 'react';
@@ -41,12 +42,29 @@ export default function ReportsPage() {
         </div>
       )}
 
+=======
+import React from 'react';
+import { 
+  BarChart3, 
+  Download, 
+  Calendar, 
+  ArrowUpRight, 
+  ArrowDownRight,
+  PieChart as PieChartIcon,
+  TrendingUp
+} from 'lucide-react';
+
+export default function ReportsPage() {
+  return (
+    <div className="space-y-8">
+>>>>>>> 012d735 (fix:correctif d'erreur)
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-black text-gray-900">Rapports & Statistiques</h2>
           <p className="text-gray-500">Analysez les performances financières et opérationnelles de votre agence.</p>
         </div>
         <div className="flex space-x-3">
+<<<<<<< HEAD
           <select 
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
@@ -70,6 +88,15 @@ export default function ReportsPage() {
                 Exporter le rapport
               </>
             )}
+=======
+          <button className="flex items-center bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition">
+            <Calendar size={18} className="mr-2" />
+            Juin 2024
+          </button>
+          <button className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+            <Download size={18} className="mr-2" />
+            Exporter le rapport
+>>>>>>> 012d735 (fix:correctif d'erreur)
           </button>
         </div>
       </div>
@@ -77,7 +104,11 @@ export default function ReportsPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
+<<<<<<< HEAD
           { label: 'Chiffre d\'affaires', value: period === 'Mai 2024' ? '3,850,000 FCFA' : '4,250,000 FCFA', trend: '+15.2%', up: true },
+=======
+          { label: 'Chiffre d\'affaires', value: '4,250,000 FCFA', trend: '+15.2%', up: true },
+>>>>>>> 012d735 (fix:correctif d'erreur)
           { label: 'Taux d\'occupation', value: '78%', trend: '+5.4%', up: true },
           { label: 'Tickets annulés', value: '12', trend: '-2.1%', up: true },
           { label: 'Nouveaux clients', value: '124', trend: '+12.8%', up: true },
