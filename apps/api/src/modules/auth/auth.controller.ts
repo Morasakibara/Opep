@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { OtpService } from './services/otp.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UserResponseDto } from '../users/dto/user-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,12 +15,20 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    const result = await this.authService.login(loginDto);
+    return {
+      ...result,
+      user: UserResponseDto.fromEntity(result.user),
+    };
   }
 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+    const result = await this.authService.register(createUserDto);
+    return {
+      ...result,
+      user: UserResponseDto.fromEntity(result.user),
+    };
   }
 
   @Post('refresh')

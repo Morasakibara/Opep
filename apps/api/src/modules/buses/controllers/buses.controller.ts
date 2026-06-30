@@ -7,6 +7,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { BusesService } from '../services/buses.service';
 import { CreateBusDto } from '../dto/create-bus.dto';
+import { BusResponseDto } from '../dto/bus-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 
 @Controller('buses')
@@ -17,19 +18,22 @@ export class BusesController {
   @Post()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   async create(@Body() createBusDto: CreateBusDto, @GetUser('agencyId') agencyId: string) {
-    return this.busesService.create(agencyId, createBusDto);
+    const bus = await this.busesService.create(agencyId, createBusDto);
+    return BusResponseDto.fromEntity(bus);
   }
 
   @Get()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findAll(@GetUser('agencyId') agencyId: string) {
-    return this.busesService.findAll(agencyId);
+    const buses = await this.busesService.findAll(agencyId);
+    return buses.map(BusResponseDto.fromEntity);
   }
 
   @Get(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
-    return this.busesService.findOne(agencyId, id);
+    const bus = await this.busesService.findOne(agencyId, id);
+    return BusResponseDto.fromEntity(bus);
   }
 
   @Patch(':id')
@@ -39,12 +43,14 @@ export class BusesController {
     @Body() updateBusDto: any, 
     @GetUser('agencyId') agencyId: string
   ) {
-    return this.busesService.update(agencyId, id, updateBusDto);
+    const bus = await this.busesService.update(agencyId, id, updateBusDto);
+    return BusResponseDto.fromEntity(bus);
   }
 
   @Delete(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
-    return this.busesService.remove(agencyId, id);
+    await this.busesService.remove(agencyId, id);
+    return { message: 'Bus supprimé avec succès' };
   }
 }

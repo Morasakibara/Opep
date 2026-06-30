@@ -5,6 +5,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { ReservationsService } from '../services/reservations.service';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
+import { ReservationResponseDto } from '../dto/reservation-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 
 @Controller('reservations')
@@ -12,22 +13,36 @@ import { GetUser } from '../../../common/decorators/get-user.decorator';
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
+  @Get()
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER, UserRole.CONTROLLER)
+  async findAll(@GetUser() user: any) {
+    const agencyId = user.agencyId;
+    if (!agencyId) {
+      return [];
+    }
+    const reservations = await this.reservationsService.findByAgency(agencyId);
+    return reservations.map(ReservationResponseDto.fromEntity);
+  }
+
   @Post()
   async create(
     @Body() createReservationDto: CreateReservationDto,
     @GetUser('id') clientId: string,
     @GetUser('role') role: string,
   ) {
-    return this.reservationsService.create(clientId, role, createReservationDto);
+    const reservation = await this.reservationsService.create(clientId, role, createReservationDto);
+    return ReservationResponseDto.fromEntity(reservation);
   }
 
   @Get('my')
   async findMyReservations(@GetUser('id') clientId: string) {
-    return this.reservationsService.findByClient(clientId);
+    const reservations = await this.reservationsService.findByClient(clientId);
+    return reservations.map(ReservationResponseDto.fromEntity);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.reservationsService.findOne(id);
+    const reservation = await this.reservationsService.findOne(id);
+    return ReservationResponseDto.fromEntity(reservation);
   }
 }

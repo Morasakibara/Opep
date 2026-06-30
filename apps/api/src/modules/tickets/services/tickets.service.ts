@@ -4,15 +4,16 @@ import { Repository } from 'typeorm';
 import { Ticket, TicketStatus } from '../entities/ticket.entity';
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { Passenger } from '../../reservations/entities/passenger.entity';
-import { generateTicketQR, TicketPayload } from '@opep/qr-utils';
+import { generateTicketQR, validateTicketQR, TicketPayload } from '@opep/qr-utils';
 import { ConfigService } from '@nestjs/config';
+import { AuditService } from '../../audit/services/audit.service';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class TicketsService {
   private privateKey: string;
+  private publicKey: string;
 
   constructor(
     @InjectRepository(Ticket)
@@ -22,15 +23,21 @@ export class TicketsService {
     @InjectRepository(Passenger)
     private readonly passengerRepository: Repository<Passenger>,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {
-    // Load RSA Private Key for signing
-    // For demo purposes, we might use a dummy key or load from env/file
-    const keyPath = this.configService.get('RSA_PRIVATE_KEY_PATH');
-    if (keyPath && fs.existsSync(keyPath)) {
-      this.privateKey = fs.readFileSync(keyPath, 'utf8');
+    // Load RSA keys
+    const privKeyPath = this.configService.get('RSA_PRIVATE_KEY_PATH');
+    if (privKeyPath && fs.existsSync(privKeyPath)) {
+      this.privateKey = fs.readFileSync(privKeyPath, 'utf8');
     } else {
-      // Fallback or development dummy key (SHOULD NEVER BE USED IN PROD)
       this.privateKey = this.configService.get('RSA_PRIVATE_KEY');
+    }
+
+    const pubKeyPath = this.configService.get('RSA_PUBLIC_KEY_PATH');
+    if (pubKeyPath && fs.existsSync(pubKeyPath)) {
+      this.publicKey = fs.readFileSync(pubKeyPath, 'utf8');
+    } else {
+      this.publicKey = this.configService.get('RSA_PUBLIC_KEY');
     }
   }
 
@@ -98,6 +105,18 @@ export class TicketsService {
       tickets.push(savedTicket);
     }
 
+    // Audit après génération
+    this.auditService.log({
+      action: 'TICKETS_GENERATED',
+      entityType: 'ticket',
+      entityId: reservationId,
+      metadata: {
+        reservationCode: reservation.reservationCode,
+        ticketCount: tickets.length,
+        passengerNames: passengers.map(p => `${p.firstName} ${p.lastName}`),
+      },
+    }).catch(() => {});
+
     return tickets;
   }
 
@@ -113,7 +132,92 @@ export class TicketsService {
       where: { id },
       relations: ['passenger', 'reservation', 'reservation.trip', 'reservation.trip.route'],
     });
-    if (!ticket) throw new NotFoundException('Ticket non trouvé');
+    if (!ticket) throw new NotFoundException('Ticket non trouve');
     return ticket;
+  }
+
+  async validateAndScan(qrString: string, scannerUserId?: string): Promise<{
+    valid: boolean;
+    ticketId?: string;
+    passengerName?: string;
+    seatNumber?: string;
+    tripRoute?: string;
+    departureTime?: string;
+    reason?: string;
+  }> {
+    // 1. Cryptographic validation
+    if (!this.publicKey) {
+      console.error('[TICKETS] Public key missing - validation not available');
+      return { valid: false, reason: 'Validation non disponible (cle publique manquante)' };
+    }
+
+    const validation = validateTicketQR(qrString, this.publicKey);
+    if (!validation.valid || !validation.payload) {
+      this.auditService.log({
+        action: 'TICKET_VALIDATION_FAILED',
+        entityType: 'ticket',
+        entityId: 'unknown',
+        metadata: { reason: validation.reason },
+      }).catch(() => {});
+      return { valid: false, reason: validation.reason || 'Signature invalide' };
+    }
+
+    const payload = validation.payload;
+
+    // 2. Check if ticket exists in DB and its status
+    const ticket = await this.ticketRepository.findOne({
+      where: { id: payload.ticketId },
+      relations: ['passenger', 'reservation', 'reservation.trip', 'reservation.trip.route'],
+    });
+
+    if (!ticket) {
+      return { valid: false, reason: 'Ticket introuvable en base' };
+    }
+
+    if (ticket.status === TicketStatus.USED) {
+      return { valid: false, reason: 'Ticket deja utilise', ticketId: ticket.id };
+    }
+
+    if (ticket.status === TicketStatus.CANCELLED) {
+      return { valid: false, reason: 'Ticket annule', ticketId: ticket.id };
+    }
+
+    if (ticket.status === TicketStatus.EXPIRED || new Date(ticket.validUntil) < new Date()) {
+      if (ticket.status !== TicketStatus.EXPIRED) {
+        ticket.status = TicketStatus.EXPIRED;
+        await this.ticketRepository.save(ticket);
+      }
+      return { valid: false, reason: 'Ticket expire', ticketId: ticket.id };
+    }
+
+    // 3. Mark ticket as scanned
+    ticket.status = TicketStatus.USED;
+    ticket.scannedAt = new Date();
+    ticket.scannedBy = scannerUserId || null;
+    ticket.scannedOffline = false;
+    await this.ticketRepository.save(ticket);
+
+    // 4. Audit
+    this.auditService.log({
+      action: 'TICKET_SCANNED',
+      entityType: 'ticket',
+      entityId: ticket.id,
+      userId: scannerUserId,
+      metadata: {
+        passengerName: payload.passengerName,
+        seatNumber: payload.seatNumber,
+        tripRoute: `${payload.departureCity} -> ${payload.arrivalCity}`,
+      },
+    }).catch(() => {});
+
+    // 5. Return success with ticket details
+    return {
+      valid: true,
+      ticketId: ticket.id,
+      passengerName: payload.passengerName,
+      seatNumber: payload.seatNumber,
+      tripRoute: `${payload.departureCity} -> ${payload.arrivalCity}`,
+      departureTime: payload.departureDateTime,
+    };
   }
 }

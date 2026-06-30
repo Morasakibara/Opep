@@ -10,11 +10,12 @@ import { OtpService } from './services/otp.service';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../users/entities/user.entity';
+import { Agency } from '../agencies/entities/agency.entity';
 
 @Module({
   imports: [
     UsersModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Agency]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

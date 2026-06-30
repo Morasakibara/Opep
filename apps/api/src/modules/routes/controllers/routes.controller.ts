@@ -6,6 +6,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { RoutesService } from '../services/routes.service';
 import { CreateRouteDto } from '../dto/create-route.dto';
+import { RouteResponseDto } from '../dto/route-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 
 @Controller('routes')
@@ -16,19 +17,22 @@ export class RoutesController {
   @Post()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   async create(@Body() createRouteDto: CreateRouteDto, @GetUser('agencyId') agencyId: string) {
-    return this.routesService.create(agencyId, createRouteDto);
+    const route = await this.routesService.create(agencyId, createRouteDto);
+    return RouteResponseDto.fromEntity(route);
   }
 
   @Get()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findAll(@GetUser('agencyId') agencyId: string) {
-    return this.routesService.findAll(agencyId);
+    const routes = await this.routesService.findAll(agencyId);
+    return routes.map(RouteResponseDto.fromEntity);
   }
 
   @Get(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
-    return this.routesService.findOne(agencyId, id);
+    const route = await this.routesService.findOne(agencyId, id);
+    return RouteResponseDto.fromEntity(route);
   }
 
   @Patch(':id')
@@ -38,12 +42,14 @@ export class RoutesController {
     @Body() updateRouteDto: any, 
     @GetUser('agencyId') agencyId: string
   ) {
-    return this.routesService.update(agencyId, id, updateRouteDto);
+    const route = await this.routesService.update(agencyId, id, updateRouteDto);
+    return RouteResponseDto.fromEntity(route);
   }
 
   @Delete(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
-    return this.routesService.remove(agencyId, id);
+    await this.routesService.remove(agencyId, id);
+    return { message: 'Ligne supprimée avec succès' };
   }
 }

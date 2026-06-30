@@ -22,19 +22,26 @@ export class TripsService {
   }
 
   async search(params: {
-    departureCity: string;
-    arrivalCity: string;
-    date: string;
-    passengers: number;
+    departureCity?: string;
+    arrivalCity?: string;
+    date?: string;
+    passengers?: number;
   }): Promise<Trip[]> {
     const query = this.tripRepository.createQueryBuilder('trip')
       .leftJoinAndSelect('trip.route', 'route')
       .leftJoinAndSelect('trip.bus', 'bus')
       .leftJoinAndSelect('trip.agency', 'agency')
-      .where('route.departureCity = :departureCity', { departureCity: params.departureCity })
-      .andWhere('route.arrivalCity = :arrivalCity', { arrivalCity: params.arrivalCity })
-      .andWhere('DATE(trip.departureDateTime) = :date', { date: params.date })
-      .andWhere('trip.status = :status', { status: 'SCHEDULED' });
+      .where('trip.status = :status', { status: 'SCHEDULED' });
+
+    if (params.departureCity) {
+      query.andWhere('route.departureCity = :departureCity', { departureCity: params.departureCity });
+    }
+    if (params.arrivalCity) {
+      query.andWhere('route.arrivalCity = :arrivalCity', { arrivalCity: params.arrivalCity });
+    }
+    if (params.date) {
+      query.andWhere('DATE(trip.departureDateTime) = :date', { date: params.date });
+    }
 
     return query.getMany();
   }
@@ -59,6 +66,14 @@ export class TripsService {
     const trip = await this.findOne(agencyId, id);
     Object.assign(trip, updateTripDto);
     return this.tripRepository.save(trip);
+  }
+
+  async findAvailable(): Promise<Trip[]> {
+    return this.tripRepository.find({
+      where: { status: TripStatus.SCHEDULED },
+      relations: ['route', 'bus', 'agency'],
+      order: { departureDateTime: 'ASC' },
+    });
   }
 
   async remove(agencyId: string, id: string): Promise<void> {

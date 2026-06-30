@@ -1,9 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !password) {
+      alert('Veuillez remplir tous les champs.');
+      return;
+    }
+    alert("Le mode inscription est limité en démo. Connectez-vous avec les comptes existants.");
+  };
   return (
     <div className="flex min-h-screen items-center justify-center bg-register relative overflow-hidden">
       <div className="absolute inset-0 overlay-dark z-0"></div>
@@ -21,7 +33,7 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
           <div className="space-y-4">
             <div>
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nom complet</label>
@@ -32,6 +44,8 @@ export default function RegisterPage() {
                 required
                 className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="Jean Dupont"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
@@ -44,6 +58,8 @@ export default function RegisterPage() {
                 required
                 className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="jean@exemple.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
@@ -55,6 +71,8 @@ export default function RegisterPage() {
                 required
                 className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
@@ -63,7 +81,6 @@ export default function RegisterPage() {
             <button
               type="submit"
               className="group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all"
-              onClick={() => alert("Le mode inscription est limité en démo. Connectez-vous avec les comptes existants.")}
             >
               S'INSCRIRE
             </button>

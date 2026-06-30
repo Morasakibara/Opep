@@ -8,8 +8,8 @@ import { Passenger } from '../entities/passenger.entity';
 import { Trip } from '../../trips/entities/trip.entity';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { ConfigService } from '@nestjs/config';
+import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ReservationsService {
@@ -25,6 +25,7 @@ export class ReservationsService {
     @InjectQueue('reservations-queue') private readonly reservationsQueue: Queue,
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {
     this.redis = new Redis({
       host: this.configService.get('REDIS_HOST', 'localhost'),
@@ -101,6 +102,20 @@ export class ReservationsService {
         { delay: 600000, removeOnComplete: true }
       );
 
+      // Audit après transaction
+      this.auditService.log({
+        userId: clientId,
+        action: 'RESERVATION_CREATED',
+        entityType: 'reservation',
+        entityId: savedReservation.id,
+        metadata: {
+          tripId,
+          seatsCount: passengers.length,
+          totalAmount: savedReservation.totalAmount,
+          status: savedReservation.status,
+        },
+      }).catch(() => {});
+
       return savedReservation;
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -118,6 +133,14 @@ export class ReservationsService {
     return this.reservationRepository.find({
       where: { clientId },
       relations: ['trip', 'trip.route', 'trip.bus'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findByAgency(agencyId: string): Promise<Reservation[]> {
+    return this.reservationRepository.find({
+      where: { agencyId },
+      relations: ['trip', 'trip.route', 'trip.bus', 'client'],
       order: { createdAt: 'DESC' },
     });
   }

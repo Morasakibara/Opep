@@ -5,6 +5,7 @@ import { Payment, PaymentProvider, PaymentStatus } from '../entities/payment.ent
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { ProcessPaymentDto } from '../dto/process-payment.dto';
 import { ConfigService } from '@nestjs/config';
+import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
 import { TicketsService } from '../../tickets/services/tickets.service';
 
@@ -20,6 +21,7 @@ export class PaymentsService {
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
     private readonly ticketsService: TicketsService,
+    private readonly auditService: AuditService,
   ) {
     this.redis = new Redis({
       host: this.configService.get('REDIS_HOST', 'localhost'),
@@ -89,6 +91,20 @@ export class PaymentsService {
       if (status === PaymentStatus.SUCCESS) {
         await this.ticketsService.generateTicketsForReservation(reservationId);
       }
+
+      // Audit après transaction
+      this.auditService.log({
+        action: status === PaymentStatus.SUCCESS ? 'PAYMENT_COMPLETED' : 'PAYMENT_FAILED',
+        entityType: 'payment',
+        entityId: savedPayment.id,
+        metadata: {
+          reservationId,
+          amount: savedPayment.amount,
+          provider: savedPayment.provider,
+          status: savedPayment.status,
+          failureReason: savedPayment.failureReason,
+        },
+      }).catch(() => {});
 
       return savedPayment;
     } catch (err) {

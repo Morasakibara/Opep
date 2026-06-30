@@ -5,8 +5,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../auth/guards/agency-ownership.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-
 import { UserRole } from '@opep/shared-types';
+import { AgencyResponseDto } from './dto/agency-response.dto';
 
 @Controller('agencies')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -15,33 +15,37 @@ export class AgenciesController {
 
   @Post()
   @Roles(UserRole.ADMIN_PLATFORM)
-  create(@Body() createAgencyDto: CreateAgencyDto) {
-    return this.agenciesService.create(createAgencyDto);
+  async create(@Body() createAgencyDto: CreateAgencyDto) {
+    const agency = await this.agenciesService.create(createAgencyDto);
+    return AgencyResponseDto.fromEntity(agency);
   }
 
   @Get()
   @Roles(UserRole.ADMIN_PLATFORM)
-  findAll() {
-    return this.agenciesService.findAll();
+  async findAll() {
+    const agencies = await this.agenciesService.findAll();
+    return agencies.map(AgencyResponseDto.fromEntity);
   }
 
   @Get(':id')
   @UseGuards(AgencyOwnershipGuard)
-  findOne(@Param('id') id: string) {
-    return this.agenciesService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const agency = await this.agenciesService.findOne(id);
+    return AgencyResponseDto.fromEntity(agency);
   }
 
   @Patch(':id')
   @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
   @UseGuards(AgencyOwnershipGuard)
-  update(@Param('id') id: string, @Body() updateAgencyDto: any) {
-    // Note: L'AgencyOwnershipGuard vérifiera que l'user appartient bien à l'agence :id
-    return this.agenciesService.update(id, updateAgencyDto);
+  async update(@Param('id') id: string, @Body() updateAgencyDto: any) {
+    const agency = await this.agenciesService.update(id, updateAgencyDto);
+    return AgencyResponseDto.fromEntity(agency);
   }
 
   @Delete(':id')
   @Roles(UserRole.ADMIN_PLATFORM)
-  remove(@Param('id') id: string) {
-    return this.agenciesService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.agenciesService.remove(id);
+    return { message: 'Agence supprimée avec succès' };
   }
 }

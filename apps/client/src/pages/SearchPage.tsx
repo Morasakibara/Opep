@@ -1,12 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, User } from 'lucide-react';
+import { Search, MapPin, Calendar, Users, User, Loader2 } from 'lucide-react';
+import { apiClient } from '../lib/apiClient';
 
 const SearchPage = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [date, setDate] = useState('');
+  const [popularTrips, setPopularTrips] = useState<any[]>([]);
+  const [loadingPopular, setLoadingPopular] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    loadPopularTrips();
+  }, []);
+
+  const loadPopularTrips = async () => {
+    setLoadingPopular(true);
+    try {
+      const trips = await apiClient.getAvailableTrips();
+      // Deduplicate by route for popular display
+      const seen = new Set<string>();
+      const unique = trips.filter((t: any) => {
+        const key = `${t.route?.departureCity}-${t.route?.arrivalCity}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 6);
+      setPopularTrips(unique);
+    } catch {
+      // Fallback silencieux - la section reste vide
+    } finally {
+      setLoadingPopular(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,6 +41,8 @@ const SearchPage = () => {
       navigate(`/results?from=${from}&to=${to}&date=${date}`);
     }
   };
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -26,7 +55,20 @@ const SearchPage = () => {
               <User size={20} className="mr-2" />
               <span>Profil</span>
             </Link>
-            <Link to="/login" className="bg-opep-orange px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-opep-orange transition">Connexion</Link>
+            {token ? (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('user');
+                  window.location.reload();
+                }}
+                className="bg-white/20 px-4 py-2 rounded-lg font-bold hover:bg-white/30 transition"
+              >
+                Déconnexion
+              </button>
+            ) : (
+              <Link to="/login" className="bg-opep-orange px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-opep-orange transition">Connexion</Link>
+            )}
           </nav>
         </div>
       </header>
@@ -44,9 +86,9 @@ const SearchPage = () => {
               <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Départ</label>
               <div className="flex items-center border rounded-lg p-2 focus-within:border-opep-blue">
                 <MapPin size={18} className="text-gray-400 mr-2" />
-                <input 
-                  type="text" 
-                  placeholder="Yaoundé" 
+                <input
+                  type="text"
+                  placeholder="Yaoundé"
                   className="w-full outline-none text-gray-800"
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
@@ -54,14 +96,14 @@ const SearchPage = () => {
                 />
               </div>
             </div>
-            
+
             <div className="relative">
               <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Arrivée</label>
               <div className="flex items-center border rounded-lg p-2 focus-within:border-opep-blue">
                 <MapPin size={18} className="text-gray-400 mr-2" />
-                <input 
-                  type="text" 
-                  placeholder="Douala" 
+                <input
+                  type="text"
+                  placeholder="Douala"
                   className="w-full outline-none text-gray-800"
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
@@ -74,8 +116,8 @@ const SearchPage = () => {
               <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Date</label>
               <div className="flex items-center border rounded-lg p-2 focus-within:border-opep-blue">
                 <Calendar size={18} className="text-gray-400 mr-2" />
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   className="w-full outline-none text-gray-800"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
@@ -97,29 +139,44 @@ const SearchPage = () => {
       {/* Results / Featured */}
       <section className="container mx-auto py-12 px-4">
         <h3 className="text-2xl font-bold text-gray-800 mb-8">Trajets populaires</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { from: 'Yaoundé', to: 'Douala', price: '3000 FCFA', agency: 'Finexs' },
-            { from: 'Douala', to: 'Bafoussam', price: '4000 FCFA', agency: 'General Express' },
-            { from: 'Yaoundé', to: 'Garoua', price: '15000 FCFA', agency: 'Touristique' },
-          ].map((trip, i) => (
-            <div key={i} className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
-              <div className="h-32 bg-gray-200"></div>
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="text-sm font-bold text-opep-blue">{trip.agency}</p>
-                    <h4 className="text-lg font-bold text-gray-900">{trip.from} ➔ {trip.to}</h4>
-                  </div>
-                  <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm font-bold">{trip.price}</span>
+
+        {loadingPopular ? (
+          <div className="flex justify-center py-12">
+            <Loader2 size={32} className="text-opep-blue animate-spin" />
+          </div>
+        ) : popularTrips.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <p>Aucun trajet disponible pour le moment.</p>
+            <p className="text-sm mt-2">Utilisez la recherche ci-dessus pour trouver un voyage.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {popularTrips.map((trip, i) => (
+              <div key={trip.id || i} className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+                <div className="h-32 bg-gradient-to-br from-blue-400 to-opep-blue flex items-center justify-center text-white text-3xl font-black">
+                  {trip.route?.departureCity || '?'} <span className="mx-2 text-lg">➔</span> {trip.route?.arrivalCity || '?'}
                 </div>
-                <button className="w-full border-2 border-opep-blue text-opep-blue py-2 rounded-lg font-bold hover:bg-opep-blue hover:text-white transition">
-                  Réserver
-                </button>
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-bold text-opep-blue">{trip.agency?.name || 'Agence'}</p>
+                      <h4 className="text-lg font-bold text-gray-900">{trip.route?.departureCity} ➔ {trip.route?.arrivalCity}</h4>
+                    </div>
+                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm font-bold">
+                      {trip.route?.basePrice ? `${trip.route.basePrice} FCFA` : 'Prix variable'}
+                    </span>
+                  </div>
+                  <Link
+                    to={`/results?from=${trip.route?.departureCity}&to=${trip.route?.arrivalCity}`}
+                    className="block w-full border-2 border-opep-blue text-opep-blue py-2 rounded-lg font-bold hover:bg-opep-blue hover:text-white transition text-center"
+                  >
+                    Réserver
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

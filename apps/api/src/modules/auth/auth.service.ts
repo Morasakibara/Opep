@@ -46,8 +46,15 @@ export class AuthService {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
+        phone: user.phone,
+        email: user.email,
         role: user.role,
         agencyId: user.agencyId,
+        isActive: user.isActive,
+        preferredLanguage: user.preferredLanguage,
+        notificationChannel: user.notificationChannel,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }
     };
   }
@@ -62,8 +69,15 @@ export class AuthService {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
+        phone: user.phone,
+        email: user.email,
         role: user.role,
         agencyId: user.agencyId,
+        isActive: user.isActive,
+        preferredLanguage: user.preferredLanguage,
+        notificationChannel: user.notificationChannel,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }
     };
   }

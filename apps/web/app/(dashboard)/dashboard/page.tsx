@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Users, 
@@ -8,23 +10,66 @@ import {
   ArrowUpRight, 
   ArrowDownRight,
   Clock,
-  QrCode
+  QrCode,
+  Loader2
 } from 'lucide-react';
+import { apiClient } from '@/lib/apiClient';
 
 export default function DashboardPage() {
-  const stats = [
+  const [stats, setStats] = useState([
     { label: 'Voyageurs aujourd\'hui', value: '1,284', icon: <Users className="text-blue-600" />, trend: '+12%', up: true },
     { label: 'Tickets vendus', value: '452', icon: <Ticket className="text-orange-600" />, trend: '+5%', up: true },
     { label: 'Revenus (XAF)', value: '1,840,000', icon: <TrendingUp className="text-green-600" />, trend: '-2%', up: false },
     { label: 'Bus actifs', value: '14/18', icon: <Bus className="text-purple-600" />, trend: 'Stable', up: true },
-  ];
-
-  const recentBookings = [
+  ]);
+  const [recentBookings, setRecentBookings] = useState([
     { id: 'TK-8821', user: 'Jean Dupont', route: 'Yaoundé - Douala', time: 'Il y a 5 min', amount: '3,000 FCFA', status: 'Payé' },
     { id: 'TK-8820', user: 'Marie Ngo', route: 'Yaoundé - Bafoussam', time: 'Il y a 12 min', amount: '4,000 FCFA', status: 'Payé' },
     { id: 'TK-8819', user: 'Paul Biya', route: 'Douala - Kribi', time: 'Il y a 15 min', amount: '2,500 FCFA', status: 'En attente' },
     { id: 'TK-8818', user: 'Samuel Eto\'o', route: 'Yaoundé - Garoua', time: 'Il y a 22 min', amount: '15,000 FCFA', status: 'Payé' },
-  ];
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [reservations, trips] = await Promise.all([
+          apiClient.getReservations().catch(() => []),
+          apiClient.getTrips().catch(() => []),
+        ]);
+        if (reservations.length > 0) {
+          setRecentBookings(reservations.slice(0, 4).map((r: any) => ({
+            id: r.ticketId || r.code?.slice(0, 8) || `RES-${r.id?.slice(0, 4)}`,
+            user: r.client || `${r.passenger?.firstName || ''} ${r.passenger?.lastName || ''}`.trim() || 'Client',
+            route: r.trip || `${r.tripRoute || ''}` || 'Trajet',
+            time: new Date(r.createdAt).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            amount: r.amount ? `${r.amount.toLocaleString('fr-FR')} FCFA` : '---',
+            status: r.status === 'CONFIRMED' ? 'Payé' : r.status === 'PENDING_PAYMENT' ? 'En attente' : r.status || '---',
+          })));
+        }
+        if (trips.length > 0) {
+          const activeTrips = trips.filter((t: any) => t.status === 'SCHEDULED' || t.status === 'BOARDING');
+          setStats([
+            { label: 'Voyageurs aujourd\'hui', value: activeTrips.length.toString(), icon: <Users className="text-blue-600" />, trend: '+12%', up: true },
+            { label: 'Tickets vendus', value: reservations.length.toString(), icon: <Ticket className="text-orange-600" />, trend: '+5%', up: true },
+            { label: 'Revenus (XAF)', value: reservations.reduce((s: number, r: any) => s + (r.amount || 0), 0).toLocaleString('fr-FR'), icon: <TrendingUp className="text-green-600" />, trend: '-2%', up: false },
+            { label: 'Bus actifs', value: `${activeTrips.length}/18`, icon: <Bus className="text-purple-600" />, trend: 'Stable', up: true },
+          ]);
+        }
+      } catch {} finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={32} className="text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -57,7 +102,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-50 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Réservations récentes</h3>
-            <button className="text-blue-600 text-sm font-bold hover:underline">Voir tout</button>
+            <button onClick={() => alert('Voir toutes les réservations (Simulation)')} className="text-blue-600 text-sm font-bold hover:underline">Voir tout</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">

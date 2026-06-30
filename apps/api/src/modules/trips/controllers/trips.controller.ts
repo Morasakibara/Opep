@@ -6,6 +6,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { TripsService } from '../services/trips.service';
 import { CreateTripDto } from '../dto/create-trip.dto';
+import { TripResponseDto } from '../dto/trip-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 
 @Controller('trips')
@@ -16,14 +17,22 @@ export class TripsController {
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   async create(@Body() createTripDto: CreateTripDto, @GetUser('agencyId') agencyId: string) {
-    return this.tripsService.create(agencyId, createTripDto);
+    const trip = await this.tripsService.create(agencyId, createTripDto);
+    return TripResponseDto.fromEntity(trip);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findAll(@GetUser('agencyId') agencyId: string) {
-    return this.tripsService.findAll(agencyId);
+    const trips = await this.tripsService.findAll(agencyId);
+    return trips.map(TripResponseDto.fromEntity);
+  }
+
+  @Get('available')
+  async findAvailable() {
+    const trips = await this.tripsService.findAvailable();
+    return trips.map(TripResponseDto.fromEntity);
   }
 
   @Get('search')
@@ -33,19 +42,21 @@ export class TripsController {
     @Query('date') date: string,
     @Query('passengers') passengers: number,
   ) {
-    return this.tripsService.search({
+    const trips = await this.tripsService.search({
       departureCity,
       arrivalCity,
       date,
       passengers: +passengers,
     });
+    return trips.map(TripResponseDto.fromEntity);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM, UserRole.CLIENT)
   async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
-    return this.tripsService.findOne(agencyId, id);
+    const trip = await this.tripsService.findOne(agencyId, id);
+    return TripResponseDto.fromEntity(trip);
   }
 
   @Patch(':id')
@@ -56,13 +67,15 @@ export class TripsController {
     @Body() updateTripDto: any, 
     @GetUser('agencyId') agencyId: string
   ) {
-    return this.tripsService.update(agencyId, id, updateTripDto);
+    const trip = await this.tripsService.update(agencyId, id, updateTripDto);
+    return TripResponseDto.fromEntity(trip);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
-    return this.tripsService.remove(agencyId, id);
+    await this.tripsService.remove(agencyId, id);
+    return { message: 'Voyage supprimé avec succès' };
   }
 }

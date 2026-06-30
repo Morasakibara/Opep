@@ -34,14 +34,14 @@ export class UsersService {
   async findByPhone(phone: string): Promise<User | undefined> {
     return this.userRepository.findOne({
       where: { phone },
-      select: ['id', 'firstName', 'lastName', 'phone', 'passwordHash', 'role', 'agencyId'],
+      // passwordHash est déjà exclu via { select: false } sur l'entité
     });
   }
 
   async findByIdentifier(identifier: string): Promise<User | undefined> {
     return this.userRepository.findOne({
       where: [{ email: identifier }, { phone: identifier }],
-      select: ['id', 'firstName', 'lastName', 'phone', 'email', 'passwordHash', 'role', 'agencyId'],
+      // passwordHash est déjà exclu via { select: false } sur l'entité
     });
   }
 

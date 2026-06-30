@@ -6,9 +6,14 @@ export class AgencyOwnershipGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    
+
     // Les admins plateforme ont accès à tout
     if (user.role === UserRole.ADMIN_PLATFORM) {
+      return true;
+    }
+
+    // Les clients n'ont pas d'agence — le guard ne s'applique pas
+    if (user.role === UserRole.CLIENT) {
       return true;
     }
 
@@ -17,9 +22,12 @@ export class AgencyOwnershipGuard implements CanActivate {
       throw new ForbiddenException('Utilisateur non rattaché à une agence');
     }
 
-    // Si la requête contient un agencyId en paramètre ou body, on compare
-    const resourceAgencyId = request.params.agencyId || request.body.agencyId || request.query.agencyId;
-    
+    // Si la requête contient un agencyId en paramètre/body/query, on compare
+    const resourceAgencyId = request.params.agencyId 
+      || request.body?.agencyId 
+      || request.query?.agencyId;
+
+    // Si l'ID de ressource est présent mais ne correspond pas, on bloque
     if (resourceAgencyId && resourceAgencyId !== user.agencyId) {
       throw new ForbiddenException('Accès refusé : ressource appartenant à une autre agence');
     }

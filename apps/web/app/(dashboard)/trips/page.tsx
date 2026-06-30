@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Map, 
   Plus, 
@@ -12,66 +12,68 @@ import {
   ArrowRight,
   Filter,
   ChevronRight,
-  Bus
+  Bus,
+  Loader2
 } from 'lucide-react';
+import { apiClient } from '@/lib/apiClient';
 
 export default function TripsPage() {
   const [activeTab, setActiveTab] = useState<'trajets' | 'lignes'>('trajets');
   const [searchQuery, setSearchQuery] = useState('');
+  const [routes, setRoutes] = useState<any[]>([]);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const initialRoutes = [
-    { id: 'R-001', origin: 'Yaoundé', destination: 'Douala', duration: '4h 30min', distance: '240 km', tripsCount: 12 },
-    { id: 'R-002', origin: 'Yaoundé', destination: 'Bafoussam', duration: '5h 00min', distance: '290 km', tripsCount: 8 },
-    { id: 'R-003', origin: 'Douala', destination: 'Kribi', duration: '3h 00min', distance: '170 km', tripsCount: 5 },
-  ];
+  useEffect(() => {
+    Promise.all([
+      apiClient.getRoutes().catch(() => []),
+      apiClient.getTrips().catch(() => []),
+    ]).then(([routesData, tripsData]) => {
+      setRoutes(routesData.length > 0 ? routesData : [
+        { id: 'R-001', departureCity: 'Yaounde', arrivalCity: 'Douala', estimatedDurationMinutes: 270, distanceKm: 240 },
+        { id: 'R-002', departureCity: 'Yaounde', arrivalCity: 'Bafoussam', estimatedDurationMinutes: 300, distanceKm: 290 },
+      ]);
+      setTrips(tripsData.length > 0 ? tripsData : []);
+    }).finally(() => setLoading(false));
+  }, []);
 
-  const initialTrips = [
-    { 
-      id: 'T-882', 
-      route: 'Yaoundé → Douala', 
-      departure: '14:30', 
-      arrival: '19:00', 
-      date: 'Aujourd\'hui', 
-      bus: 'VIP-001', 
-      seats: '68/70', 
-      price: '6000 FCFA',
-      status: 'En attente'
-    },
-    { 
-      id: 'T-883', 
-      route: 'Douala → Kribi', 
-      departure: '16:00', 
-      arrival: '19:00', 
-      date: 'Aujourd\'hui', 
-      bus: 'STD-014', 
-      seats: '22/30', 
-      price: '3000 FCFA',
-      status: 'Confirmé'
-    },
-    { 
-      id: 'T-884', 
-      route: 'Yaoundé → Bafoussam', 
-      departure: '07:00', 
-      arrival: '12:00', 
-      date: 'Demain', 
-      bus: 'VIP-002', 
-      seats: '10/70', 
-      price: '5000 FCFA',
-      status: 'Planifié'
-    },
-  ];
+  const displayRoutes = routes.map((r: any) => ({
+    id: r.id?.slice(0, 7) || 'R',
+    origin: r.departureCity || '?',
+    destination: r.arrivalCity || '?',
+    duration: `${Math.floor((r.estimatedDurationMinutes || 0) / 60)}h ${(r.estimatedDurationMinutes || 0) % 60}min`,
+    distance: `${r.distanceKm || 0} km`,
+    tripsCount: trips.filter((t: any) => t.routeId === r.id).length,
+  }));
 
-  const filteredRoutes = initialRoutes.filter(r => 
+  const displayTrips = trips.map((t: any) => ({
+    id: t.id?.slice(0, 7) || 'T',
+    route: `${t.route?.departureCity || '?'} -> ${t.route?.arrivalCity || '?'}`,
+    departure: t.departureDateTime ? new Date(t.departureDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+    arrival: t.arrivalDateTime ? new Date(t.arrivalDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+    date: t.departureDateTime ? new Date(t.departureDateTime).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'N/A',
+    bus: t.bus?.plateNumber || t.busId?.slice(0, 7) || 'N/A',
+    price: `${(t.basePrice || 0).toLocaleString('fr-FR')} FCFA`,
+    status: t.status === 'SCHEDULED' ? 'Planifie' : t.status === 'BOARDING' ? 'Embarquement' : t.status === 'COMPLETED' ? 'Termine' : t.status || 'N/A',
+  }));
+
+  const filteredRoutes = displayRoutes.filter(r => 
     r.origin.toLowerCase().includes(searchQuery.toLowerCase()) || 
     r.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredTrips = initialTrips.filter(t => 
+  );  const filteredTrips = displayTrips.filter(t => 
     t.route.toLowerCase().includes(searchQuery.toLowerCase()) || 
     t.bus.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={32} className="text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -80,7 +82,7 @@ export default function TripsPage() {
           <h2 className="text-2xl font-black text-gray-900">Lignes & Trajets</h2>
           <p className="text-gray-500">Définissez vos itinéraires et planifiez les départs.</p>
         </div>
-        <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+        <button onClick={() => alert(activeTab === 'lignes' ? 'Nouvelle ligne (Simulation)' : 'Planifier un trajet (Simulation)')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100">
           <Plus size={20} className="mr-2" />
           {activeTab === 'lignes' ? 'Nouvelle ligne' : 'Planifier un trajet'}
         </button>
@@ -114,7 +116,7 @@ export default function TripsPage() {
             className="py-3 bg-transparent border-none outline-none text-sm w-full" 
           />
         </div>
-        <button className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 flex items-center shadow-sm hover:bg-gray-50 transition">
+        <button onClick={() => alert('Filtres (Simulation)')} className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 flex items-center shadow-sm hover:bg-gray-50 transition">
           <Filter size={18} className="mr-2 text-gray-400" />
           Filtres
         </button>
@@ -160,7 +162,7 @@ export default function TripsPage() {
               </div>
               <div className="px-6 py-4 bg-gray-50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <p className="text-xs font-bold text-gray-500">{route.tripsCount} trajets actifs</p>
-                <button className="text-xs font-bold text-blue-600 hover:underline flex items-center">
+                <button onClick={() => alert(`Détails de la ligne ${route.id} (Simulation)`)} className="text-xs font-bold text-blue-600 hover:underline flex items-center">
                   Détails <ChevronRight size={14} className="ml-1" />
                 </button>
               </div>

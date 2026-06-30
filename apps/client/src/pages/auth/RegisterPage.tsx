@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserPlus, User, Phone, Lock, Mail, ArrowRight } from 'lucide-react';
+import { UserPlus, User, Phone, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { apiClient } from '../../lib/apiClient';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -10,17 +11,34 @@ const RegisterPage = () => {
     email: '',
     password: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registering:', formData);
-    navigate('/otp');
+    if (!formData.firstName || !formData.lastName || !formData.phone || !formData.password) {
+      setError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const data = await apiClient.register(formData);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/otp');
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de l\'inscription');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-register relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 overlay-dark z-0"></div>
+      <div className="max-w-md w-full space-y-8 bg-white/95 p-10 rounded-2xl shadow-xl border border-gray-100 relative z-10">
         <div className="text-center">
           <div className="flex justify-center">
             <div className="bg-opep-orange p-3 rounded-xl text-white">
@@ -35,6 +53,13 @@ const RegisterPage = () => {
             </Link>
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 flex items-center border border-red-100">
+            <AlertCircle size={14} className="mr-2 flex-shrink-0" />
+            {error}
+          </div>
+        )}
 
         <form className="mt-8 space-y-4" onSubmit={handleRegister}>
           <div className="grid grid-cols-2 gap-4">
@@ -116,10 +141,14 @@ const RegisterPage = () => {
 
           <button
             type="submit"
-            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-opep-orange hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opep-orange transition"
+            disabled={loading}
+            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-opep-orange hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opep-orange transition disabled:opacity-70"
           >
-            S'inscrire
-            <ArrowRight className="ml-2 h-5 w-5" />
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            ) : null}
+            {loading ? 'Inscription...' : 'S\'inscrire'}
+            {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
           </button>
         </form>
       </div>

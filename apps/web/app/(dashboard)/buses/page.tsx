@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bus as BusIcon, 
   Plus, 
@@ -10,8 +10,10 @@ import {
   X,
   Check,
   LayoutGrid,
-  User
+  User,
+  Loader2
 } from 'lucide-react';
+import { apiClient } from '@/lib/apiClient';
 
 export default function BusesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -19,15 +21,32 @@ export default function BusesPage() {
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [seatCapacity, setSeatCapacity] = useState(48);
   const [searchQuery, setSearchQuery] = useState('');
+  const [buses, setBuses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const initialBuses = [
-    { id: 'VIP-001', model: 'Mercedes-Benz Travego', capacity: 70, type: 'VIP', status: 'Actif', lastService: '01/06/2026' },
-    { id: 'STD-012', model: 'Toyota Coaster', capacity: 30, type: 'Classique', status: 'Maintenance', lastService: '15/05/2026' },
-    { id: 'VIP-002', model: 'Mercedes-Benz Travego', capacity: 70, type: 'VIP', status: 'Actif', lastService: '28/05/2026' },
-    { id: 'STD-014', model: 'Hyundai County', capacity: 30, type: 'Classique', status: 'Actif', lastService: '02/06/2026' },
-  ];
+  useEffect(() => {
+    apiClient.getBuses()
+      .then((data) => setBuses(data))
+      .catch(() => {
+        // Fallback demo data
+        setBuses([
+          { id: 'VIP-001', plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, isActive: true },
+          { id: 'STD-012', plateNumber: 'LT-003-AC', model: 'Toyota Coaster', totalSeats: 30, isActive: false },
+        ]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const filteredBuses = initialBuses.filter(bus => 
+  const displayBuses = buses.map((bus) => ({
+    id: bus.plateNumber || bus.id?.slice(0, 7) || 'BUS',
+    model: bus.model || 'Inconnu',
+    capacity: bus.totalSeats || 0,
+    type: bus.totalSeats > 45 ? 'VIP' : 'Classique',
+    status: bus.isActive !== false ? 'Actif' : 'Maintenance',
+    lastService: bus.updatedAt ? new Date(bus.updatedAt).toLocaleDateString('fr-FR') : 'N/A',
+  }));
+
+  const filteredBuses = displayBuses.filter(bus => 
     bus.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
     bus.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bus.type.toLowerCase().includes(searchQuery.toLowerCase())
@@ -41,9 +60,16 @@ export default function BusesPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={32} className="text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
-      {/* ... previous content unchanged ... */}
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-black text-gray-900">Gestion des Bus</h2>
@@ -121,7 +147,7 @@ export default function BusesPage() {
               >
                 <Settings size={14} className="mr-1" /> Configurer les sièges
               </button>
-              <button className="text-xs font-bold text-gray-500 hover:text-gray-700">
+              <button onClick={() => alert(`Historique du bus ${bus.id} (Simulation)`)} className="text-xs font-bold text-gray-500 hover:text-gray-700">
                 Historique
               </button>
             </div>
@@ -131,8 +157,8 @@ export default function BusesPage() {
 
       {/* Add Bus Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setShowAddModal(false)}>
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-50 flex justify-between items-center">
               <h3 className="text-xl font-black text-gray-900">Ajouter un nouveau bus</h3>
               <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -177,8 +203,8 @@ export default function BusesPage() {
 
       {/* Seat Config View */}
       {showSeatConfig && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 h-[80vh] flex flex-col">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setShowSeatConfig(null)}>
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-50 flex justify-between items-center">
               <div>
                 <h3 className="text-xl font-black text-gray-900">Configuration des sièges - {showSeatConfig}</h3>

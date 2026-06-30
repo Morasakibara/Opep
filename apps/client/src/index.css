@@ -14,3 +14,26 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+.bg-login {
+  background-image: url('/img/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-register {
+  background-image: url('/img/register-bg.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-otp {
+  background-image: url('/img/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay-dark {
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}

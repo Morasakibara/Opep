@@ -1,28 +1,39 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogIn, Phone, Lock, ArrowRight } from 'lucide-react';
-import axios from 'axios';
+import { LogIn, Phone, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { apiClient } from '../../lib/apiClient';
 
 const LoginPage = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!phone || !password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+    setLoading(true);
+    setError('');
     try {
-      // Pour l'instant on simule ou on appelle l'API si elle est configurée
-      // const response = await axios.post('http://localhost:3000/api/v1/auth/login', { phone, password });
-      console.log('Login attempt:', { phone, password });
+      const data = await apiClient.login(phone, password);
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/');
-    } catch (error) {
-      console.error('Login failed', error);
+    } catch (err: any) {
+      setError(err.message || 'Erreur de connexion');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-login relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 overlay-dark z-0"></div>
+      <div className="max-w-md w-full space-y-8 bg-white/95 p-10 rounded-2xl shadow-xl border border-gray-100 relative z-10">
         <div>
           <div className="flex justify-center">
             <div className="bg-opep-blue p-3 rounded-xl text-white">
@@ -39,6 +50,13 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 flex items-center border border-red-100">
+            <AlertCircle size={14} className="mr-2 flex-shrink-0" />
+            {error}
+          </div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
@@ -90,10 +108,14 @@ const LoginPage = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-opep-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opep-blue transition shadow-lg"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-opep-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opep-blue transition shadow-lg disabled:opacity-70"
             >
-              Se connecter
-              <ArrowRight className="ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              ) : null}
+              {loading ? 'Connexion...' : 'Se connecter'}
+              {!loading && <ArrowRight className="ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />}
             </button>
           </div>
         </form>

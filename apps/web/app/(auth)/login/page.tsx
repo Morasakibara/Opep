@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/apiClient';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
@@ -30,29 +31,30 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
+    setError('');
     try {
-      const res = await fetch('http://localhost:3000/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      
+      const data = await apiClient.login(identifier, password);
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       window.location.href = '/dashboard';
     } catch (e: any) {
-      setError("Serveur injoignable. Utilisez le mode démo.");
+      if (e.status === 401) {
+        setError('Identifiant ou mot de passe incorrect');
+      } else {
+        setError("Serveur injoignable. Utilisez le mode demo.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl">
-        <h1 className="text-3xl font-black text-blue-600 text-center mb-2">OPEP</h1>
+    <div className="flex min-h-screen items-center justify-center bg-login relative overflow-hidden p-4">
+      <div className="absolute inset-0 overlay-dark z-0"></div>
+      <div className="w-full max-w-md bg-white/95 p-8 rounded-3xl shadow-2xl relative z-10 hover-float">
+        <div className="flex justify-center mb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-blue-600">OPEP</h1>
+        </div>
         <p className="text-center text-gray-500 mb-8 font-bold">Connexion Agence</p>
 
         {error && (
@@ -84,6 +86,12 @@ export default function LoginPage() {
           >
             {loading ? 'CHARGEMENT...' : 'SE CONNECTER'}
           </button>
+
+          <div className="text-center mt-4">
+            <a href="/forgot-password" className="text-xs font-bold text-gray-400 hover:text-gray-600">
+              Mot de passe oublié ?
+            </a>
+          </div>
 
           <div className="pt-6 border-t border-gray-100 flex flex-col space-y-2">
             <button 

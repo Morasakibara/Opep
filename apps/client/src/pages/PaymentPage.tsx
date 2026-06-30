@@ -1,17 +1,41 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Smartphone, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { ArrowLeft, CreditCard, Smartphone, CheckCircle, AlertTriangle } from 'lucide-react';
+import { apiClient } from '../lib/apiClient';
 
 const PaymentPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const reservationId = searchParams.get('reservationId');
   const [method, setMethod] = useState<'momo' | 'om' | 'stripe' | null>(null);
-  const [status, setStatus] = useState<'idle' | 'processing' | 'success'>('idle');
+  const [phone, setPhone] = useState('');
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [ticketId, setTicketId] = useState('');
 
-  const handlePay = () => {
+  useEffect(() => {
+    if (!reservationId) {
+      setErrorMessage('Aucune réservation trouvée. Veuillez refaire une réservation.');
+      setStatus('error');
+    }
+  }, [reservationId]);
+
+  const handlePay = async () => {
+    if (!method || !reservationId) return;
     setStatus('processing');
-    setTimeout(() => {
+    setErrorMessage('');
+    try {
+      const result = await apiClient.processPayment({
+        reservationId,
+        method,
+        phone: method !== 'stripe' ? phone : undefined,
+      });
+      setTicketId(result.id || result.ticketId || result.ticket?.id || '');
       setStatus('success');
-    }, 2000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Erreur lors du paiement. Veuillez réessayer.');
+      setStatus('error');
+    }
   };
 
   if (status === 'success') {
@@ -24,11 +48,29 @@ const PaymentPage = () => {
         <p className="text-gray-500 mb-8 max-w-xs">
           Votre réservation a été confirmée. Votre ticket QR est prêt.
         </p>
-        <Link 
-          to="/tickets/123"
+        <Link
+          to={ticketId ? `/tickets/${ticketId}` : '/tickets/0'}
           className="w-full max-w-xs bg-opep-blue text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-800 transition"
         >
           Voir mon Ticket
+        </Link>
+      </div>
+    );
+  }
+
+  if (status === 'error' && !reservationId) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6">
+          <AlertTriangle size={48} />
+        </div>
+        <h2 className="text-2xl font-black text-gray-900 mb-2">Erreur</h2>
+        <p className="text-gray-500 mb-8">{errorMessage}</p>
+        <Link
+          to="/"
+          className="w-full max-w-xs bg-opep-blue text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-800 transition"
+        >
+          Retour à l'accueil
         </Link>
       </div>
     );
@@ -50,10 +92,17 @@ const PaymentPage = () => {
 
       <div className="container mx-auto px-4 mt-6 max-w-xl">
         <h3 className="font-bold text-gray-900 mb-6">Choisissez votre mode de paiement</h3>
-        
+
+        {status === 'error' && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center">
+            <AlertTriangle size={18} className="mr-2 flex-shrink-0" />
+            {errorMessage}
+          </div>
+        )}
+
         <div className="space-y-4">
           {/* MTN MoMo */}
-          <button 
+          <button
             onClick={() => setMethod('momo')}
             className={`w-full p-4 rounded-2xl border-2 transition flex items-center justify-between ${method === 'momo' ? 'border-opep-blue bg-blue-50' : 'border-white bg-white'}`}
           >
@@ -68,7 +117,7 @@ const PaymentPage = () => {
           </button>
 
           {/* Orange Money */}
-          <button 
+          <button
             onClick={() => setMethod('om')}
             className={`w-full p-4 rounded-2xl border-2 transition flex items-center justify-between ${method === 'om' ? 'border-opep-blue bg-blue-50' : 'border-white bg-white'}`}
           >
@@ -83,7 +132,7 @@ const PaymentPage = () => {
           </button>
 
           {/* Card */}
-          <button 
+          <button
             onClick={() => setMethod('stripe')}
             className={`w-full p-4 rounded-2xl border-2 transition flex items-center justify-between ${method === 'stripe' ? 'border-opep-blue bg-blue-50' : 'border-white bg-white'}`}
           >
@@ -109,10 +158,12 @@ const PaymentPage = () => {
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                     <Smartphone size={18} />
                   </div>
-                  <input 
-                    type="tel" 
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-opep-blue focus:border-opep-blue outline-none" 
-                    placeholder="6XX XX XX XX" 
+                  <input
+                    type="tel"
+                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-opep-blue focus:border-opep-blue outline-none"
+                    placeholder="6XX XX XX XX"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                   />
                 </div>
                 <p className="text-[10px] text-gray-400">Une demande de confirmation sera envoyée sur votre téléphone.</p>
@@ -126,7 +177,7 @@ const PaymentPage = () => {
             <button
               onClick={handlePay}
               disabled={status === 'processing'}
-              className="w-full mt-6 bg-opep-orange text-white py-4 rounded-xl font-bold shadow-lg hover:bg-orange-600 transition flex items-center justify-center"
+              className="w-full mt-6 bg-opep-orange text-white py-4 rounded-xl font-bold shadow-lg hover:bg-orange-600 transition flex items-center justify-center disabled:opacity-50"
             >
               {status === 'processing' ? (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

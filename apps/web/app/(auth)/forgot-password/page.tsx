@@ -1,9 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
+  const [phone, setPhone] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone) {
+      alert('Veuillez entrer votre numéro de téléphone.');
+      return;
+    }
+    alert(`Code envoyé au ${phone} (Simulé).`);
+  };
   return (
     <div className="flex min-h-screen items-center justify-center bg-login relative overflow-hidden">
       <div className="absolute inset-0 overlay-dark z-0"></div>
@@ -21,7 +31,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Numéro de téléphone</label>
@@ -32,6 +42,8 @@ export default function ForgotPasswordPage() {
                 required
                 className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="6XX XX XX XX"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
           </div>
@@ -40,7 +52,6 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               className="group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all"
-              onClick={() => alert("Fonctionnalité désactivée en mode présentation.")}
             >
               ENVOYER LE CODE
             </button>
