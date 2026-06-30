@@ -34,7 +34,7 @@ Copiez ce bloc dans votre fichier de configuration MCP (Gemini/Claude/Codebuff) 
       "command": "npx",
       "args": ["-y", "@_davideast/stitch-mcp", "proxy"],
       "env": {
-        "STITCH_API_KEY": "REDACTED",
+        "STITCH_API_KEY": "REPLACE_WITH_YOUR_OWN_KEY",
         "STITCH_HOST": "stitch.googleapis.com"
       }
     }
