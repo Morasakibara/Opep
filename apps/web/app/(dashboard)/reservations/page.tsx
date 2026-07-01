@@ -43,7 +43,7 @@ export default function ReservationsPage() {
       const data = await apiClient.getReservations();
       setReservations(data);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors du chargement des réservations');
+      setError(err.message || 'Erreur de chargement des réservations');
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ export default function ReservationsPage() {
             placeholder="Rechercher par code, client ou trajet..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-0 rounded-xl text-sm transition outline-none"
+            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-0 rounded-xl text-sm transition outline-none text-gray-900"
           />
         </div>
       </div>

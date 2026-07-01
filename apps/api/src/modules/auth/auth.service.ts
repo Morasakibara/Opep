@@ -82,6 +82,19 @@ export class AuthService {
     };
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.usersService.findByIdentifierByUserId(userId);
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isPasswordValid) throw new UnauthorizedException('Mot de passe actuel incorrect');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.usersService.update(user.id, { passwordHash });
+
+    return { message: 'Mot de passe modifié avec succès' };
+  }
+
   async resetPassword(phone: string, newPassword: string) {
     const user = await this.usersService.findByPhone(phone);
     if (!user) throw new NotFoundException('Utilisateur introuvable');

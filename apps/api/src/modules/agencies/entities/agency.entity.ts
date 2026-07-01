@@ -27,6 +27,12 @@ export class Agency extends BaseEntity {
   @Column({ nullable: true })
   logoUrl: string;
 
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  website: string;
+
   @Column({ default: true })
   isActive: boolean;
 

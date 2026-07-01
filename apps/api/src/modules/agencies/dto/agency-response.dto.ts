@@ -6,6 +6,8 @@ export class AgencyResponseDto {
   phone: string;
   email: string;
   logoUrl?: string;
+  description?: string;
+  website?: string;
   isActive: boolean;
   subscriptionPlan: string;
   subscriptionExpiresAt?: string;
@@ -21,6 +23,8 @@ export class AgencyResponseDto {
       phone: agency.phone,
       email: agency.email,
       logoUrl: agency.logoUrl,
+      description: agency.description,
+      website: agency.website,
       isActive: agency.isActive,
       subscriptionPlan: agency.subscriptionPlan,
       subscriptionExpiresAt: agency.subscriptionExpiresAt?.toISOString?.() ?? agency.subscriptionExpiresAt,

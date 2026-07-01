@@ -124,7 +124,7 @@ export default function DashboardLayout({
         <header className="h-16 bg-white/50 backdrop-blur-md border-b border-gray-200/50 flex items-center justify-between px-8 relative z-50">
           <div className="flex items-center bg-gray-100/50 rounded-lg px-3 py-2 w-96 border border-gray-200/50">
             <Search size={18} className="text-gray-400 mr-2" />
-            <input type="text" placeholder="Rechercher un ticket, un passager..." className="bg-transparent border-none outline-none text-sm w-full" />
+            <input type="text" placeholder="Rechercher un ticket, un passager..." className="bg-transparent border-none outline-none text-sm w-full text-gray-900" />
           </div>
           
           <div className="flex items-center space-x-6">

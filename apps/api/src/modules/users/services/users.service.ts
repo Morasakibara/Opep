@@ -39,14 +39,25 @@ export class UsersService {
   }
 
   async findByIdentifier(identifier: string): Promise<User | undefined> {
-    return this.userRepository.findOne({
-      where: [{ email: identifier }, { phone: identifier }],
-      // passwordHash est déjà exclu via { select: false } sur l'entité
-    });
+    return this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.email = :identifier OR user.phone = :identifier', { identifier })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
   }
 
   async findById(id: string): Promise<User | undefined> {
     return this.userRepository.findOneBy({ id });
+  }
+
+  async findByIdentifierByUserId(id: string): Promise<User | undefined> {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.id = :id', { id })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
   }
 
   async findAll(): Promise<User[]> {

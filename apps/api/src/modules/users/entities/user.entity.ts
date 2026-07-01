@@ -62,5 +62,8 @@ export class User extends BaseEntity {
   termsVersion: string;
 
   @Column({ nullable: true })
+  avatarUrl: string;
+
+  @Column({ nullable: true })
   privacyPolicyAcceptedLang: string;
 }

@@ -2,19 +2,47 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/apiClient';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      alert('Veuillez remplir tous les champs.');
+    setError('');
+    if (!name || !email || !password || !phone) {
+      setError('Veuillez remplir tous les champs.');
       return;
     }
-    alert("Le mode inscription est limité en démo. Connectez-vous avec les comptes existants.");
+    if (!email.includes('@')) {
+      setError('Email invalide.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await apiClient.register({
+        firstName: name.split(' ')[0] || name,
+        lastName: name.split(' ').slice(1).join(' ') || 'Utilisateur',
+        email: email,
+        phone: phone,
+        password: password,
+        role: 'CLIENT',
+      });
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de l\'inscription');
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="flex min-h-screen items-center justify-center bg-register relative overflow-hidden">
@@ -34,6 +62,11 @@ export default function RegisterPage() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 border-l-4 border-red-500">
+              {error}
+            </div>
+          )}
           <div className="space-y-4">
             <div>
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nom complet</label>
@@ -49,13 +82,25 @@ export default function RegisterPage() {
               />
             </div>
             <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Téléphone</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="+237 XXXXXXXXX"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            <div>
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Adresse email</label>
               <input
                 id="email-address"
                 name="email"
                 type="email"
                 autoComplete="email"
-                required
                 className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 placeholder="jean@exemple.com"
                 value={email}
@@ -82,7 +127,7 @@ export default function RegisterPage() {
               type="submit"
               className="group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all"
             >
-              S'INSCRIRE
+              {loading ? 'INSCRIPTION...' : "S'INSCRIRE"}
             </button>
           </div>
 

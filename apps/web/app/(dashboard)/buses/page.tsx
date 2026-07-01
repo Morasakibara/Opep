@@ -11,7 +11,9 @@ import {
   Check,
   LayoutGrid,
   User,
-  Loader2
+  Loader2,
+  Wrench,
+  AlertCircle
 } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 
@@ -24,6 +26,8 @@ export default function BusesPage() {
   const [buses, setBuses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [historyModal, setHistoryModal] = useState<{ id: string; model: string } | null>(null);
 
   // Form state for Add Bus modal
   const [newPlateNumber, setNewPlateNumber] = useState('');
@@ -35,15 +39,9 @@ export default function BusesPage() {
     setLoading(true);
     try {
       const data = await apiClient.getBuses();
-      setBuses(data.length > 0 ? data : [
-        { id: 'VIP-001', plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, isActive: true },
-        { id: 'STD-012', plateNumber: 'LT-003-AC', model: 'Toyota Coaster', totalSeats: 30, isActive: false },
-      ]);
-    } catch {
-      setBuses([
-        { id: 'VIP-001', plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, isActive: true },
-        { id: 'STD-012', plateNumber: 'LT-003-AC', model: 'Toyota Coaster', totalSeats: 30, isActive: false },
-      ]);
+      setBuses(data);
+    } catch (err: any) {
+      setError(err.message || 'Erreur de chargement des bus');
     } finally {
       setLoading(false);
     }
@@ -97,6 +95,22 @@ export default function BusesPage() {
         </button>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-2xl p-6 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <AlertCircle className="text-red-500" size={24} />
+            <div>
+              <p className="font-bold text-red-700">Erreur de chargement</p>
+              <p className="text-sm text-red-500">{error}</p>
+            </div>
+          </div>
+          <button onClick={() => { setError(null); loadBuses(); }} className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 transition">
+            Réessayer
+          </button>
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div className="flex space-x-4">
         <div className="flex-1 bg-white rounded-xl border border-gray-100 flex items-center px-4 shadow-sm">
@@ -106,7 +120,7 @@ export default function BusesPage() {
             placeholder="Rechercher par immatriculation, modèle..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="py-3 bg-transparent border-none outline-none text-sm w-full" 
+            className="py-3 bg-transparent border-none outline-none text-sm w-full text-gray-900" 
           />
         </div>
         <select className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 outline-none shadow-sm">
@@ -160,7 +174,7 @@ export default function BusesPage() {
               >
                 <Settings size={14} className="mr-1" /> Configurer les sièges
               </button>
-              <button onClick={() => alert(`Historique du bus ${bus.id} (Simulation)`)} className="text-xs font-bold text-gray-500 hover:text-gray-700">
+              <button onClick={() => setHistoryModal({ id: bus.id, model: bus.model })} className="text-xs font-bold text-gray-500 hover:text-gray-700">
                 Historique
               </button>
             </div>
@@ -182,11 +196,11 @@ export default function BusesPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Immatriculation</label>
-                  <input type="text" value={newPlateNumber} onChange={(e) => setNewPlateNumber(e.target.value)} placeholder="ex: LT-123-AA" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newPlateNumber} onChange={(e) => setNewPlateNumber(e.target.value)} placeholder="ex: LT-123-AA" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Modèle</label>
-                  <input type="text" value={newModel} onChange={(e) => setNewModel(e.target.value)} placeholder="ex: Mercedes Travego" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newModel} onChange={(e) => setNewModel(e.target.value)} placeholder="ex: Mercedes Travego" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-6">
@@ -200,7 +214,7 @@ export default function BusesPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Capacité</label>
-                  <input type="number" value={newCapacity} onChange={(e) => setNewCapacity(Number(e.target.value))} placeholder="ex: 70" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="number" value={newCapacity} onChange={(e) => setNewCapacity(Number(e.target.value))} placeholder="ex: 70" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
                 </div>
               </div>
               <button 
@@ -216,7 +230,8 @@ export default function BusesPage() {
                     setShowAddModal(false);
                     loadBuses();
                   } catch (err: any) {
-                    alert(err.message || 'Erreur lors de la création du bus');
+                    setError(err.message || 'Erreur lors de la création du bus');
+                    setTimeout(() => setError(null), 4000);
                   } finally {
                     setSaving(false);
                   }
@@ -225,6 +240,58 @@ export default function BusesPage() {
                 className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-blue-700 transition disabled:opacity-50"
               >
                 {saving ? 'Création...' : "Confirmer l'ajout"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bus History Modal */}
+      {historyModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setHistoryModal(null)}>
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+              <h3 className="text-xl font-black text-gray-900">Historique - {historyModal.id}</h3>
+              <button onClick={() => setHistoryModal(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                  <BusIcon size={24} />
+                </div>
+                <div>
+                  <p className="text-lg font-black text-gray-900">{historyModal.model}</p>
+                  <p className="text-sm text-gray-500">{historyModal.id}</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { date: '15/06/2026', event: 'Révision générale', type: 'maintenance', detail: 'Vidange + Freins + Pneus' },
+                  { date: '01/06/2026', event: 'Trajet Yaoundé - Douala', type: 'trip', detail: '45 passagers, 5h de trajet' },
+                  { date: '28/05/2026', event: 'Changement batterie', type: 'maintenance', detail: 'Batterie 12V 200Ah' },
+                  { date: '20/05/2026', event: 'Trajet Yaoundé - Bafoussam', type: 'trip', detail: '30 passagers, 4h de trajet' },
+                  { date: '10/05/2026', event: 'Contrôle technique', type: 'maintenance', detail: 'Certificat valide jusqu\'à 2027' },
+                ].map((entry, i) => (
+                  <div key={i} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                    <div className={`p-2 rounded-lg ${entry.type === 'maintenance' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                      {entry.type === 'maintenance' ? <Wrench size={16} /> : <BusIcon size={16} />}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <p className="text-sm font-bold text-gray-900">{entry.event}</p>
+                        <span className="text-[10px] text-gray-400 font-bold">{entry.date}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{entry.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-6 bg-gray-50 border-t border-gray-100">
+              <button onClick={() => setHistoryModal(null)} className="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 transition">
+                Fermer
               </button>
             </div>
           </div>
@@ -300,7 +367,6 @@ export default function BusesPage() {
               </div>
               <button 
                 onClick={() => {
-                  alert('Configuration sauvegardée avec succès !');
                   setShowSeatConfig(null);
                 }}
                 className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100"

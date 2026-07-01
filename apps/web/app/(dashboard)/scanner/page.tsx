@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useQRScanner } from '@/hooks/useQRScanner';
 import { validateTicketOffline } from '@/lib/offlineValidation';
 import { 
   CheckCircle2, 
@@ -13,6 +14,7 @@ import {
   Wifi,
   WifiOff,
   ScanLine,
+  Camera
 } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 
@@ -60,10 +62,8 @@ export default function ScannerPage() {
       .catch(() => {});
   }, []);
 
-  // Start camera on mount
-  useEffect(() => {
-    startCamera('environment');
-  }, []);
+  // Camera state — starts manually on user gesture
+  const [cameraStarted, setCameraStarted] = useState(false);
 
   const validateWithAPI = async (qrString: string, isOnline: boolean) => {
     if (isOnline) {
@@ -186,10 +186,6 @@ export default function ScannerPage() {
     // Scanning will restart automatically via useEffect when lastResult.status = 'none'
   }, [resetScan]);
 
-  const handleRetryCamera = () => {
-    startCamera('environment');
-  };
-
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-end mb-8">
@@ -231,12 +227,39 @@ export default function ScannerPage() {
         {/* Scanner Interface */}
         <div className="space-y-4">
           <div className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative aspect-square lg:aspect-[4/3]">
-            {cameraError ? (
+            {/* Canvas & Video — always in the DOM so refs are available synchronously on user gesture */}
+            <canvas ref={canvasRef} className="hidden" />
+            <video
+              ref={videoRef}
+              className={`w-full h-full object-cover ${!cameraStarted ? 'hidden' : ''}`}
+              playsInline
+              muted
+              autoPlay
+            />
+            {!cameraStarted ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 text-white p-6 text-center">
+                <Camera size={48} className="text-slate-500 mb-4" />
+                <p className="text-sm font-bold text-gray-300 mb-2">Caméra non active</p>
+                <p className="text-xs text-gray-500 mb-6">Cliquez sur le bouton ci-dessous pour activer la caméra et scanner les QR codes.</p>
+                <button
+                  onClick={async () => {
+                    await startCamera('environment');
+                    setCameraStarted(true);
+                  }}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-xl flex items-center"
+                >
+                  <Camera size={20} className="mr-2" />
+                  Activer la caméra
+                </button>
+              </div>
+            ) : cameraError ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 text-white p-6 text-center">
                 <VideoOff size={48} className="text-slate-500 mb-4" />
-                <p className="text-sm font-bold text-red-400 mb-2">{cameraError}</p>
+                <p className="text-sm font-bold text-red-400 mb-2">{cameraError || 'Erreur inconnue'}</p>
                 <button
-                  onClick={handleRetryCamera}
+                  onClick={async () => {
+                    await startCamera('environment');
+                  }}
                   className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center"
                 >
                   <RefreshCw size={16} className="mr-2" />
@@ -245,19 +268,7 @@ export default function ScannerPage() {
               </div>
             ) : (
               <>
-                {/* Hidden canvas for QR processing */}
-                <canvas ref={canvasRef} className="hidden" />
-                
-                {/* Video feed */}
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  playsInline
-                  muted
-                  autoPlay
-                />
-
-                {/* QR Guide Overlay */}
+                {/* QR Guide Overlay (video is always rendered above) */}
                 <div className="absolute inset-0 border-[60px] border-slate-900/60 flex items-center justify-center pointer-events-none">
                   <div className={`w-64 h-64 border-2 rounded-2xl relative transition-colors duration-300 ${
                     validating

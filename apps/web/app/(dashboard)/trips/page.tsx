@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   Map, 
   Plus, 
@@ -13,7 +14,8 @@ import {
   Filter,
   ChevronRight,
   Bus,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { apiClient } from '@/lib/apiClient';
 
@@ -23,19 +25,26 @@ export default function TripsPage() {
   const [routes, setRoutes] = useState<any[]>([]);
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      apiClient.getRoutes().catch(() => []),
-      apiClient.getTrips().catch(() => []),
-    ]).then(([routesData, tripsData]) => {
-      setRoutes(routesData.length > 0 ? routesData : [
-        { id: 'R-001', departureCity: 'Yaounde', arrivalCity: 'Douala', estimatedDurationMinutes: 270, distanceKm: 240 },
-        { id: 'R-002', departureCity: 'Yaounde', arrivalCity: 'Bafoussam', estimatedDurationMinutes: 300, distanceKm: 290 },
+  async function loadData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const [routesData, tripsData] = await Promise.all([
+        apiClient.getRoutes(),
+        apiClient.getTrips(),
       ]);
-      setTrips(tripsData.length > 0 ? tripsData : []);
-    }).finally(() => setLoading(false));
-  }, []);
+      setRoutes(routesData);
+      setTrips(tripsData);
+    } catch (err: any) {
+      setError(err.message || 'Erreur de chargement des trajets');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadData(); }, []);
 
   const displayRoutes = routes.map((r: any) => ({
     id: r.id?.slice(0, 7) || 'R',
@@ -88,10 +97,10 @@ export default function TripsPage() {
           <h2 className="text-2xl font-black text-gray-900">Lignes & Trajets</h2>
           <p className="text-gray-500">Définissez vos itinéraires et planifiez les départs.</p>
         </div>
-        <button onClick={() => alert(activeTab === 'lignes' ? 'Nouvelle ligne (Simulation)' : 'Planifier un trajet (Simulation)')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+        <Link href={activeTab === 'lignes' ? '/trips' : '/trips'} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100">
           <Plus size={20} className="mr-2" />
           {activeTab === 'lignes' ? 'Nouvelle ligne' : 'Planifier un trajet'}
-        </button>
+        </Link>
       </div>
 
       {/* Tabs */}
@@ -110,19 +119,36 @@ export default function TripsPage() {
         </button>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-2xl p-6 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <AlertCircle className="text-red-500" size={24} />
+            <div>
+              <p className="font-bold text-red-700">Erreur de chargement</p>
+              <p className="text-sm text-red-500">{error}</p>
+            </div>
+          </div>
+          <button onClick={loadData} className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 transition">
+            Réessayer
+          </button>
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div className="flex space-x-4">
         <div className="flex-1 bg-white rounded-xl border border-gray-100 flex items-center px-4 shadow-sm">
           <Search size={18} className="text-gray-400 mr-2" />
           <input 
+            id="search-input"
             type="text" 
             placeholder="Rechercher..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="py-3 bg-transparent border-none outline-none text-sm w-full" 
+            className="py-3 bg-transparent border-none outline-none text-sm w-full text-gray-900" 
           />
         </div>
-        <button onClick={() => alert('Filtres (Simulation)')} className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 flex items-center shadow-sm hover:bg-gray-50 transition">
+        <button onClick={() => document.getElementById('search-input')?.focus()} className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 flex items-center shadow-sm hover:bg-gray-50 transition">
           <Filter size={18} className="mr-2 text-gray-400" />
           Filtres
         </button>
@@ -168,7 +194,7 @@ export default function TripsPage() {
               </div>
               <div className="px-6 py-4 bg-gray-50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <p className="text-xs font-bold text-gray-500">{route.tripsCount} trajets actifs</p>
-                <button onClick={() => alert(`Détails de la ligne ${route.id} (Simulation)`)} className="text-xs font-bold text-blue-600 hover:underline flex items-center">
+                <button onClick={() => { setActiveTab('trajets'); setSearchQuery(route.origin); }} className="text-xs font-bold text-blue-600 hover:underline flex items-center">
                   Détails <ChevronRight size={14} className="ml-1" />
                 </button>
               </div>

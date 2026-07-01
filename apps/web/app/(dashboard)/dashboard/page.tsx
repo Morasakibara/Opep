@@ -102,7 +102,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-50 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Réservations récentes</h3>
-            <button onClick={() => alert('Voir toutes les réservations (Simulation)')} className="text-blue-600 text-sm font-bold hover:underline">Voir tout</button>
+            <Link href="/reservations" className="text-blue-600 text-sm font-bold hover:underline">Voir tout</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 
 export default function LoginPage() {
@@ -9,21 +8,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const handleDemo = (role: string) => {
-    const user = {
-      id: 'demo',
-      firstName: role === 'ADMIN_PLATFORM' ? 'Admin' : 'Manager',
-      lastName: 'OPEP',
-      role: role
-    };
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', 'demo');
-      localStorage.setItem('user', JSON.stringify(user));
-      window.location.href = '/dashboard';
-    }
-  };
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -41,7 +25,7 @@ export default function LoginPage() {
       if (e.status === 401) {
         setError('Identifiant ou mot de passe incorrect');
       } else {
-        setError("Serveur injoignable. Utilisez le mode demo.");
+        setError('Serveur injoignable. Vérifiez votre connexion au serveur.');
       }
     } finally {
       setLoading(false);
@@ -67,14 +51,14 @@ export default function LoginPage() {
           <input
             type="text"
             placeholder="Identifiant"
-            className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+            className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-900"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
           />
           <input
             type="password"
             placeholder="Mot de passe"
-            className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+            className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-900"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -93,19 +77,10 @@ export default function LoginPage() {
             </a>
           </div>
 
-          <div className="pt-6 border-t border-gray-100 flex flex-col space-y-2">
-            <button 
-              onClick={() => handleDemo('ADMIN_PLATFORM')}
-              className="w-full bg-slate-100 text-slate-700 p-3 rounded-xl font-black text-xs hover:bg-slate-200 transition"
-            >
-              ACCÈS DÉMO ADMINISTRATEUR
-            </button>
-            <button 
-              onClick={() => handleDemo('AGENCY_MANAGER')}
-              className="w-full bg-purple-50 text-purple-700 p-3 rounded-xl font-black text-xs hover:bg-purple-100 transition"
-            >
-              ACCÈS DÉMO MANAGER
-            </button>
+          <div className="pt-6 border-t border-gray-100">
+            <p className="text-center text-[10px] text-gray-400 font-medium">
+              Comptes test : +237600000000 / 123456 (Admin) — +237670000001 / 123456 (Manager)
+            </p>
           </div>
         </div>
       </div>

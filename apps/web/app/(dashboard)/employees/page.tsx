@@ -34,7 +34,12 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Add employee form state
   const [newFirstName, setNewFirstName] = useState('');
@@ -60,7 +65,7 @@ export default function EmployeesPage() {
       const data = await apiClient.getUsers();
       setEmployees(data);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors du chargement');
+      setError(err.message || 'Erreur de chargement du personnel');
     } finally {
       setLoading(false);
     }
@@ -128,14 +133,24 @@ export default function EmployeesPage() {
     setNewPassword('');
   }
 
-  async function handleDeleteEmployee(id: string, name: string) {
-    if (!confirm(`Supprimer ${name} ? Cette action est irréversible.`)) return;
+  function confirmDelete(id: string, name: string) {
+    setDeleteTarget({ id, name });
+    setShowDeleteModal(true);
+  }
+
+  async function handleDeleteConfirmed() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await apiClient.deleteUser(id);
-      showToast('success', `${name} supprimé avec succès`);
+      await apiClient.deleteUser(deleteTarget.id);
+      showToast('success', `${deleteTarget.name} supprimé avec succès`);
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
       loadEmployees();
     } catch (err: any) {
       showToast('error', err.message || 'Erreur lors de la suppression');
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -216,7 +231,7 @@ export default function EmployeesPage() {
                 placeholder="Rechercher un employé..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm outline-none"
+                className="w-full pl-8 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm outline-none text-gray-900"
               />
             </div>
           </div>
@@ -274,7 +289,7 @@ export default function EmployeesPage() {
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end space-x-1 opacity-0 group-hover:opacity-100 transition">
                         <button 
-                          onClick={() => handleDeleteEmployee(emp.id, `${emp.firstName} ${emp.lastName}`)}
+                          onClick={() => confirmDelete(emp.id, `${emp.firstName} ${emp.lastName}`)}
                           className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition"
                           title="Supprimer"
                         >
@@ -286,6 +301,42 @@ export default function EmployeesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && deleteTarget && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}>
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-50">
+              <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="text-red-600" size={28} />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 text-center">Confirmer la suppression</h3>
+              <p className="text-sm text-gray-500 text-center mt-2">
+                Êtes-vous sûr de vouloir supprimer <strong>{deleteTarget.name}</strong> ?
+                <br />
+                Cette action est irréversible et toutes les données associées seront perdues.
+              </p>
+            </div>
+            <div className="p-4 flex space-x-3 justify-end">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteConfirmed}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition shadow-lg shadow-red-100 disabled:opacity-50 flex items-center justify-center"
+              >
+                {deleting ? <Loader2 size={18} className="animate-spin mr-2" /> : <Trash2 size={18} className="mr-2" />}
+                Supprimer
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -304,21 +355,21 @@ export default function EmployeesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Prénom</label>
-                  <input type="text" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} placeholder="ex: Jean" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} placeholder="ex: Jean" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Nom</label>
-                  <input type="text" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} placeholder="ex: Dupont" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} placeholder="ex: Dupont" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Email</label>
-                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ex: jean@opep.cm" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ex: jean@opep.cm" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Téléphone</label>
-                  <input type="text" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+237 ..." className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+237 ..." className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Rôle</label>
@@ -330,7 +381,7 @@ export default function EmployeesPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Mot de passe temporaire</label>
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mot de passe initial" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mot de passe initial" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
               </div>
               <button 
                 onClick={handleAddEmployee}

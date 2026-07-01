@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "set NEXT_IGNORE_INCORRECT_LOCKFILE=1 && next dev -p 3001",
+    "build": "set NEXT_IGNORE_INCORRECT_LOCKFILE=1 && next build",
+    "start": "set NEXT_IGNORE_INCORRECT_LOCKFILE=1 && next start",
+    "lint": "set NEXT_IGNORE_INCORRECT_LOCKFILE=1 && next lint"
   },
   "dependencies": {
     "@next/swc-win32-x64-msvc": "14.2.3",

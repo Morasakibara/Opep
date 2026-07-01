@@ -39,6 +39,15 @@ export const apiClient = {
     return handleResponse<{ access_token: string; user: any }>(res);
   },
 
+  async sendOtp(phone: string) {
+    const res = await fetch(`${API_BASE}/auth/otp/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+    return handleResponse<{ message: string }>(res);
+  },
+
   async verifyOtp(phone: string, otp: string) {
     const res = await fetch(`${API_BASE}/auth/otp/verify`, {
       method: 'POST',
@@ -197,6 +206,16 @@ export const apiClient = {
     const params = period ? `?period=${period}` : '';
     const res = await fetch(`${API_BASE}/reports${params}`, { headers: await getAuthHeaders() });
     return handleResponse(res);
+  },
+
+  // Security
+  async changePassword(currentPassword: string, newPassword: string) {
+    const res = await fetch(`${API_BASE}/auth/change-password`, {
+      method: 'POST',
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    return handleResponse<{ message: string }>(res);
   },
 
   // Health & config

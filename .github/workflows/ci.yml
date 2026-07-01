@@ -1,0 +1,122 @@
+name: OPEP CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: TypeScript check (API)
+        run: npx tsc --noEmit --project apps/api/tsconfig.json
+
+      - name: TypeScript check (Web)
+        run: npx tsc --noEmit --project apps/web/tsconfig.json
+
+      - name: Lint (API)
+        run: npx eslint --config apps/api/.eslintrc.js "apps/api/src/**/*.ts" "apps/api/test/**/*.ts"
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Run API unit tests
+        run: npx jest --config apps/api/package.json --testPathPattern='\\.spec\\.ts$' --passWithNoTests
+        working-directory: apps/api
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: opep
+          POSTGRES_PASSWORD: opep_dev_secret
+          POSTGRES_DB: opep_db_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Run migrations
+        run: npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d apps/api/src/config/typeorm.config.ts
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://opep:opep_dev_secret@localhost:5432/opep_db_test
+          JWT_SECRET: ci_jwt_secret
+          JWT_REFRESH_SECRET: ci_refresh_secret
+
+      - name: Run e2e tests
+        run: npx jest --config apps/api/test/jest-e2e.json --forceExit --detectOpenHandles
+        env:
+          DATABASE_URL: postgresql://opep:opep_dev_secret@localhost:5432/opep_db_test
+          JWT_SECRET: ci_jwt_secret
+          JWT_REFRESH_SECRET: ci_refresh_secret
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Build API (NestJS)
+        run: npx nest build
+        working-directory: apps/api
+
+      - name: Build Web (Next.js)
+        run: npx next build
+        working-directory: apps/web
