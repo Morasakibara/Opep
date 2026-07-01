@@ -43,7 +43,7 @@ export default function DashboardPage() {
             user: r.client || `${r.passenger?.firstName || ''} ${r.passenger?.lastName || ''}`.trim() || 'Client',
             route: r.trip || `${r.tripRoute || ''}` || 'Trajet',
             time: new Date(r.createdAt).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-            amount: r.amount ? `${r.amount.toLocaleString('fr-FR')} FCFA` : '---',
+            amount: r.amount || r.totalAmount ? `${(r.totalAmount || r.amount || 0).toLocaleString('fr-FR')} FCFA` : '---',
             status: r.status === 'CONFIRMED' ? 'Payé' : r.status === 'PENDING_PAYMENT' ? 'En attente' : r.status || '---',
           })));
         }
@@ -52,7 +52,7 @@ export default function DashboardPage() {
           setStats([
             { label: 'Voyageurs aujourd\'hui', value: activeTrips.length.toString(), icon: <Users className="text-blue-600" />, trend: '+12%', up: true },
             { label: 'Tickets vendus', value: reservations.length.toString(), icon: <Ticket className="text-orange-600" />, trend: '+5%', up: true },
-            { label: 'Revenus (XAF)', value: reservations.reduce((s: number, r: any) => s + (r.amount || 0), 0).toLocaleString('fr-FR'), icon: <TrendingUp className="text-green-600" />, trend: '-2%', up: false },
+            { label: 'Revenus (XAF)', value: reservations.reduce((s: number, r: any) => s + (r.totalAmount || r.amount || 0), 0).toLocaleString('fr-FR'), icon: <TrendingUp className="text-green-600" />, trend: '-2%', up: false },
             { label: 'Bus actifs', value: `${activeTrips.length}/18`, icon: <Bus className="text-purple-600" />, trend: 'Stable', up: true },
           ]);
         }

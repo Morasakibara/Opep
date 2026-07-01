@@ -14,7 +14,7 @@ import {
   WifiOff,
   ScanLine,
 } from 'lucide-react';
-import { useQRScanner } from '@/hooks/useQRScanner';
+import { apiClient } from '@/lib/apiClient';
 
 interface ScanEntry {
   id: string;
@@ -51,13 +51,12 @@ export default function ScannerPage() {
 
   // Check API health & fetch public key for offline validation
   useEffect(() => {
-    fetch('http://localhost:3000/api/v1/health', { signal: AbortSignal.timeout(3000) })
-      .then((r) => setApiStatus(r.ok ? 'online' : 'offline'))
+    apiClient.healthCheck()
+      .then((ok) => setApiStatus(ok ? 'online' : 'offline'))
       .catch(() => setApiStatus('offline'));
     
-    fetch('http://localhost:3000/api/v1/public-key', { signal: AbortSignal.timeout(3000) })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data?.publicKey) setPublicKey(data.publicKey); })
+    apiClient.getPublicKey()
+      .then((key) => { if (key) setPublicKey(key); })
       .catch(() => {});
   }, []);
 
@@ -69,28 +68,13 @@ export default function ScannerPage() {
   const validateWithAPI = async (qrString: string, isOnline: boolean) => {
     if (isOnline) {
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:3000/api/v1/tickets/validate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ qrString }),
-          signal: AbortSignal.timeout(10000),
+        const data = await apiClient.validateTicket(qrString);
+        setLastResult({
+          status: data.valid ? 'valid' : 'invalid',
+          data,
+          reason: data.reason,
         });
-
-        if (res.ok) {
-          const data = await res.json();
-          setLastResult({
-            status: data.valid ? 'valid' : 'invalid',
-            data,
-            reason: data.reason,
-          });
-          return data;
-        } else {
-          throw new Error('Erreur API');
-        }
+        return data;
       } catch {
         // Fallback: try offline validation
         if (publicKey) {

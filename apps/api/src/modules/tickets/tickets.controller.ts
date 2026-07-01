@@ -15,6 +15,12 @@ export class TicketsController {
     return tickets.map(TicketResponseDto.fromEntity);
   }
 
+  @Get('my')
+  async getMyTickets(@Req() req: any) {
+    const tickets = await this.ticketsService.getMyTickets(req.user.id);
+    return tickets.map(TicketResponseDto.fromEntity);
+  }
+
   @Get('reservation/:reservationId')
   async getByReservation(@Param('reservationId') reservationId: string) {
     const tickets = await this.ticketsService.getTicketsByReservation(reservationId);

@@ -30,7 +30,7 @@ export const apiClient = {
     return handleResponse<{ access_token: string; refresh_token: string; user: any }>(res);
   },
 
-  async register(data: { email: string; password: string; firstName: string; lastName: string; phone?: string }) {
+  async register(data: { firstName: string; lastName: string; phone: string; password: string; role?: string; email?: string }) {
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -39,13 +39,13 @@ export const apiClient = {
     return handleResponse<{ access_token: string; user: any }>(res);
   },
 
-  async verifyOtp(identifier: string, code: string) {
+  async verifyOtp(phone: string, otp: string) {
     const res = await fetch(`${API_BASE}/auth/otp/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, code }),
+      body: JSON.stringify({ phone, otp }),
     });
-    return handleResponse<{ valid: boolean }>(res);
+    return handleResponse<{ valid: boolean; message?: string }>(res);
   },
 
   // Tickets
@@ -199,7 +199,7 @@ export const apiClient = {
     return handleResponse(res);
   },
 
-  // Health
+  // Health & config
   async healthCheck() {
     try {
       const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });

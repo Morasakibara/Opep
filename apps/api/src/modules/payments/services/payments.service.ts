@@ -94,7 +94,8 @@ export class PaymentsService {
 
       // Audit après transaction
       this.auditService.log({
-        action: status === PaymentStatus.SUCCESS ? 'PAYMENT_COMPLETED' : 'PAYMENT_FAILED',
+        userId: reservation.clientId,
+        action: status === PaymentStatus.SUCCESS ? 'PAYMENT_PROCESSED' : 'PAYMENT_FAILED',
         entityType: 'payment',
         entityId: savedPayment.id,
         metadata: {

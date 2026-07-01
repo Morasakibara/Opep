@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Query, UseGuards, Param, Patch, Delete } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
@@ -30,12 +31,14 @@ export class TripsController {
   }
 
   @Get('available')
+  @SkipThrottle()
   async findAvailable() {
     const trips = await this.tripsService.findAvailable();
     return trips.map(TripResponseDto.fromEntity);
   }
 
   @Get('search')
+  @SkipThrottle()
   async search(
     @Query('departureCity') departureCity: string,
     @Query('arrivalCity') arrivalCity: string,

@@ -46,16 +46,22 @@ export default function TripsPage() {
     tripsCount: trips.filter((t: any) => t.routeId === r.id).length,
   }));
 
-  const displayTrips = trips.map((t: any) => ({
-    id: t.id?.slice(0, 7) || 'T',
-    route: `${t.route?.departureCity || '?'} -> ${t.route?.arrivalCity || '?'}`,
-    departure: t.departureDateTime ? new Date(t.departureDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
-    arrival: t.arrivalDateTime ? new Date(t.arrivalDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
-    date: t.departureDateTime ? new Date(t.departureDateTime).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'N/A',
-    bus: t.bus?.plateNumber || t.busId?.slice(0, 7) || 'N/A',
-    price: `${(t.basePrice || 0).toLocaleString('fr-FR')} FCFA`,
-    status: t.status === 'SCHEDULED' ? 'Planifie' : t.status === 'BOARDING' ? 'Embarquement' : t.status === 'COMPLETED' ? 'Termine' : t.status || 'N/A',
-  }));
+  const displayTrips = trips.map((t: any) => {
+    const totalSeats = t.bus?.totalSeats || 48;
+    const filledSeats = t.filledSeats || 0;
+    return {
+      id: t.id?.slice(0, 7) || 'T',
+      route: `${t.route?.departureCity || '?'} -> ${t.route?.arrivalCity || '?'}`,
+      departure: t.departureDateTime ? new Date(t.departureDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+      arrival: t.arrivalDateTime ? new Date(t.arrivalDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+      date: t.departureDateTime ? new Date(t.departureDateTime).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'N/A',
+      bus: t.bus?.plateNumber || t.busId?.slice(0, 7) || 'N/A',
+      price: `${(t.basePrice || 0).toLocaleString('fr-FR')} FCFA`,
+      seats: `${filledSeats}/${totalSeats}`,
+      fillPercent: totalSeats > 0 ? Math.round((filledSeats / totalSeats) * 100) : 0,
+      status: t.status === 'SCHEDULED' ? 'Planifié' : t.status === 'BOARDING' ? 'Embarquement' : t.status === 'COMPLETED' ? 'Terminé' : t.status || 'N/A',
+    };
+  });
 
   const filteredRoutes = displayRoutes.filter(r => 
     r.origin.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -216,8 +222,8 @@ export default function TripsPage() {
                         </div>
                         <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                           <div 
-                            className={`h-full ${parseInt(trip.seats.split('/')[0]) > 60 ? 'bg-orange-500' : 'bg-blue-600'}`} 
-                            style={{ width: `${(parseInt(trip.seats.split('/')[0]) / parseInt(trip.seats.split('/')[1])) * 100}%` }}
+                            className={`h-full ${trip.fillPercent > 60 ? 'bg-orange-500' : 'bg-blue-600'}`} 
+                            style={{ width: `${trip.fillPercent}%` }}
                           ></div>
                         </div>
                       </div>
@@ -228,7 +234,10 @@ export default function TripsPage() {
                     <td className="px-6 py-5">
                       <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${
                         trip.status === 'Confirmé' ? 'bg-green-100 text-green-700' : 
-                        trip.status === 'En attente' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
+                        trip.status === 'En attente' ? 'bg-orange-100 text-orange-700' : 
+                        trip.status === 'Planifié' ? 'bg-blue-100 text-blue-700' :
+                        trip.status === 'Embarquement' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-700'
                       }`}>
                         {trip.status}
                       </span>

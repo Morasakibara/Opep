@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
-describe('AuthController (e2e)', () => {
+describe('OPEP API (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -12,7 +12,9 @@ describe('AuthController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    // Match production ValidationPipe — no forbidNonWhitelisted to avoid
+    // rejecting extra props that production would accept.
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
   });
 
@@ -20,23 +22,143 @@ describe('AuthController (e2e)', () => {
     await app.close();
   });
 
-  it('/auth/login (POST) - Should fail with empty body', () => {
-    return request(app.getHttpServer())
-      .post('/auth/login')
-      .send({})
-      .expect(400);
+  // ────────────────────────────────────────────────────────────────────────────
+  // Auth endpoints — public, no guards
+  // ────────────────────────────────────────────────────────────────────────────
+
+  describe('POST /auth/login', () => {
+    it('fails with 400 when body is empty', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send({})
+        .expect(400);
+    });
+
+    it('fails with 400 when identifier is missing', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ password: 'secret123' })
+        .expect(400);
+    });
+
+    it('fails with 400 when password is missing', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ identifier: 'awa@opep.test' })
+        .expect(400);
+    });
+
+    it('fails with 401 for non-existent user', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ identifier: 'ghost@nonexistent.test', password: 'secret123' })
+        .expect(401);
+    });
   });
 
-  it('/auth/register (POST) - Should fail with invalid email', () => {
-    return request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        email: 'invalid-email',
-        password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
-        phone: '670000000'
-      })
-      .expect(400);
+  describe('POST /auth/register', () => {
+    it('fails with 400 when body is empty', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({})
+        .expect(400);
+    });
+
+    it('fails with 400 when firstName/lastName/phone/password are missing', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({ email: 'test@test.com' })
+        .expect(400);
+    });
+
+    it('fails with 400 for invalid email format', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          phone: '670000001',
+          password: 'secret123',
+          email: 'invalid-email',
+          role: 'CLIENT',
+        })
+        .expect(400);
+    });
+
+    it('fails with 400 for invalid role enum', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe',
+          phone: '670000002',
+          password: 'secret123',
+          role: 'INVALID_ROLE',
+        })
+        .expect(400);
+    });
+  });
+
+  describe('POST /auth/refresh', () => {
+    it('fails with 401 when refresh_token is missing (no DTO — raw body extraction goes to authService which throws UnauthorizedException)', () => {
+      return request(app.getHttpServer())
+        .post('/auth/refresh')
+        .send({})
+        .expect(401);
+    });
+  });
+
+  describe('POST /auth/otp/verify', () => {
+    it('returns 401 for an invalid/expired OTP', () => {
+      return request(app.getHttpServer())
+        .post('/auth/otp/verify')
+        .send({ phone: '670000001', otp: '000000' })
+        .expect(401);
+    });
+  });
+
+  describe('POST /auth/reset-password', () => {
+    it('fails with 400 when body is empty', () => {
+      return request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({})
+        .expect(400);
+    });
+
+    it('fails with 400 when phone and newPassword are missing', () => {
+      return request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ phone: '670000001' })
+        .expect(400);
+    });
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Protected endpoints — require JwtAuthGuard
+  // ────────────────────────────────────────────────────────────────────────────
+
+  describe('Protected endpoints (no auth token)', () => {
+    const protectedEndpoints = [
+      { method: 'post' as const, path: '/payments/process' },
+      { method: 'get' as const, path: '/payments/reservation/some-uuid' },
+      { method: 'post' as const, path: '/tickets/generate/some-uuid' },
+      { method: 'get' as const, path: '/tickets/my' },
+      { method: 'post' as const, path: '/tickets/validate' },
+      { method: 'get' as const, path: '/tickets/some-uuid' },
+      { method: 'get' as const, path: '/tickets/reservation/some-uuid' },
+      { method: 'get' as const, path: '/reservations' },
+      { method: 'post' as const, path: '/reservations' },
+      { method: 'get' as const, path: '/reservations/my' },
+      { method: 'get' as const, path: '/reservations/some-uuid' },
+    ];
+
+    for (const { method, path } of protectedEndpoints) {
+      it(`${method.toUpperCase()} ${path} returns 401 without auth token`, () => {
+        const agent = request(app.getHttpServer());
+        const req = method === 'post' ? agent.post(path) : agent.get(path);
+
+        return req.send(method === 'post' ? {} : undefined).expect(401);
+      });
+    }
   });
 });

@@ -23,19 +23,33 @@ export default function BusesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [buses, setBuses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    apiClient.getBuses()
-      .then((data) => setBuses(data))
-      .catch(() => {
-        // Fallback demo data
-        setBuses([
-          { id: 'VIP-001', plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, isActive: true },
-          { id: 'STD-012', plateNumber: 'LT-003-AC', model: 'Toyota Coaster', totalSeats: 30, isActive: false },
-        ]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  // Form state for Add Bus modal
+  const [newPlateNumber, setNewPlateNumber] = useState('');
+  const [newModel, setNewModel] = useState('');
+  const [newType, setNewType] = useState('Classique');
+  const [newCapacity, setNewCapacity] = useState(48);
+
+  async function loadBuses() {
+    setLoading(true);
+    try {
+      const data = await apiClient.getBuses();
+      setBuses(data.length > 0 ? data : [
+        { id: 'VIP-001', plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, isActive: true },
+        { id: 'STD-012', plateNumber: 'LT-003-AC', model: 'Toyota Coaster', totalSeats: 30, isActive: false },
+      ]);
+    } catch {
+      setBuses([
+        { id: 'VIP-001', plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, isActive: true },
+        { id: 'STD-012', plateNumber: 'LT-003-AC', model: 'Toyota Coaster', totalSeats: 30, isActive: false },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadBuses(); }, []);
 
   const displayBuses = buses.map((bus) => ({
     id: bus.plateNumber || bus.id?.slice(0, 7) || 'BUS',
@@ -74,11 +88,10 @@ export default function BusesPage() {
         <div>
           <h2 className="text-2xl font-black text-gray-900">Gestion des Bus</h2>
           <p className="text-gray-500">Gérez la flotte de véhicules de votre agence.</p>
-        </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100"
-        >
+        </div>          <button 
+            onClick={() => { setNewPlateNumber(''); setNewModel(''); setNewType('Classique'); setNewCapacity(48); setShowAddModal(true); }}
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100"
+          >
           <Plus size={20} className="mr-2" />
           Ajouter un bus
         </button>
@@ -169,17 +182,17 @@ export default function BusesPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Immatriculation</label>
-                  <input type="text" placeholder="ex: LT-123-AA" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newPlateNumber} onChange={(e) => setNewPlateNumber(e.target.value)} placeholder="ex: LT-123-AA" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Modèle</label>
-                  <input type="text" placeholder="ex: Mercedes Travego" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="text" value={newModel} onChange={(e) => setNewModel(e.target.value)} placeholder="ex: Mercedes Travego" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Type</label>
-                  <select className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-gray-700">
+                  <select value={newType} onChange={(e) => setNewType(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-gray-700">
                     <option>VIP</option>
                     <option>Classique</option>
                     <option>Premium</option>
@@ -187,14 +200,31 @@ export default function BusesPage() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Capacité</label>
-                  <input type="number" placeholder="ex: 70" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                  <input type="number" value={newCapacity} onChange={(e) => setNewCapacity(Number(e.target.value))} placeholder="ex: 70" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
               <button 
-                onClick={() => setShowAddModal(false)}
-                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-blue-700 transition"
+                onClick={async () => {
+                  if (!newPlateNumber || !newModel) return;
+                  setSaving(true);
+                  try {
+                    await apiClient.createBus({
+                      plateNumber: newPlateNumber,
+                      model: newModel,
+                      totalSeats: newCapacity,
+                    });
+                    setShowAddModal(false);
+                    loadBuses();
+                  } catch (err: any) {
+                    alert(err.message || 'Erreur lors de la création du bus');
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={saving || !newPlateNumber || !newModel}
+                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-blue-700 transition disabled:opacity-50"
               >
-                Confirmer l'ajout
+                {saving ? 'Création...' : "Confirmer l'ajout"}
               </button>
             </div>
           </div>

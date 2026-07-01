@@ -1,7 +1,9 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { OtpService } from './services/otp.service';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 
@@ -14,6 +16,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto);
     return {
@@ -23,6 +26,7 @@ export class AuthController {
   }
 
   @Post('register')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async register(@Body() createUserDto: CreateUserDto) {
     const result = await this.authService.register(createUserDto);
     return {
@@ -33,12 +37,14 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
   async refresh(@Body('refresh_token') refreshToken: string) {
     return this.authService.refreshToken(refreshToken);
   }
 
   @Post('otp/send')
   @HttpCode(HttpStatus.OK)
+  @SkipThrottle()
   async sendOtp(@Body('phone') phone: string) {
     await this.otpService.generateOtp(phone);
     return { message: 'OTP envoyé avec succès' };
@@ -46,9 +52,20 @@ export class AuthController {
 
   @Post('otp/verify')
   @HttpCode(HttpStatus.OK)
+  @SkipThrottle()
   async verifyOtp(@Body('phone') phone: string, @Body('otp') otp: string) {
     const isValid = await this.otpService.verifyOtp(phone, otp);
     if (!isValid) throw new UnauthorizedException('Code OTP invalide ou expiré');
     return { message: 'OTP vérifié avec succès' };
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(
+      resetPasswordDto.phone,
+      resetPasswordDto.newPassword,
+    );
   }
 }

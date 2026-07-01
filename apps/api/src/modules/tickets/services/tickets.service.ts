@@ -120,6 +120,18 @@ export class TicketsService {
     return tickets;
   }
 
+  async getMyTickets(userId: string): Promise<Ticket[]> {
+    return this.ticketRepository
+      .createQueryBuilder('ticket')
+      .leftJoinAndSelect('ticket.passenger', 'passenger')
+      .leftJoinAndSelect('ticket.reservation', 'reservation')
+      .leftJoinAndSelect('reservation.trip', 'trip')
+      .leftJoinAndSelect('trip.route', 'route')
+      .where('reservation.clientId = :userId', { userId })
+      .orderBy('ticket.issuedAt', 'DESC')
+      .getMany();
+  }
+
   async getTicketsByReservation(reservationId: string): Promise<Ticket[]> {
     return this.ticketRepository.find({
       where: { reservationId },

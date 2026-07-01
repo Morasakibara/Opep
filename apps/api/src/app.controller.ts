@@ -1,4 +1,5 @@
 import { Controller, Get, Inject } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 
@@ -17,6 +18,7 @@ export class AppController {
   }
 
   @Get('health')
+  @SkipThrottle()
   healthCheck(): any {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }

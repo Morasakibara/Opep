@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/services/users.service';
@@ -80,6 +80,16 @@ export class AuthService {
         updatedAt: user.updatedAt,
       }
     };
+  }
+
+  async resetPassword(phone: string, newPassword: string) {
+    const user = await this.usersService.findByPhone(phone);
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.usersService.update(user.id, { passwordHash });
+
+    return { message: 'Mot de passe réinitialisé avec succès' };
   }
 
   async refreshToken(token: string) {
