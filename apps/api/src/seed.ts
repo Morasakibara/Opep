@@ -1,5 +1,4 @@
 import { DataSource } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
@@ -7,6 +6,7 @@ dotenv.config({ path: join(__dirname, '../.env') });
 dotenv.config({ path: join(__dirname, '../../.env') });
 
 import { UserRole, SubscriptionPlan } from '@opep/shared-types';
+import { Algorithm, hash as argon2Hash } from '@node-rs/argon2';
 import { User } from './modules/users/entities/user.entity';
 import { Agency } from './modules/agencies/entities/agency.entity';
 import { Bus } from './modules/buses/entities/bus.entity';
@@ -31,7 +31,12 @@ async function seed() {
   console.log('[SEED] Cleaning database...');
   await dataSource.query('TRUNCATE agencies, users, buses, routes, trips, reservations CASCADE');
 
-  const passwordHash = await bcrypt.hash('123456', 10);
+  const passwordHash = await argon2Hash('123456', {
+    algorithm: Algorithm.Argon2id,
+    memoryCost: 19456,
+    timeCost: 2,
+    parallelism: 1,
+  });
 
   // === AGENCIES ===
   const agencyData = [

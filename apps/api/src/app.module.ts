@@ -13,6 +13,7 @@ import Redis from 'ioredis';
 import { PerUserThrottlerGuard } from './common/guards/per-user-throttler.guard';
 import { CsrfOriginGuard } from './common/guards/csrf-origin.guard';
 import { MetricsModule } from './modules/metrics/metrics.module';
+import { PasswordModule } from './common/password/password.module';
 import { dataSourceOptions } from './config/typeorm.config';
 import { AppController } from './app.controller';
 import { BusesModule } from './modules/buses/buses.module';
@@ -48,6 +49,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     SubscriptionsModule,
     MessagesModule,
     MetricsModule,
+    PasswordModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

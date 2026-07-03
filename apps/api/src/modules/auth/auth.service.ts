@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,16 +7,19 @@ import { UsersService } from '../users/services/users.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { Agency, SubscriptionPlan } from '../agencies/entities/agency.entity';
-import * as bcrypt from 'bcrypt';
+import { PasswordService } from '../../common/password/password.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     @InjectRepository(Agency)
     private readonly agencyRepository: Repository<Agency>,
+    private readonly passwordService: PasswordService,
   ) {}
 
   async generateTokens(user: any, agencyPlan: SubscriptionPlan = SubscriptionPlan.BASIC) {
@@ -45,8 +48,27 @@ export class AuthService {
     const user = await this.usersService.findByIdentifier(loginDto.identifier);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
+    const isPasswordValid = await this.passwordService.verify(user.passwordHash, loginDto.password);
     if (!isPasswordValid) throw new UnauthorizedException('Identifiants invalides');
+
+    // Graceful migration: legacy bcrypt hashes are transparently upgraded to
+    // argon2id on the next successful login. The user's session is preserved
+    // and future logins take the much faster argon2id verify path.
+    if (this.passwordService.needsRehash(user.passwordHash)) {
+      try {
+        const newHash = await this.passwordService.hash(loginDto.password);
+        await this.usersService.update(user.id, { passwordHash: newHash });
+        user.passwordHash = newHash;
+      } catch (err) {
+        // Resilient fallback: if the upgrade write fails (network blip,
+        // transient DB issue, lock contention), allow login to proceed with
+        // the legacy hash. The user is still authenticated correctly. The
+        // migration attempts again on the next successful login.
+        this.logger.warn(
+          `Failed to upgrade legacy password hash for user ${user.id}: ${(err as Error).message}`,
+        );
+      }
+    }
 
     const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
     const tokens = await this.generateTokens(user, agencyPlan);
@@ -108,10 +130,10 @@ export class AuthService {
     const user = await this.usersService.findByIdentifierByUserId(userId);
     if (!user) throw new NotFoundException('Utilisateur introuvable');
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isPasswordValid = await this.passwordService.verify(user.passwordHash, currentPassword);
     if (!isPasswordValid) throw new UnauthorizedException('Mot de passe actuel incorrect');
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await this.passwordService.hash(newPassword);
     await this.usersService.update(user.id, { passwordHash });
 
     return { message: 'Mot de passe modifié avec succès' };
@@ -121,7 +143,7 @@ export class AuthService {
     const user = await this.usersService.findByPhone(phone);
     if (!user) throw new NotFoundException('Utilisateur introuvable');
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await this.passwordService.hash(newPassword);
     await this.usersService.update(user.id, { passwordHash });
 
     return { message: 'Mot de passe réinitialisé avec succès' };

@@ -1,0 +1,109 @@
+# ============================================================
+# OPEP monorepo .dockerignore
+# Goal: ship the smallest possible Docker build context.
+# Patterns are gitignore-style (Docker supports the same syntax).
+#
+# ⚠️ CRITICAL: NEVER exclude `apps/web/app/reproduction/**/*.tsx` or
+# `apps/client/src/pages/reproduction/**/*.tsx` — those are runtime
+# Next.js / Vite routes. Excluding them would silently drop them
+# from the output bundle. Only the auto-generated AI integration
+# guides (`*.prompt.md`) and one-off root scripts are safe to hide.
+# ============================================================
+
+# --- VCS / metadata ---
+.git
+.gitignore
+.gitattributes
+.github
+
+# --- Dependencies (always installed fresh in deps stage) ---
+node_modules
+**/node_modules
+.pnpm-store
+**/.pnpm-debug.log*
+
+# --- Build outputs (produced inside the deps/builder stages) ---
+**/dist
+**/build
+**/.next
+**/.nuxt
+**/.svelte-kit
+**/.turbo
+**/.cache
+**/.parcel-cache
+
+# --- Test artifacts ---
+coverage
+**/coverage
+**/*.lcov
+.nyc_output
+junit.xml
+**/jest-cache
+
+# --- Logs / runtime junk ---
+*.log
+logs
+**/logs
+**/*.log-*
+
+# --- Secrets / local env (NEVER ship a real .env in CI) ---
+# `**/` widens the net so .env files under apps/, packages/ and any other
+# sub-tree cannot accidentally leak into a published image.
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets/**
+**/*.pem
+**/*.key
+
+# --- TypeScript build info + linter caches ---
+*.tsbuildinfo
+**/*.tsbuildinfo
+.eslintcache
+.prettiercache
+
+# --- Editor / IDE / OS metadata ---
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# --- Docker / orchestration --- (these files don't belong in the image)
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+.hadolint.yaml
+
+# --- Documentation (humans only, useless at runtime) ---
+*.md
+README.md
+LICENSE
+docs
+**/docs
+docs-md
+skills
+**/skills
+
+# --- Auto-generated AI integration guides ---
+# We deleted 60 .prompt.md files plus their generators earlier; the glob
+# is kept as a safety net should anyone re-run the reproduction pipeline.
+# Note: generate-keys.js, the QR-signing-keys helper, is at the repo root
+# and is intentionally included in the build context. It prints to stdout
+# and the actual keys are wired in via env vars (QR_SIGNING_PRIVATE_KEY /
+# QR_SIGNING_PUBLIC_KEY) consumed at runtime by @opep/qr-utils.
+**/*.prompt.md
+
+# --- Cypress / Playwright / E2E caches ---
+**/cypress/videos
+**/cypress/screenshots
+**/.playwright
+
+# --- Local Postgres / MAMP data dumps (host dev data, never the API runtime) ---
+**/mamp
+**/phpMyAdmin
