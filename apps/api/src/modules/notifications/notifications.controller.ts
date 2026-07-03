@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { AuditService } from '../audit/services/audit.service';
@@ -10,7 +10,8 @@ export class NotificationsController {
   constructor(private readonly auditService: AuditService) {}
 
   @Get('my')
-  @SkipThrottle()
+  @SkipThrottle({ long: true, medium: true, short: true })
+  @Throttle({ public: { limit: 30, ttl: 60000 } })
   async getMyNotifications(@GetUser('id') userId: string) {
     const logs = await this.auditService.getUserAudit(userId);
     return logs.map((log) => ({

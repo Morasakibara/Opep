@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
@@ -59,15 +61,19 @@ export default function DashboardLayout({
 
   const bgClass = user?.role === 'ADMIN_PLATFORM' ? 'bg-admin' : 'bg-manager';
 
-  const menuItems = [
-    { icon: <LayoutDashboard size={20} />, label: 'Tableau de bord', href: '/dashboard' },
-    { icon: <Bus size={20} />, label: 'Gestion des Bus', href: '/buses' },
-    { icon: <Map size={20} />, label: 'Lignes & Trajets', href: '/trips' },
-    { icon: <Ticket size={20} />, label: 'Réservations', href: '/reservations' },
-    { icon: <QrCode size={20} />, label: 'Scanner QR', href: '/scanner' },
-    { icon: <Users size={20} />, label: 'Personnel', href: '/employees' },
-    { icon: <BarChart3 size={20} />, label: 'Rapports', href: '/reports' },
+  const allMenuItems = [
+    { icon: <LayoutDashboard size={20} />, label: 'Tableau de bord', href: '/dashboard', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER', 'CASHIER'] },
+    { icon: <Bus size={20} />, label: 'Gestion des Bus', href: '/buses', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
+    { icon: <Map size={20} />, label: 'Lignes & Trajets', href: '/trips', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
+    { icon: <Ticket size={20} />, label: 'Réservations', href: '/reservations', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER', 'CASHIER'] },
+    { icon: <QrCode size={20} />, label: 'Scanner QR', href: '/scanner', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER', 'CASHIER', 'CONTROLLER'] },
+    { icon: <Users size={20} />, label: 'Personnel', href: '/employees', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
+    { icon: <BarChart3 size={20} />, label: 'Rapports', href: '/reports', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
   ];
+
+  const menuItems = allMenuItems.filter(item => 
+    !user || item.roles.includes(user.role)
+  );
 
   return (
     <div className={`flex h-screen ${bgClass} relative`}>

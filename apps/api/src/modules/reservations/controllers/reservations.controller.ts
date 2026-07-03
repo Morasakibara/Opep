@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -25,6 +26,7 @@ export class ReservationsController {
   }
 
   @Post()
+  @Throttle({ short: { limit: 30, ttl: 60000 } })
   async create(
     @Body() createReservationDto: CreateReservationDto,
     @GetUser('id') clientId: string,

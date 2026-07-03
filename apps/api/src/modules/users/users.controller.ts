@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UsersService } from './services/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -14,6 +15,7 @@ export class UsersController {
 
   @Post()
   @Roles(UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     return UserResponseDto.fromEntity(user);
@@ -33,6 +35,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Throttle({ short: { limit: 20, ttl: 60000 } })
   async update(@Param('id') id: string, @Body() updateUserDto: any) {
     const user = await this.usersService.update(id, updateUserDto);
     return UserResponseDto.fromEntity(user);
@@ -40,6 +43,7 @@ export class UsersController {
 
   @Delete(':id')
   @Roles(UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 20, ttl: 60000 } })
   async remove(@Param('id') id: string) {
     await this.usersService.remove(id);
     return { message: 'Utilisateur supprimé avec succès' };

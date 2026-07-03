@@ -30,7 +30,7 @@ const PaymentPage = () => {
         method,
         phone: method !== 'stripe' ? phone : undefined,
       });
-      setTicketId(result.id || result.ticketId || result.ticket?.id || '');
+      setTicketId((result as any).id || (result as any).ticketId || (result as any).ticket?.id || '');
       setStatus('success');
     } catch (err: any) {
       setErrorMessage(err.message || 'Erreur lors du paiement. Veuillez réessayer.');

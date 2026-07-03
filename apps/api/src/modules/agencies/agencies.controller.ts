@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AgenciesService } from './services/agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -15,6 +16,7 @@ export class AgenciesController {
 
   @Post()
   @Roles(UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async create(@Body() createAgencyDto: CreateAgencyDto) {
     const agency = await this.agenciesService.create(createAgencyDto);
     return AgencyResponseDto.fromEntity(agency);
@@ -37,6 +39,7 @@ export class AgenciesController {
   @Patch(':id')
   @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
   @UseGuards(AgencyOwnershipGuard)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async update(@Param('id') id: string, @Body() updateAgencyDto: any) {
     const agency = await this.agenciesService.update(id, updateAgencyDto);
     return AgencyResponseDto.fromEntity(agency);
@@ -44,6 +47,7 @@ export class AgenciesController {
 
   @Delete(':id')
   @Roles(UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async remove(@Param('id') id: string) {
     await this.agenciesService.remove(id);
     return { message: 'Agence supprimée avec succès' };

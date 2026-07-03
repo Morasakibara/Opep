@@ -1,3 +1,5 @@
+import { ApiTrip, ApiTicket, ApiUser, Reservation, Payment, Route, Bus, Agency } from './apiTypes';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
@@ -27,7 +29,7 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, password }),
     });
-    return handleResponse<{ access_token: string; refresh_token: string; user: any }>(res);
+    return handleResponse<{ access_token: string; refresh_token: string; user: ApiUser }>(res);
   },
 
   async register(data: { firstName: string; lastName: string; phone: string; password: string; role?: string; email?: string }) {
@@ -36,7 +38,7 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return handleResponse<{ access_token: string; user: any }>(res);
+    return handleResponse<{ access_token: string; user: ApiUser }>(res);
   },
 
   async sendOtp(phone: string) {
@@ -79,24 +81,23 @@ export const apiClient = {
     const res = await fetch(`${API_BASE}/tickets/${id}`, {
       headers: await getAuthHeaders(),
     });
-    return handleResponse(res);
+    return handleResponse<ApiTicket>(res);
   },
 
   // Users
   async getProfile() {
-    // Get user ID from stored user info
     const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     const user = userStr ? JSON.parse(userStr) : null;
     if (user?.id) {
       const res = await fetch(`${API_BASE}/users/${user.id}`, {
         headers: await getAuthHeaders(),
       });
-      return handleResponse(res);
+      return handleResponse<ApiUser>(res);
     }
     throw new Error('Utilisateur non connecté');
   },
 
-  async updateProfile(data: any) {
+  async updateProfile(data: Partial<ApiUser>) {
     const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     const user = userStr ? JSON.parse(userStr) : null;
     if (user?.id) {
@@ -105,7 +106,7 @@ export const apiClient = {
         headers: await getAuthHeaders(),
         body: JSON.stringify(data),
       });
-      return handleResponse(res);
+      return handleResponse<ApiUser>(res);
     }
     throw new Error('Utilisateur non connecté');
   },
@@ -115,16 +116,16 @@ export const apiClient = {
     const res = await fetch(`${API_BASE}/agencies/${agencyId}`, {
       headers: await getAuthHeaders(),
     });
-    return handleResponse(res);
+    return handleResponse<Agency>(res);
   },
 
-  async updateAgency(agencyId: string, data: any) {
+  async updateAgency(agencyId: string, data: Record<string, unknown>) {
     const res = await fetch(`${API_BASE}/agencies/${agencyId}`, {
       method: 'PATCH',
       headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse(res);
+    return handleResponse<Agency>(res);
   },
 
   async deleteAgency(agencyId: string) {
@@ -132,7 +133,7 @@ export const apiClient = {
       method: 'DELETE',
       headers: await getAuthHeaders(),
     });
-    return handleResponse(res);
+    return handleResponse<{ message: string }>(res);
   },
 
   // Users (employees)
@@ -140,7 +141,7 @@ export const apiClient = {
     const res = await fetch(`${API_BASE}/users`, {
       headers: await getAuthHeaders(),
     });
-    return handleResponse<any[]>(res);
+    return handleResponse<ApiUser[]>(res);
   },
 
   async createUser(data: { firstName: string; lastName: string; email: string; phone: string; password: string; role?: string }) {
@@ -149,16 +150,16 @@ export const apiClient = {
       headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse(res);
+    return handleResponse<ApiUser>(res);
   },
 
-  async updateUser(userId: string, data: any) {
+  async updateUser(userId: string, data: Partial<ApiUser>) {
     const res = await fetch(`${API_BASE}/users/${userId}`, {
       method: 'PATCH',
       headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse(res);
+    return handleResponse<ApiUser>(res);
   },
 
   async deleteUser(userId: string) {
@@ -166,46 +167,46 @@ export const apiClient = {
       method: 'DELETE',
       headers: await getAuthHeaders(),
     });
-    return handleResponse(res);
+    return handleResponse<{ message: string }>(res);
   },
 
   // Buses
   async getBuses() {
     const res = await fetch(`${API_BASE}/buses`, { headers: await getAuthHeaders() });
-    return handleResponse<any[]>(res);
+    return handleResponse<Bus[]>(res);
   },
 
-  async createBus(data: any) {
+  async createBus(data: Record<string, unknown>) {
     const res = await fetch(`${API_BASE}/buses`, {
       method: 'POST',
       headers: await getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return handleResponse(res);
+    return handleResponse<Bus>(res);
   },
 
   // Trips / Routes
   async getTrips() {
     const res = await fetch(`${API_BASE}/trips`, { headers: await getAuthHeaders() });
-    return handleResponse<any[]>(res);
+    return handleResponse<ApiTrip[]>(res);
   },
 
   async getRoutes() {
     const res = await fetch(`${API_BASE}/routes`, { headers: await getAuthHeaders() });
-    return handleResponse<any[]>(res);
+    return handleResponse<Route[]>(res);
   },
 
   // Reservations
   async getReservations() {
     const res = await fetch(`${API_BASE}/reservations`, { headers: await getAuthHeaders() });
-    return handleResponse<any[]>(res);
+    return handleResponse<Reservation[]>(res);
   },
 
   // Reports
   async getReports(period?: string) {
     const params = period ? `?period=${period}` : '';
     const res = await fetch(`${API_BASE}/reports${params}`, { headers: await getAuthHeaders() });
-    return handleResponse(res);
+    return handleResponse<Record<string, unknown>>(res);
   },
 
   // Security

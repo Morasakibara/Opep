@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Patch, Delete } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
@@ -17,6 +18,7 @@ export class BusesController {
 
   @Post()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async create(@Body() createBusDto: CreateBusDto, @GetUser('agencyId') agencyId: string) {
     const bus = await this.busesService.create(agencyId, createBusDto);
     return BusResponseDto.fromEntity(bus);
@@ -38,6 +40,7 @@ export class BusesController {
 
   @Patch(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async update(
     @Param('id') id: string, 
     @Body() updateBusDto: any, 
@@ -49,6 +52,7 @@ export class BusesController {
 
   @Delete(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     await this.busesService.remove(agencyId, id);
     return { message: 'Bus supprimé avec succès' };

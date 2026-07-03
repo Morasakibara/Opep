@@ -1,32 +1,58 @@
+version: '3.8'
+
 services:
+  # Database: PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: opep_postgres
+    container_name: opep-postgres
+    restart: always
     environment:
-      POSTGRES_USER: opep
-      POSTGRES_PASSWORD: opep_dev_secret
-      POSTGRES_DB: opep_db
+      POSTGRES_USER: ${DB_USER:-opep}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-opep_password}
+      POSTGRES_DB: ${DB_NAME:-opep_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # Cache: Redis
   redis:
     image: redis:7-alpine
-    container_name: opep_redis
+    container_name: opep-redis
+    restart: always
     ports:
       - "6379:6379"
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: opep_pgadmin
+  # Backend: NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: opep-api
+    restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@opep.cm
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
+      DATABASE_URL: postgres://${DB_USER:-opep}:${DB_PASSWORD:-opep_password}@postgres:5432/${DB_NAME:-opep_db}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-super_secret_sovereign_key}
     depends_on:
       - postgres
+      - redis
+    ports:
+      - "3000:3000"
+
+  # Frontend: Next.js Web
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: opep-web
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:3000/api/v1
+    depends_on:
+      - api
+    ports:
+      - "80:3000"
 
 volumes:
   postgres_data:

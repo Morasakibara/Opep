@@ -28,3 +28,12 @@ Thumbs.db
 # Keys
 keys/*.pem
 !keys/.gitkeep
+#files
+MCP_CONFIG.md
+reproduction-interface.js
+PLAYBOOK_FOR_IA.md
+OPEP_TEAM_MEMORY.md
+generate-keys.js
+GEMINI.md
+MCP_CONFIG.md
+nul

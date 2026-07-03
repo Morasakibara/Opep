@@ -34,7 +34,7 @@ const ResultsPage = () => {
     setError(null);
     apiClient.searchTrips(from, to, date || undefined)
       .then(data => {
-        setTrips(data);
+        setTrips(data as any);
       })
       .catch(err => {
         setError(err.message || 'Erreur de recherche');

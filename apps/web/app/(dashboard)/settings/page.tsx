@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
@@ -281,8 +282,8 @@ export default function SettingsPage() {
               <div className="flex items-center space-x-6 mb-8">
                 <div className="relative group">
                   {avatarUrl ? (
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden">
-                      <img src={avatarUrl} alt="Photo de profil" className="w-full h-full object-cover" />
+                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden">
+                      <Image fill className="object-cover" src={avatarUrl} alt="Photo de profil" />
                     </div>
                   ) : (
                     <div className="w-24 h-24 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-3xl font-black">

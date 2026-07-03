@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { PaymentsService } from './services/payments.service';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
@@ -11,6 +12,7 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('process')
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   async processPayment(@Body() processPaymentDto: ProcessPaymentDto) {
     const payment = await this.paymentsService.processPayment(processPaymentDto);
     return PaymentResponseDto.fromEntity(payment);

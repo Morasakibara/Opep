@@ -1,9 +1,12 @@
 import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UsersService } from '../users/services/users.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Agency, SubscriptionPlan } from '../agencies/entities/agency.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,14 +15,21 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @InjectRepository(Agency)
+    private readonly agencyRepository: Repository<Agency>,
   ) {}
 
-  async generateTokens(user: any) {
-    const payload = { 
-      sub: user.id, 
-      phone: user.phone, 
-      role: user.role, 
-      agencyId: user.agencyId 
+  async generateTokens(user: any, agencyPlan: SubscriptionPlan = SubscriptionPlan.BASIC) {
+    const payload = {
+      sub: user.id,
+      phone: user.phone,
+      role: user.role,
+      agencyId: user.agencyId ?? null,
+      // Embed plan in JWT so downstream guards (throttler, feature gates) can
+      // branch without an extra DB lookup. Stale for up to JWT_EXPIRES_IN —
+      // acceptable because subscription upgrades re-issue tokens and an admin
+      // can revoke via /users end.
+      plan: agencyPlan,
     };
 
     return {
@@ -38,7 +48,8 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
     if (!isPasswordValid) throw new UnauthorizedException('Identifiants invalides');
 
-    const tokens = await this.generateTokens(user);
+    const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
+    const tokens = await this.generateTokens(user, agencyPlan);
 
     return {
       ...tokens,
@@ -61,7 +72,7 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
-    const tokens = await this.generateTokens(user);
+    const tokens = await this.generateTokens(user, SubscriptionPlan.BASIC);
 
     return {
       ...tokens,
@@ -80,6 +91,17 @@ export class AuthService {
         updatedAt: user.updatedAt,
       }
     };
+  }
+
+  private async resolveAgencyPlan(agencyId: string | null | undefined): Promise<SubscriptionPlan> {
+    if (!agencyId) {
+      return SubscriptionPlan.BASIC;
+    }
+    const agency = await this.agencyRepository.findOne({
+      where: { id: agencyId },
+      select: ['subscriptionPlan'],
+    });
+    return agency?.subscriptionPlan ?? SubscriptionPlan.BASIC;
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
@@ -110,11 +132,12 @@ export class AuthService {
       const payload = this.jwtService.verify(token, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
       });
-      
+
       const user = await this.usersService.findById(payload.sub);
       if (!user) throw new UnauthorizedException();
 
-      return this.generateTokens(user);
+      const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
+      return this.generateTokens(user, agencyPlan);
     } catch (e) {
       throw new UnauthorizedException('Token de rafraîchissement invalide');
     }

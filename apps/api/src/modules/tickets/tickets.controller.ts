@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { TicketsService } from './services/tickets.service';
 import { TicketResponseDto } from './dto/ticket-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -10,6 +11,7 @@ export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
   @Post('generate/:reservationId')
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async generateTickets(@Param('reservationId') reservationId: string) {
     const tickets = await this.ticketsService.generateTicketsForReservation(reservationId);
     return tickets.map(TicketResponseDto.fromEntity);
@@ -28,6 +30,7 @@ export class TicketsController {
   }
 
   @Post('validate')
+  @Throttle({ short: { limit: 60, ttl: 60000 } })
   async validateTicket(@Body() body: { qrString: string }, @Req() req: any) {
     const result = await this.ticketsService.validateAndScan(body.qrString, req.user?.id);
     return result;

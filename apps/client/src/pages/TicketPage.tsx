@@ -198,8 +198,7 @@ const TicketPage = () => {
             {/* QR Code */}
             <div className="bg-gray-50 rounded-3xl p-8 flex flex-col items-center border border-gray-100">
               {qrDataUrl ? (
-                <div className="w-48 h-48 bg-white p-3 rounded-2xl shadow-sm border border-gray-200 mb-4">
-                  <img src={qrDataUrl} alt="QR Code ticket" className="w-full h-full" />
+                <div className="w-48 h-48 bg-white p-3 rounded-2xl shadow-sm border border-gray-200 mb-4">                  <img src={qrDataUrl} alt="QR Code ticket" loading="eager" decoding="async" width={192} height={192} className="w-full h-full" />
                 </div>
               ) : (
                 <div className="w-48 h-48 bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-4 flex items-center justify-center">

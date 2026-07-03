@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, Param, Patch, Delete } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
@@ -16,6 +17,7 @@ export class RoutesController {
 
   @Post()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async create(@Body() createRouteDto: CreateRouteDto, @GetUser('agencyId') agencyId: string) {
     const route = await this.routesService.create(agencyId, createRouteDto);
     return RouteResponseDto.fromEntity(route);
@@ -37,6 +39,7 @@ export class RoutesController {
 
   @Patch(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async update(
     @Param('id') id: string, 
     @Body() updateRouteDto: any, 
@@ -48,6 +51,7 @@ export class RoutesController {
 
   @Delete(':id')
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     await this.routesService.remove(agencyId, id);
     return { message: 'Ligne supprimée avec succès' };

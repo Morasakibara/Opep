@@ -38,10 +38,10 @@ const BookingPage = () => {
     setLoading(true);
     apiClient.getTrip(id)
       .then(data => {
-        setTrip(data);
+        setTrip(data as any);
         // Simulate occupied seats based on availableSeats
-        const total = data.bus?.totalSeats || data.totalSeats || 70;
-        const occupiedCount = total - (data.availableSeats || 0);
+        const total = (data as any).bus?.totalSeats || (data as any).totalSeats || 70;
+        const occupiedCount = total - ((data as any).availableSeats || 0);
         const occupied = Array.from({ length: total }, (_, i) => i + 1)
           .sort(() => Math.random() - 0.5)
           .slice(0, occupiedCount);

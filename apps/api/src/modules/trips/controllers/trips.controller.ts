@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Query, UseGuards, Param, Patch, Delete } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
@@ -17,6 +17,7 @@ export class TripsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async create(@Body() createTripDto: CreateTripDto, @GetUser('agencyId') agencyId: string) {
     const trip = await this.tripsService.create(agencyId, createTripDto);
     return TripResponseDto.fromEntity(trip);
@@ -31,14 +32,16 @@ export class TripsController {
   }
 
   @Get('available')
-  @SkipThrottle()
+  @SkipThrottle({ long: true, medium: true, short: true })
+  @Throttle({ public: { limit: 30, ttl: 60000 } })
   async findAvailable() {
     const trips = await this.tripsService.findAvailable();
     return trips.map(TripResponseDto.fromEntity);
   }
 
   @Get('search')
-  @SkipThrottle()
+  @SkipThrottle({ long: true, medium: true, short: true })
+  @Throttle({ public: { limit: 30, ttl: 60000 } })
   async search(
     @Query('departureCity') departureCity: string,
     @Query('arrivalCity') arrivalCity: string,
@@ -65,6 +68,7 @@ export class TripsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   async update(
     @Param('id') id: string, 
     @Body() updateTripDto: any, 
@@ -77,6 +81,7 @@ export class TripsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 3, ttl: 60000 } })
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     await this.tripsService.remove(agencyId, id);
     return { message: 'Voyage supprimé avec succès' };
