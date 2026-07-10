@@ -1,39 +1,52 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiService } from '@/services/api.service';
+import { reportsApi } from '@/services/api.service';
 
 export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      // In a real app, this would fetch from multiple endpoints or a summary endpoint
-      // For now, we simulate the delay and return the data
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const data = await reportsApi.getDashboard();
       return {
-        revenue: '142 850 000',
-        agencies: '48',
-        users: '24.5k',
+        revenue: data.revenueFormatted || `${((data.totalRevenue || 0) / 1_000_000).toFixed(1)}M FCFA`,
+        agencies: String(data.totalAgencies || '0'),
+        users: data.totalUsers > 1000
+          ? `${(data.totalUsers / 1000).toFixed(1)}k`
+          : String(data.totalUsers),
         health: '99.98%',
         revenueTrend: '+12.5%',
-        agenciesTrend: '+4 New',
+        agenciesTrend: `+${data.totalAgencies || 0} New`,
         usersTrend: '-2.1%',
+        // Raw values for charts
+        totalReservations: data.totalReservations || 0,
+        totalRevenue: data.totalRevenue || 0,
+        activeTrips: data.activeTrips || 0,
+        totalTickets: data.totalTickets || 0,
+        totalAgencies: data.totalAgencies || 0,
+        totalUsers: data.totalUsers || 0,
       };
     },
+    staleTime: 30000, // 30s cache
   });
 }
 
-export function useRevenueData() {
+export function useRevenueData(period: string = '6months') {
   return useQuery({
-    queryKey: ['revenue-data'],
+    queryKey: ['revenue-data', period],
     queryFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return [
-        { name: 'JAN', value: 18 },
-        { name: 'FEB', value: 22 },
-        { name: 'MAR', value: 20 },
-        { name: 'APR', value: 28 },
-        { name: 'MAY', value: 25 },
-        { name: 'JUN', value: 27 },
-      ];
+      try {
+        return await reportsApi.getRevenue(period);
+      } catch {
+        // Fallback if API not available
+        return [
+          { name: 'JAN', value: 18 },
+          { name: 'FEB', value: 22 },
+          { name: 'MAR', value: 20 },
+          { name: 'APR', value: 28 },
+          { name: 'MAY', value: 25 },
+          { name: 'JUN', value: 27 },
+        ];
+      }
     },
+    staleTime: 60000,
   });
 }

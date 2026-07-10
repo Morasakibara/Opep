@@ -1,33 +1,27 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Payment, PaymentProvider, PaymentStatus } from '../entities/payment.entity';
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { ProcessPaymentDto } from '../dto/process-payment.dto';
-import { ConfigService } from '@nestjs/config';
+import { WebhookPaymentDto, RefundPaymentDto } from '../dto/webhook-payment.dto';
 import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
 import { TicketsService } from '../../tickets/services/tickets.service';
+import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 
 @Injectable()
 export class PaymentsService {
-  private redis: Redis;
-
   constructor(
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
     private readonly dataSource: DataSource,
-    private readonly configService: ConfigService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
     private readonly ticketsService: TicketsService,
     private readonly auditService: AuditService,
-  ) {
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-    });
-  }
+  ) {}
 
   async processPayment(dto: ProcessPaymentDto): Promise<Payment> {
     const { reservationId, provider, phoneNumber, stripeToken } = dto;
@@ -121,5 +115,119 @@ export class PaymentsService {
       where: { reservationId },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  // ============ Refund ============
+
+  async refundPayment(
+    paymentId: string,
+    refundDto: RefundPaymentDto,
+    refundedBy: string,
+  ): Promise<Payment> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id: paymentId },
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Paiement non trouve');
+    }
+
+    if (payment.status === PaymentStatus.REFUNDED) {
+      throw new BadRequestException('Ce paiement a deja ete rembourse');
+    }
+
+    if (payment.status !== PaymentStatus.SUCCESS) {
+      throw new BadRequestException('Seuls les paiements reussis peuvent etre rembourses');
+    }
+
+    const refundAmount = refundDto.amount ?? payment.amount;
+
+    if (refundAmount > payment.amount) {
+      throw new BadRequestException('Le montant du remboursement depasse le montant du paiement');
+    }
+
+    // Update payment as refunded
+    payment.status = PaymentStatus.REFUNDED;
+    payment.refundedAt = new Date();
+    payment.refundedBy = refundedBy;
+    payment.refundAmount = refundAmount;
+
+    const savedPayment = await this.paymentRepository.save(payment);
+
+    // Cancel associated reservation
+    const reservation = await this.reservationRepository.findOne({
+      where: { id: payment.reservationId },
+    });
+
+    if (reservation && reservation.status === ReservationStatus.CONFIRMED) {
+      reservation.status = ReservationStatus.CANCELLED;
+      reservation.cancelledAt = new Date();
+      reservation.cancelledBy = refundedBy;
+      reservation.cancelReason = refundDto.reason || 'Remboursement du paiement';
+      await this.reservationRepository.save(reservation);
+    }
+
+    // Audit
+    this.auditService.log({
+      userId: refundedBy,
+      action: 'PAYMENT_REFUNDED',
+      entityType: 'payment',
+      entityId: payment.id,
+      metadata: {
+        originalAmount: payment.amount,
+        refundedAmount: refundAmount,
+        reason: refundDto.reason,
+        reservationId: payment.reservationId,
+      },
+    }).catch(() => {});
+
+    return savedPayment;
+  }
+
+  // ============ Webhook Handler ============
+
+  async handleWebhook(
+    provider: PaymentProvider,
+    dto: WebhookPaymentDto,
+  ): Promise<{ received: boolean }> {
+    // Look up existing payment by provider transaction ID
+    const existingPayment = await this.paymentRepository.findOne({
+      where: { providerTransactionId: dto.transactionId, provider },
+    });
+
+    if (existingPayment) {
+      // Update payment status based on webhook
+      if (dto.status === 'SUCCESS' && existingPayment.status === PaymentStatus.PENDING) {
+        existingPayment.status = PaymentStatus.SUCCESS;
+        existingPayment.providerReference = dto.reference;
+        await this.paymentRepository.save(existingPayment);
+
+        // Confirm reservation and generate tickets
+        const reservation = await this.reservationRepository.findOne({
+          where: { id: existingPayment.reservationId },
+        });
+        if (reservation && reservation.status === ReservationStatus.PENDING_PAYMENT) {
+          reservation.status = ReservationStatus.CONFIRMED;
+          await this.reservationRepository.save(reservation);
+          await this.ticketsService.generateTicketsForReservation(existingPayment.reservationId);
+        }
+      } else if (dto.status === 'FAILED') {
+        existingPayment.status = PaymentStatus.FAILED;
+        existingPayment.failureReason = 'Echec confirme par le prestataire';
+        await this.paymentRepository.save(existingPayment);
+      }
+
+      this.auditService.log({
+        action: `WEBHOOK_${provider}_${dto.status}`,
+        entityType: 'payment',
+        entityId: existingPayment.id,
+        metadata: dto.metadata || {},
+      }).catch(() => {});
+    } else {
+      // Payment not found in our system — log for investigation but don't fail
+      console.warn(`[WEBHOOK] Paiement inconnu: ${provider} / ${dto.transactionId}`);
+    }
+
+    return { received: true };
   }
 }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bus } from '../entities/bus.entity';
 import { CreateBusDto } from '../dto/create-bus.dto';
+import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 @Injectable()
 export class BusesService {
@@ -19,10 +20,14 @@ export class BusesService {
     return this.busRepository.save(bus);
   }
 
-  async findAll(agencyId: string): Promise<Bus[]> {
-    return this.busRepository.find({
+  async findAll(agencyId: string, paginationDto: PaginationDto): Promise<{ items: Bus[]; total: number }> {
+    const [items, total] = await this.busRepository.findAndCount({
       where: { agencyId, isActive: true },
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
     });
+    return { items, total };
   }
 
   async findOne(agencyId: string, id: string): Promise<Bus> {

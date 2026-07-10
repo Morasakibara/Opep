@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -7,14 +7,13 @@ import { Reservation, ReservationStatus } from '../entities/reservation.entity';
 import { Passenger } from '../entities/passenger.entity';
 import { Trip } from '../../trips/entities/trip.entity';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
-import { ConfigService } from '@nestjs/config';
 import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
+import { REDIS_CLIENT } from '../../../common/redis/redis.module';
+import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 @Injectable()
 export class ReservationsService {
-  private redis: Redis;
-
   constructor(
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
@@ -23,15 +22,10 @@ export class ReservationsService {
     @InjectRepository(Trip)
     private readonly tripRepository: Repository<Trip>,
     @InjectQueue('reservations-queue') private readonly reservationsQueue: Queue,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
     private readonly dataSource: DataSource,
-    private readonly configService: ConfigService,
     private readonly auditService: AuditService,
-  ) {
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-    });
-  }
+  ) {}
 
   async create(clientId: string, role: string, createReservationDto: CreateReservationDto): Promise<Reservation> {
     const { tripId, passengers, type } = createReservationDto;
@@ -129,20 +123,26 @@ export class ReservationsService {
     }
   }
 
-  async findByClient(clientId: string): Promise<Reservation[]> {
-    return this.reservationRepository.find({
+  async findByClient(clientId: string, paginationDto: PaginationDto): Promise<{ items: Reservation[]; total: number }> {
+    const [items, total] = await this.reservationRepository.findAndCount({
       where: { clientId },
       relations: ['trip', 'trip.route', 'trip.bus'],
-      order: { createdAt: 'DESC' },
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
     });
+    return { items, total };
   }
 
-  async findByAgency(agencyId: string): Promise<Reservation[]> {
-    return this.reservationRepository.find({
+  async findByAgency(agencyId: string, paginationDto: PaginationDto): Promise<{ items: Reservation[]; total: number }> {
+    const [items, total] = await this.reservationRepository.findAndCount({
       where: { agencyId },
       relations: ['trip', 'trip.route', 'trip.bus', 'client'],
-      order: { createdAt: 'DESC' },
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
     });
+    return { items, total };
   }
 
   async findOne(id: string): Promise<Reservation> {

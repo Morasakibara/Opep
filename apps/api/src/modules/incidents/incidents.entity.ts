@@ -1,11 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../users/entities/user.entity';
 import { Trip } from '../trips/entities/trip.entity';
 
 @Entity('incidents')
-export class Incident {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Incident extends BaseEntity {
 
   @Column()
   type: string; // ACCIDENT, DELAY, MECHANICAL_BREAKDOWN, OTHER
@@ -28,6 +27,5 @@ export class Incident {
   @ManyToOne(() => Trip, { nullable: true })
   trip: Trip;
 
-  @CreateDateColumn()
-  createdAt: Date;
+
 }

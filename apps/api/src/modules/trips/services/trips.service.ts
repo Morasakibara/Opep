@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Trip, TripStatus } from '../entities/trip.entity';
 import { CreateTripDto } from '../dto/create-trip.dto';
+import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 @Injectable()
 export class TripsService {
@@ -21,12 +22,15 @@ export class TripsService {
     return this.tripRepository.save(trip);
   }
 
-  async search(params: {
-    departureCity?: string;
-    arrivalCity?: string;
-    date?: string;
-    passengers?: number;
-  }): Promise<Trip[]> {
+  async search(
+    params: {
+      departureCity?: string;
+      arrivalCity?: string;
+      date?: string;
+      passengers?: number;
+    },
+    paginationDto: PaginationDto,
+  ): Promise<{ items: Trip[]; total: number }> {
     const query = this.tripRepository.createQueryBuilder('trip')
       .leftJoinAndSelect('trip.route', 'route')
       .leftJoinAndSelect('trip.bus', 'bus')
@@ -43,14 +47,23 @@ export class TripsService {
       query.andWhere('DATE(trip.departureDateTime) = :date', { date: params.date });
     }
 
-    return query.getMany();
+    const [items, total] = await query
+      .skip((paginationDto.page - 1) * paginationDto.limit)
+      .take(paginationDto.limit)
+      .getManyAndCount();
+
+    return { items, total };
   }
 
-  async findAll(agencyId: string): Promise<Trip[]> {
-    return this.tripRepository.find({
+  async findAll(agencyId: string, paginationDto: PaginationDto): Promise<{ items: Trip[]; total: number }> {
+    const [items, total] = await this.tripRepository.findAndCount({
       where: { agencyId },
       relations: ['route', 'bus'],
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
     });
+    return { items, total };
   }
 
   async findOne(agencyId: string, id: string): Promise<Trip> {
@@ -68,12 +81,15 @@ export class TripsService {
     return this.tripRepository.save(trip);
   }
 
-  async findAvailable(): Promise<Trip[]> {
-    return this.tripRepository.find({
+  async findAvailable(paginationDto: PaginationDto): Promise<{ items: Trip[]; total: number }> {
+    const [items, total] = await this.tripRepository.findAndCount({
       where: { status: TripStatus.SCHEDULED },
       relations: ['route', 'bus', 'agency'],
       order: { departureDateTime: 'ASC' },
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
     });
+    return { items, total };
   }
 
   async remove(agencyId: string, id: string): Promise<void> {

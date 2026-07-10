@@ -4,25 +4,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reservation, ReservationStatus } from '../entities/reservation.entity';
 import { Passenger } from '../entities/passenger.entity';
-import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { Inject } from '@nestjs/common';
+import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 
 @Processor('reservations-queue')
 export class ReservationsProcessor extends WorkerHost {
-  private redis: Redis;
-
   constructor(
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
     @InjectRepository(Passenger)
     private readonly passengerRepository: Repository<Passenger>,
-    private readonly configService: ConfigService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {
     super();
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-    });
   }
 
   async process(job: Job<any, any, string>): Promise<any> {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Patch, Delete, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -10,6 +10,7 @@ import { BusesService } from '../services/buses.service';
 import { CreateBusDto } from '../dto/create-bus.dto';
 import { BusResponseDto } from '../dto/bus-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
+import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
 @Controller('buses')
 @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard, SubscriptionGuard)
@@ -26,9 +27,9 @@ export class BusesController {
 
   @Get()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
-  async findAll(@GetUser('agencyId') agencyId: string) {
-    const buses = await this.busesService.findAll(agencyId);
-    return buses.map(BusResponseDto.fromEntity);
+  async findAll(@GetUser('agencyId') agencyId: string, @Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.busesService.findAll(agencyId, paginationDto);
+    return paginate(items.map(BusResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get(':id')

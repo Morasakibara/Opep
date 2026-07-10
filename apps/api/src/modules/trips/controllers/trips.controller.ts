@@ -9,6 +9,7 @@ import { TripsService } from '../services/trips.service';
 import { CreateTripDto } from '../dto/create-trip.dto';
 import { TripResponseDto } from '../dto/trip-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
+import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
 @Controller('trips')
 export class TripsController {
@@ -26,17 +27,20 @@ export class TripsController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
-  async findAll(@GetUser('agencyId') agencyId: string) {
-    const trips = await this.tripsService.findAll(agencyId);
-    return trips.map(TripResponseDto.fromEntity);
+  async findAll(
+    @GetUser('agencyId') agencyId: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    const { items, total } = await this.tripsService.findAll(agencyId, paginationDto);
+    return paginate(items.map(TripResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get('available')
   @SkipThrottle({ long: true, medium: true, short: true })
   @Throttle({ public: { limit: 30, ttl: 60000 } })
-  async findAvailable() {
-    const trips = await this.tripsService.findAvailable();
-    return trips.map(TripResponseDto.fromEntity);
+  async findAvailable(@Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.tripsService.findAvailable(paginationDto);
+    return paginate(items.map(TripResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get('search')
@@ -47,14 +51,15 @@ export class TripsController {
     @Query('arrivalCity') arrivalCity: string,
     @Query('date') date: string,
     @Query('passengers') passengers: number,
+    @Query() paginationDto: PaginationDto,
   ) {
-    const trips = await this.tripsService.search({
+    const { items, total } = await this.tripsService.search({
       departureCity,
       arrivalCity,
       date,
       passengers: +passengers,
-    });
-    return trips.map(TripResponseDto.fromEntity);
+    }, paginationDto);
+    return paginate(items.map(TripResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get(':id')

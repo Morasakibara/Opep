@@ -1,10 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../users/entities/user.entity';
 
 @Entity('drivers')
-export class Driver {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Driver extends BaseEntity {
 
   @Column({ unique: true })
   licenseNumber: string;
@@ -25,6 +24,5 @@ export class Driver {
   @JoinColumn()
   user: User;
 
-  @CreateDateColumn()
-  createdAt: Date;
+
 }

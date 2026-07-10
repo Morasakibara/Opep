@@ -2,9 +2,12 @@ name: OPEP CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
+
+env:
+  NODE_VERSION: 20
 
 jobs:
   lint-and-typecheck:
@@ -15,10 +18,22 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - run: npm ci --legacy-peer-deps
+
+      - name: Build shared packages
+        run: npm run build --workspace=packages/shared-types --workspace=packages/qr-utils
 
       - name: TypeScript check (API)
         run: npx tsc --noEmit --project apps/api/tsconfig.json
@@ -32,23 +47,45 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    needs: [lint-and-typecheck]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - run: npm ci --legacy-peer-deps
 
+      - name: Build shared packages
+        run: npm run build --workspace=packages/shared-types --workspace=packages/qr-utils
+
       - name: Run API unit tests
-        run: npx jest --config apps/api/package.json --testPathPattern='\\.spec\\.ts$' --passWithNoTests
+        run: npx jest --config apps/api/package.json --testPathPattern='\.spec\.ts$'
         working-directory: apps/api
+        env:
+          JWT_SECRET: ci_jwt_secret
+          JWT_REFRESH_SECRET: ci_refresh_secret
+
+      - name: Run Web unit tests (if any)
+        run: npx jest --passWithNoTests
+        working-directory: apps/web
+        continue-on-error: true
 
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    needs: [unit-tests]
     services:
       postgres:
         image: postgres:15-alpine
@@ -78,10 +115,22 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - run: npm ci --legacy-peer-deps
+
+      - name: Build shared packages
+        run: npm run build --workspace=packages/shared-types --workspace=packages/qr-utils
 
       - name: Run migrations
         run: npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d apps/api/src/config/typeorm.config.ts
@@ -103,15 +152,28 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    needs: [unit-tests]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - run: npm ci --legacy-peer-deps
+
+      - name: Build shared packages
+        run: npm run build --workspace=packages/shared-types --workspace=packages/qr-utils
 
       - name: Build API (NestJS)
         run: npx nest build
@@ -120,3 +182,5 @@ jobs:
       - name: Build Web (Next.js)
         run: npx next build
         working-directory: apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1

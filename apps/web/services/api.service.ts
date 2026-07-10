@@ -1,6 +1,7 @@
 /**
  * OPEP Web API Service
- * Typed service layer covering all NestJS backend endpoints
+ * Typed service layer covering all NestJS backend endpoints.
+ * This is the canonical API client for the web app — lib/apiClient.ts is deprecated.
  */
 import type {
   Trip, Route, Bus, User, Agency, Reservation, Ticket,
@@ -37,6 +38,55 @@ async function fetchApi<T>(
 
   return response.json();
 }
+
+// ============ Auth ============
+export const authApi = {
+  login: (identifier: string, password: string) =>
+    fetchApi<{ access_token: string; refresh_token: string; user: User }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ identifier, password }),
+    }),
+  register: (data: any) =>
+    fetchApi<{ access_token: string; refresh_token: string; user: User }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  refresh: (refreshToken: string) =>
+    fetchApi<{ access_token: string; refresh_token: string }>('/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }),
+  sendOtp: (phone: string) =>
+    fetchApi<{ message: string }>('/auth/otp/send', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    }),
+  verifyOtp: (phone: string, otp: string) =>
+    fetchApi<{ valid: boolean; message?: string }>('/auth/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify({ phone, otp }),
+    }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    fetchApi<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+  resetPassword: (phone: string, newPassword: string) =>
+    fetchApi<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ phone, newPassword }),
+    }),
+  getProfile: () => fetchApi<User>('/auth/me'),
+  updateProfile: (data: any) => fetchApi<User>('/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+  logout: (refreshToken?: string) =>
+    fetchApi<{ message: string }>('/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }),
+};
 
 // ============ Trips ============
 export const tripsApi = {
@@ -104,7 +154,8 @@ export const ticketsApi = {
   getMyTickets: () => fetchApi<Ticket[]>('/tickets/my'),
   getById: (id: string) => fetchApi<Ticket>(`/tickets/${id}`),
   getByReservation: (reservationId: string) => fetchApi<Ticket[]>(`/tickets/reservation/${reservationId}`),
-  generateTickets: (reservationId: string) => fetchApi<Ticket[]>(`/tickets/generate/${reservationId}`, { method: 'POST' }),
+  generateTickets: (reservationId: string) =>
+    fetchApi<Ticket[]>(`/tickets/generate/${reservationId}`, { method: 'POST' }),
   validate: (data: { qrData: string; controllerId: string; latitude?: number; longitude?: number }) =>
     fetchApi<any>('/tickets/validate', { method: 'POST', body: JSON.stringify(data) }),
 };
@@ -113,6 +164,16 @@ export const ticketsApi = {
 export const paymentsApi = {
   process: (data: any) => fetchApi<Payment>('/payments/process', { method: 'POST', body: JSON.stringify(data) }),
   getByReservation: (id: string) => fetchApi<Payment>(`/payments/reservation/${id}`),
+  refund: (paymentId: string, data?: { amount?: number; reason?: string }) =>
+    fetchApi<Payment>(`/payments/${paymentId}/refund`, { method: 'POST', body: JSON.stringify(data || {}) }),
+};
+
+// ============ Reports / Analytics ============
+export const reportsApi = {
+  getDashboard: () => fetchApi<any>('/reports/dashboard'),
+  getRevenue: (period?: string) =>
+    fetchApi<{ name: string; value: number }[]>(`/reports/revenue${period ? `?period=${period}` : ''}`),
+  getHealth: () => fetchApi<any>('/reports/health'),
 };
 
 // ============ Drivers ============
@@ -150,15 +211,43 @@ export const notificationsApi = {
   getMyNotifications: () => fetchApi<any[]>('/notifications/my'),
 };
 
-// Legacy compatibility
+// ============ Health / Config ============
+export const configApi = {
+  healthCheck: () => fetchApi<{ status: string }>('/health'),
+  getPublicKey: () => fetchApi<{ publicKey: string; configured: boolean }>('/public-key'),
+};
+
+// ============ Legacy compatibility ============
 export const apiService = {
+  // Auth
+  login: authApi.login,
+  register: authApi.register,
+  refresh: authApi.refresh,
+  sendOtp: authApi.sendOtp,
+  verifyOtp: authApi.verifyOtp,
+  changePassword: authApi.changePassword,
+  resetPassword: authApi.resetPassword,
+  getProfile: authApi.getProfile,
+  updateProfile: authApi.updateProfile,
+  logout: authApi.logout,
+  // Trips
   getTrips: tripsApi.getAll,
   getTripById: tripsApi.getById,
   createTrip: tripsApi.create,
+  // Users
   getUsers: usersApi.getAll,
   createUser: usersApi.create,
   updateUser: usersApi.update,
+  // Agencies
   getAgencies: agenciesApi.getAll,
-  getRevenueStats: () => fetchApi<any>('/analytics/revenue?period=6months'),
-  getSystemHealth: () => fetchApi<any>('/analytics/health'),
+  // Reports
+  getDashboardStats: reportsApi.getDashboard,
+  getRevenueStats: () => reportsApi.getRevenue('6months'),
+  getSystemHealth: reportsApi.getHealth,
+  // Payments
+  processPayment: paymentsApi.process,
+  refundPayment: paymentsApi.refund,
+  // Tickets
+  getMyTickets: ticketsApi.getMyTickets,
+  validateTicket: ticketsApi.validate,
 };

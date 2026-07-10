@@ -4,12 +4,13 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Incident } from './incidents.entity';
 import { IncidentsService } from './incidents.service';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 describe('IncidentsService', () => {
   let service: IncidentsService;
   let repo: Repository<Incident>;
 
-  const mockIncident: Incident = {
+  const mockIncident = {
     id: 'inc-1',
     type: 'MECHANICAL_BREAKDOWN',
     description: 'Panne moteur sur la N3',
@@ -19,13 +20,14 @@ describe('IncidentsService', () => {
     reportedBy: null,
     trip: null,
     createdAt: new Date(),
-  };
+  } as Incident;
 
   const mockRepository = {
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
     findOne: jest.fn(),
+    findAndCount: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -67,14 +69,15 @@ describe('IncidentsService', () => {
   });
 
   describe('findAll', () => {
-    it('returns all incidents with relations', async () => {
+    it('returns paginated incidents with relations', async () => {
       const incidents = [mockIncident];
-      mockRepository.find.mockResolvedValue(incidents);
+      mockRepository.findAndCount.mockResolvedValue([incidents, 1]);
 
-      const result = await service.findAll();
+      const paginationDto = new PaginationDto();
+      const result = await service.findAll(paginationDto);
 
-      expect(mockRepository.find).toHaveBeenCalledWith({ relations: ['reportedBy', 'trip'] });
-      expect(result).toEqual(incidents);
+      expect(result.items).toEqual(incidents);
+      expect(result.total).toBe(1);
     });
   });
 

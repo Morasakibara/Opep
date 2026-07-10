@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param, Patch, Delete, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -9,6 +9,7 @@ import { RoutesService } from '../services/routes.service';
 import { CreateRouteDto } from '../dto/create-route.dto';
 import { RouteResponseDto } from '../dto/route-response.dto';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
+import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
 @Controller('routes')
 @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
@@ -25,9 +26,9 @@ export class RoutesController {
 
   @Get()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
-  async findAll(@GetUser('agencyId') agencyId: string) {
-    const routes = await this.routesService.findAll(agencyId);
-    return routes.map(RouteResponseDto.fromEntity);
+  async findAll(@GetUser('agencyId') agencyId: string, @Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.routesService.findAll(agencyId, paginationDto);
+    return paginate(items.map(RouteResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get(':id')

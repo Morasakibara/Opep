@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Incident } from './incidents.entity';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class IncidentsService {
@@ -16,8 +17,14 @@ export class IncidentsService {
     return Array.isArray(saved) ? saved[0] : saved;
   }
 
-  async findAll(): Promise<Incident[]> {
-    return this.incidentRepository.find({ relations: ['reportedBy', 'trip'] });
+  async findAll(paginationDto: PaginationDto): Promise<{ items: Incident[]; total: number }> {
+    const [items, total] = await this.incidentRepository.findAndCount({
+      relations: ['reportedBy', 'trip'],
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
+    });
+    return { items, total };
   }
 
   async findOne(id: string): Promise<Incident> {

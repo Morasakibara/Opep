@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Driver } from './drivers.entity';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
 export class DriversService {
@@ -10,8 +11,14 @@ export class DriversService {
     private readonly driverRepository: Repository<Driver>,
   ) {}
 
-  async findAll(): Promise<Driver[]> {
-    return this.driverRepository.find({ relations: ['user'] });
+  async findAll(paginationDto: PaginationDto): Promise<{ items: Driver[]; total: number }> {
+    const [items, total] = await this.driverRepository.findAndCount({
+      relations: ['user'],
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
+    });
+    return { items, total };
   }
 
   async findOne(id: string): Promise<Driver> {

@@ -1,22 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 
 @Injectable()
 export class OtpService {
-  private redis: Redis;
-
   constructor(
     @InjectQueue('otp-queue') private readonly otpQueue: Queue,
-    private readonly configService: ConfigService,
-  ) {
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-    });
-  }
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+  ) {}
 
   async generateOtp(phone: string): Promise<string> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();

@@ -1,10 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, Column, ManyToOne } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { Agency } from '../agencies/entities/agency.entity';
 
 @Entity('subscriptions')
-export class Subscription {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Subscription extends BaseEntity {
 
   @Column()
   planName: string; // STARTER, PREMIUM, ENTERPRISE
@@ -24,6 +23,5 @@ export class Subscription {
   @ManyToOne(() => Agency)
   agency: Agency;
 
-  @CreateDateColumn()
-  createdAt: Date;
+
 }

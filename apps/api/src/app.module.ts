@@ -12,6 +12,8 @@ import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis'
 import Redis from 'ioredis';
 import { PerUserThrottlerGuard } from './common/guards/per-user-throttler.guard';
 import { CsrfOriginGuard } from './common/guards/csrf-origin.guard';
+import { RedisModule, REDIS_CLIENT } from './common/redis/redis.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { dataSourceOptions } from './config/typeorm.config';
 import { AppController } from './app.controller';
@@ -43,14 +45,15 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       }),
       inject: [ConfigService],
     }),
+    RedisModule,
     IncidentsModule,
     DriversModule,
     SubscriptionsModule,
     MessagesModule,
     MetricsModule,
     ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
+      imports: [ConfigModule, RedisModule],
+      useFactory: (config: ConfigService, redisClient: Redis) => ({
         throttlers: [
           {
             name: 'long',
@@ -73,14 +76,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
             limit: parseInt(config.get('THROTTLE_PUBLIC_LIMIT', '30'), 10),
           },
         ],
-        storage: new ThrottlerStorageRedisService(
-          new Redis({
-            host: config.get('REDIS_HOST', 'localhost'),
-            port: parseInt(config.get('REDIS_PORT', '6379'), 10),
-          }),
-        ),
+        storage: new ThrottlerStorageRedisService(redisClient),
       }),
-      inject: [ConfigService],
+      inject: [ConfigService, REDIS_CLIENT],
     }),
     AuditModule,
     AgenciesModule,
@@ -93,6 +91,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     PaymentsModule,
     TicketsModule,
     NotificationsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

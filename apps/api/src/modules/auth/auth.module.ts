@@ -7,15 +7,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { OtpService } from './services/otp.service';
+import { LoginAttemptService } from './services/login-attempt.service';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../users/entities/user.entity';
 import { Agency } from '../agencies/entities/agency.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 @Module({
   imports: [
     UsersModule,
-    TypeOrmModule.forFeature([User, Agency]),
+    TypeOrmModule.forFeature([User, Agency, RefreshToken]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -29,7 +31,7 @@ import { Agency } from '../agencies/entities/agency.entity';
       name: 'otp-queue',
     }),
   ],
-  providers: [AuthService, JwtStrategy, OtpService],
+  providers: [AuthService, JwtStrategy, OtpService, LoginAttemptService],
   controllers: [AuthController],
   exports: [AuthService, OtpService],
 })

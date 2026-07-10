@@ -1,10 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, HttpCode, HttpStatus, UnauthorizedException, UseGuards, Req } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { OtpService } from './services/otp.service';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
@@ -81,5 +82,29 @@ export class AuthController {
       resetPasswordDto.phone,
       resetPasswordDto.newPassword,
     );
+  }
+
+  // ============ Profile ============
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req: any) {
+    return this.authService.getProfile(req.user.id);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ short: { limit: 20, ttl: 60000 } })
+  async updateProfile(@Body() updateProfileDto: UpdateProfileDto, @Req() req: any) {
+    return this.authService.updateProfile(req.user.id, updateProfileDto);
+  }
+
+  // ============ Logout ============
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() req: any, @Body('refresh_token') refreshToken?: string) {
+    return this.authService.logout(req.user.id, refreshToken);
   }
 }

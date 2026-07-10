@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { DriversService } from './drivers.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
+import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 
 @Controller('drivers')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -13,8 +14,9 @@ export class DriversController {
 
   @Get()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
-  findAll() {
-    return this.driversService.findAll();
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.driversService.findAll(paginationDto);
+    return paginate(items, total, paginationDto);
   }
 
   @Get(':id')

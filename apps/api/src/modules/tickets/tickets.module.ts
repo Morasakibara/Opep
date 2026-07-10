@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ticket } from './entities/ticket.entity';
+import { OfflineScan } from './entities/offline-scan.entity';
 import { TicketsService } from './services/tickets.service';
 import { TicketsController } from './tickets.controller';
 import { Reservation } from '../reservations/entities/reservation.entity';
@@ -9,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Ticket, Reservation, Passenger]),
+    TypeOrmModule.forFeature([Ticket, OfflineScan, Reservation, Passenger]),
     ConfigModule,
   ],
   providers: [TicketsService],

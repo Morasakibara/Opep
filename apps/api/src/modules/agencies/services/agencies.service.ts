@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Agency } from '../entities/agency.entity';
 import { CreateAgencyDto } from '../dto/create-agency.dto';
+import { PaginationDto } from '../../../common/dto/pagination.dto';
 
 @Injectable()
 export class AgenciesService {
@@ -23,8 +24,14 @@ export class AgenciesService {
     return this.agencyRepository.save(agency);
   }
 
-  async findAll(): Promise<Agency[]> {
-    return this.agencyRepository.find({ where: { isActive: true } });
+  async findAll(paginationDto: PaginationDto): Promise<{ items: Agency[]; total: number }> {
+    const [items, total] = await this.agencyRepository.findAndCount({
+      where: { isActive: true },
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
+    });
+    return { items, total };
   }
 
   async findOne(id: string): Promise<Agency> {

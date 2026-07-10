@@ -78,7 +78,7 @@ export class TicketsService {
         departureCity: reservation.trip.route.departureCity,
         arrivalCity: reservation.trip.route.arrivalCity,
         departureDateTime: reservation.trip.departureDateTime.toISOString(),
-        validUntil: new Date(reservation.trip.departureDateTime.getTime() + 24 * 60 * 60 * 1000).toISOString(), // Valid for 24h after departure
+        validUntil: new Date(reservation.trip.departureDateTime.getTime() + 2 * 60 * 60 * 1000).toISOString(), // Valid for 2h after departure
         agencyId: reservation.agencyId,
         issuedAt: new Date().toISOString(),
       };

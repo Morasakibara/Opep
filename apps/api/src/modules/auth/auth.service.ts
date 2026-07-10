@@ -1,12 +1,16 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as crypto from 'crypto';
 import { UsersService } from '../users/services/users.service';
+import { LoginAttemptService } from './services/login-attempt.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Agency, SubscriptionPlan } from '../agencies/entities/agency.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -15,8 +19,11 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly loginAttemptService: LoginAttemptService,
     @InjectRepository(Agency)
     private readonly agencyRepository: Repository<Agency>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   async generateTokens(user: any, agencyPlan: SubscriptionPlan = SubscriptionPlan.BASIC) {
@@ -25,28 +32,75 @@ export class AuthService {
       phone: user.phone,
       role: user.role,
       agencyId: user.agencyId ?? null,
-      // Embed plan in JWT so downstream guards (throttler, feature gates) can
-      // branch without an extra DB lookup. Stale for up to JWT_EXPIRES_IN —
-      // acceptable because subscription upgrades re-issue tokens and an admin
-      // can revoke via /users end.
       plan: agencyPlan,
     };
 
+    const accessToken = this.jwtService.sign(payload);
+    const refreshTokenStr = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
+    });
+
+    // Hash and store refresh token in DB
+    const tokenHash = crypto.createHash('sha256').update(refreshTokenStr).digest('hex');
+    const expiresInMs = this.parseDuration(this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'));
+    const expiresAt = new Date(Date.now() + expiresInMs);
+
+    await this.refreshTokenRepository.save({
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+    });
+
     return {
-      access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload, {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
-      }),
+      access_token: accessToken,
+      refresh_token: refreshTokenStr,
     };
   }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.usersService.findByIdentifier(loginDto.identifier);
-    if (!user) throw new UnauthorizedException('Identifiants invalides');
+  private parseDuration(duration: string): number {
+    const match = duration.match(/^(\d+)([smhd])$/);
+    if (!match) return 7 * 24 * 60 * 60 * 1000; // default 7d
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+    switch (unit) {
+      case 's': return value * 1000;
+      case 'm': return value * 60 * 1000;
+      case 'h': return value * 60 * 60 * 1000;
+      case 'd': return value * 24 * 60 * 60 * 1000;
+      default: return 7 * 24 * 60 * 60 * 1000;
+    }
+  }
 
+  async login(loginDto: LoginDto) {
+    // 1. Check if account is locked (5 failed attempts within 15min)
+    const lockStatus = await this.loginAttemptService.isLocked(loginDto.identifier);
+    if (lockStatus.locked) {
+      const minutes = Math.ceil(lockStatus.remainingSeconds / 60);
+      throw new ForbiddenException(
+        `Compte temporairement bloqué. Veuillez réessayer dans ${minutes} minute(s).`
+      );
+    }
+
+    // 2. Find user
+    const user = await this.usersService.findByIdentifier(loginDto.identifier);
+    if (!user) {
+      await this.loginAttemptService.recordFailedAttempt(loginDto.identifier);
+      throw new UnauthorizedException('Identifiants invalides');
+    }
+
+    // 3. Check password
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
-    if (!isPasswordValid) throw new UnauthorizedException('Identifiants invalides');
+    if (!isPasswordValid) {
+      const attempts = await this.loginAttemptService.recordFailedAttempt(loginDto.identifier);
+      const remaining = 5 - attempts;
+      throw new UnauthorizedException(
+        `Identifiants invalides. ${remaining > 0 ? `Tentatives restantes : ${remaining}` : 'Compte bloqué pour 15 minutes.'}`
+      );
+    }
+
+    // 4. Clear login attempts on success
+    await this.loginAttemptService.clearAttempts(loginDto.identifier);
 
     const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
     const tokens = await this.generateTokens(user, agencyPlan);
@@ -129,9 +183,29 @@ export class AuthService {
 
   async refreshToken(token: string) {
     try {
+      // Verify the JWT signature and expiry
       const payload = this.jwtService.verify(token, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
       });
+
+      // Check if token exists in DB and is not revoked
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const storedToken = await this.refreshTokenRepository.findOne({
+        where: { tokenHash, isRevoked: false },
+      });
+
+      if (!storedToken) {
+        throw new UnauthorizedException();
+      }
+
+      // Check if expired
+      if (storedToken.expiresAt < new Date()) {
+        await this.refreshTokenRepository.update(storedToken.id, { isRevoked: true, revokedAt: new Date() });
+        throw new UnauthorizedException('Token de rafraîchissement expiré');
+      }
+
+      // Revoke the old token (rotation)
+      await this.refreshTokenRepository.update(storedToken.id, { isRevoked: true, revokedAt: new Date() });
 
       const user = await this.usersService.findById(payload.sub);
       if (!user) throw new UnauthorizedException();
@@ -139,7 +213,56 @@ export class AuthService {
       const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
       return this.generateTokens(user, agencyPlan);
     } catch (e) {
+      if (e instanceof UnauthorizedException) throw e;
       throw new UnauthorizedException('Token de rafraîchissement invalide');
     }
+  }
+
+  // ============ Profile (GET /auth/me + PATCH /auth/me) ============
+
+  async getProfile(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      email: user.email,
+      role: user.role,
+      agencyId: user.agencyId,
+      isActive: user.isActive,
+      preferredLanguage: user.preferredLanguage,
+      notificationChannel: user.notificationChannel,
+      notificationPhone: user.notificationPhone,
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    await this.usersService.update(userId, dto);
+    return this.getProfile(userId);
+  }
+
+  // ============ Logout ============
+
+  async logout(userId: string, refreshTokenStr?: string) {
+    if (refreshTokenStr) {
+      // Revoke specific refresh token
+      const tokenHash = crypto.createHash('sha256').update(refreshTokenStr).digest('hex');
+      await this.refreshTokenRepository.update(
+        { tokenHash, userId },
+        { isRevoked: true, revokedAt: new Date() },
+      );
+    } else {
+      // Revoke all refresh tokens for the user
+      await this.refreshTokenRepository.update(
+        { userId, isRevoked: false },
+        { isRevoked: true, revokedAt: new Date() },
+      );
+    }
+    return { message: 'Déconnexion réussie' };
   }
 }

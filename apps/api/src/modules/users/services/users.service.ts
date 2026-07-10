@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { PaginationDto } from '../../../common/dto/pagination.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -60,8 +61,13 @@ export class UsersService {
       .getOne();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(paginationDto: PaginationDto): Promise<{ items: User[]; total: number }> {
+    const [items, total] = await this.userRepository.findAndCount({
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: paginationDto.sortOrder || 'DESC' },
+    });
+    return { items, total };
   }
 
   async update(id: string, updateUserDto: any): Promise<User> {

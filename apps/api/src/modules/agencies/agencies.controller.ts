@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AgenciesService } from './services/agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
@@ -8,6 +8,7 @@ import { AgencyOwnershipGuard } from '../auth/guards/agency-ownership.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { AgencyResponseDto } from './dto/agency-response.dto';
+import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 
 @Controller('agencies')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -24,9 +25,9 @@ export class AgenciesController {
 
   @Get()
   @Roles(UserRole.ADMIN_PLATFORM)
-  async findAll() {
-    const agencies = await this.agenciesService.findAll();
-    return agencies.map(AgencyResponseDto.fromEntity);
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.agenciesService.findAll(paginationDto);
+    return paginate(items.map(AgencyResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get(':id')

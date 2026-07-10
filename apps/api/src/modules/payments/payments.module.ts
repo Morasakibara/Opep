@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Payment } from './entities/payment.entity';
 import { PaymentsService } from './services/payments.service';
 import { PaymentsController } from './payments.controller';
+import { PaymentsWebhookController } from './payments-webhook.controller';
 import { Reservation } from '../reservations/entities/reservation.entity';
 import { ConfigModule } from '@nestjs/config';
 import { TicketsModule } from '../tickets/tickets.module';
@@ -14,7 +15,7 @@ import { TicketsModule } from '../tickets/tickets.module';
     TicketsModule,
   ],
   providers: [PaymentsService],
-  controllers: [PaymentsController],
+  controllers: [PaymentsController, PaymentsWebhookController],
   exports: [PaymentsService],
 })
 export class PaymentsModule {}

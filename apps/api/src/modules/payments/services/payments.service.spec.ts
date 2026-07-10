@@ -1,16 +1,3 @@
-// Mock ioredis BEFORE importing PaymentsService so that its constructor's `new Redis(...)` becomes a no-op.
-// The factory must set `__esModule: true` and assign to `default` because PaymentsService uses `import Redis from 'ioredis'`.
-jest.mock('ioredis', () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
-    on: jest.fn(),
-    quit: jest.fn(),
-    set: jest.fn().mockResolvedValue('OK'),
-    get: jest.fn().mockResolvedValue(null),
-    del: jest.fn().mockResolvedValue(1),
-  })),
-}));
-
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { DataSource, Repository } from 'typeorm';
@@ -20,6 +7,7 @@ import { AuditService } from '../../audit/services/audit.service';
 import { TicketsService } from '../../tickets/services/tickets.service';
 import { Payment, PaymentProvider } from '../entities/payment.entity';
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
+import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
@@ -77,8 +65,7 @@ describe('PaymentsService', () => {
         { provide: 'ReservationRepository', useFactory: mockRepository },
         { provide: TicketsService, useFactory: mockTicketService },
         { provide: AuditService, useFactory: mockAuditService },
-        // ioredis constructor is replaced with a noop via mock instance
-        { provide: 'REDIS_CLIENT', useValue: { on: jest.fn(), quit: jest.fn(), set: jest.fn(), get: jest.fn() } },
+        { provide: REDIS_CLIENT, useValue: { on: jest.fn(), quit: jest.fn(), set: jest.fn(), get: jest.fn() } },
       ],
     }).compile();
 

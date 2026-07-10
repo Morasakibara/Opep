@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { IncidentsService } from './incidents.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
+import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 
 @Controller('incidents')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -20,8 +21,9 @@ export class IncidentsController {
 
   @Get()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
-  findAll() {
-    return this.incidentsService.findAll();
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.incidentsService.findAll(paginationDto);
+    return paginate(items, total, paginationDto);
   }
 
   @Get(':id')
