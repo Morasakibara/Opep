@@ -44,6 +44,13 @@ export class RoutesService {
     return this.routeRepository.save(route);
   }
 
+  async search(departureCity?: string, arrivalCity?: string): Promise<Route[]> {
+    const where: any = { isActive: true };
+    if (departureCity) where.departureCity = departureCity;
+    if (arrivalCity) where.arrivalCity = arrivalCity;
+    return this.routeRepository.find({ where });
+  }
+
   async remove(agencyId: string, id: string): Promise<void> {
     const route = await this.findOne(agencyId, id);
     route.isActive = false;

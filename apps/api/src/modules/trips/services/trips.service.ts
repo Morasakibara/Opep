@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Trip, TripStatus } from '../entities/trip.entity';
@@ -90,6 +90,49 @@ export class TripsService {
       take: paginationDto.limit,
     });
     return { items, total };
+  }
+
+  async updateStatus(agencyId: string, id: string, status: TripStatus): Promise<Trip> {
+    const trip = await this.findOne(agencyId, id);
+    if (trip.status !== TripStatus.SCHEDULED) {
+      throw new BadRequestException('Seuls les voyages planifiés (SCHEDULED) peuvent être modifiés');
+    }
+    trip.status = status;
+    return this.tripRepository.save(trip);
+  }
+
+  async getSeats(agencyId: string, id: string): Promise<{
+    totalSeats: number;
+    occupiedSeats: string[];
+    lockedSeats: string[];
+    availableSeats: number;
+    seatLayout: any;
+  }> {
+    const trip = await this.tripRepository.findOne({
+      where: { id, agencyId },
+      relations: ['bus'],
+    });
+    if (!trip) throw new NotFoundException('Voyage non trouvé');
+
+    // Get confirmed/pending reservations for this trip
+    const reservations = await this.tripRepository.manager
+      .createQueryBuilder()
+      .select('DISTINCT passenger.seatNumber', 'seatNumber')
+      .from('passengers', 'passenger')
+      .innerJoin('reservations', 'reservation', 'reservation.id = passenger.reservationId')
+      .where('reservation.tripId = :tripId', { tripId: id })
+      .andWhere('reservation.status IN (:...statuses)', { statuses: ['CONFIRMED', 'PENDING_PAYMENT'] })
+      .getRawMany();
+
+    const occupiedSeats = reservations.map(r => r.seatNumber);
+    
+    return {
+      totalSeats: trip.bus.totalSeats,
+      occupiedSeats,
+      lockedSeats: [], // Locked seats would need Redis scan - simplified
+      availableSeats: trip.bus.totalSeats - occupiedSeats.length,
+      seatLayout: trip.bus.seatLayout,
+    };
   }
 
   async remove(agencyId: string, id: string): Promise<void> {

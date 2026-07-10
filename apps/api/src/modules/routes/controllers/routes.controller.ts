@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, Param, Patch, Delete, Query } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
@@ -29,6 +29,16 @@ export class RoutesController {
   async findAll(@GetUser('agencyId') agencyId: string, @Query() paginationDto: PaginationDto) {
     const { items, total } = await this.routesService.findAll(agencyId, paginationDto);
     return paginate(items.map(RouteResponseDto.fromEntity), total, paginationDto);
+  }
+
+  @Get('search')
+  @SkipThrottle({ long: true, medium: true, short: true })
+  @Throttle({ public: { limit: 30, ttl: 60000 } })
+  async searchRoutes(
+    @Query('departureCity') departureCity: string,
+    @Query('arrivalCity') arrivalCity: string,
+  ) {
+    return this.routesService.search(departureCity, arrivalCity);
   }
 
   @Get(':id')

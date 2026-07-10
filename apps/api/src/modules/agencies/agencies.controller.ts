@@ -9,6 +9,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { AgencyResponseDto } from './dto/agency-response.dto';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 
 @Controller('agencies')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -35,6 +36,13 @@ export class AgenciesController {
   async findOne(@Param('id') id: string) {
     const agency = await this.agenciesService.findOne(id);
     return AgencyResponseDto.fromEntity(agency);
+  }
+
+  @Get(':id/stats')
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
+  @UseGuards(AgencyOwnershipGuard)
+  async getStats(@Param('id') id: string) {
+    return this.agenciesService.getAgencyStats(id);
   }
 
   @Patch(':id')

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -73,6 +73,23 @@ export class UsersService {
   async update(id: string, updateUserDto: any): Promise<User> {
     await this.userRepository.update(id, updateUserDto);
     return this.findById(id);
+  }
+
+  async toggleActivation(id: string, activate: boolean): Promise<User> {
+    const user = await this.findById(id);
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+    await this.userRepository.update(id, { isActive: activate });
+    return this.findById(id);
+  }
+
+  async createAgencyStaff(createUserDto: CreateUserDto): Promise<User> {
+    if (!createUserDto.agencyId) {
+      throw new BadRequestException('Un employé d\'agence doit avoir un agencyId');
+    }
+    if (!createUserDto.email) {
+      throw new BadRequestException('Un employé d\'agence doit avoir un email');
+    }
+    return this.create(createUserDto);
   }
 
   async remove(id: string): Promise<void> {

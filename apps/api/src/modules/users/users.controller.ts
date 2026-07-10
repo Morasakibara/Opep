@@ -42,6 +42,22 @@ export class UsersController {
     return UserResponseDto.fromEntity(user);
   }
 
+  @Post('agency-staff')
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
+  async createAgencyStaff(@Body() createUserDto: CreateUserDto) {
+    const user = await this.usersService.createAgencyStaff(createUserDto);
+    return UserResponseDto.fromEntity(user);
+  }
+
+  @Patch(':id/activate')
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
+  @Throttle({ short: { limit: 20, ttl: 60000 } })
+  async toggleActivation(@Param('id') id: string, @Body('isActive') isActive: boolean) {
+    const user = await this.usersService.toggleActivation(id, isActive);
+    return UserResponseDto.fromEntity(user);
+  }
+
   @Delete(':id')
   @Roles(UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 20, ttl: 60000 } })

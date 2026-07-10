@@ -1,9 +1,12 @@
 import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { Payment, PaymentProvider, PaymentStatus } from '../entities/payment.entity';
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { ProcessPaymentDto } from '../dto/process-payment.dto';
+import { InitiatePaymentDto } from '../dto/initiate-payment.dto';
 import { WebhookPaymentDto, RefundPaymentDto } from '../dto/webhook-payment.dto';
 import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
@@ -19,6 +22,7 @@ export class PaymentsService {
     private readonly reservationRepository: Repository<Reservation>,
     private readonly dataSource: DataSource,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    @InjectQueue('payments-queue') private readonly paymentsQueue: Queue,
     private readonly ticketsService: TicketsService,
     private readonly auditService: AuditService,
   ) {}
@@ -107,6 +111,133 @@ export class PaymentsService {
       throw err;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  // ============ Initiate (Async with BullMQ mock) ============
+
+  async initiatePayment(dto: InitiatePaymentDto): Promise<{
+    payment: Payment;
+    instructions: {
+      provider: string;
+      action: string;
+      details?: string;
+      expectedDelay: string;
+    };
+  }> {
+    const { reservationId, provider, phoneNumber, stripeToken } = dto;
+
+    // 1. Get Reservation
+    const reservation = await this.reservationRepository.findOne({
+      where: { id: reservationId },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Réservation non trouvée');
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING_PAYMENT) {
+      throw new BadRequestException('La réservation n\'est pas en attente de paiement');
+    }
+
+    // 2. Validate provider-specific requirements
+    if ((provider === PaymentProvider.MTN_MOMO || provider === PaymentProvider.ORANGE_MONEY) && !phoneNumber) {
+      throw new BadRequestException('Le numéro de téléphone est requis pour le Mobile Money');
+    }
+    if (provider === PaymentProvider.STRIPE && !stripeToken) {
+      throw new BadRequestException('Le token Stripe est requis');
+    }
+    if (provider === PaymentProvider.CASH) {
+      // For CASH, process immediately
+      return {
+        payment: await this.processPayment({
+          reservationId,
+          provider,
+          paymentMethod: 'cash',
+        }),
+        instructions: {
+          provider: 'CASH',
+          action: 'PAY_AT_COUNTER',
+          details: 'Veuillez payer au guichet de l\'agence',
+          expectedDelay: '0s',
+        },
+      };
+    }
+
+    // 3. Generate a transaction ID
+    const transactionId = `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+
+    // 4. Create Payment record as PENDING
+    const payment = this.paymentRepository.create({
+      reservationId,
+      amount: reservation.totalAmount,
+      provider,
+      providerTransactionId: transactionId,
+      status: PaymentStatus.PENDING,
+      paymentMethod: provider === PaymentProvider.STRIPE ? 'card' : 'mobile_money',
+    });
+
+    const savedPayment = await this.paymentRepository.save(payment);
+
+    // 5. Schedule mock processing via BullMQ (2-3s delay)
+    const expectedDelay = provider === PaymentProvider.MTN_MOMO ? 3000 : 2000;
+    await this.paymentsQueue.add(
+      'process-mock-payment',
+      {
+        paymentId: savedPayment.id,
+        reservationId,
+        provider,
+        amount: reservation.totalAmount,
+        phoneNumber,
+      },
+      { delay: 100, removeOnComplete: true } // Small delay before processing starts
+    );
+
+    // 6. Build provider instructions
+    const instructions = this.buildProviderInstructions(provider, phoneNumber, expectedDelay);
+
+    return { payment: savedPayment, instructions };
+  }
+
+  private buildProviderInstructions(
+    provider: PaymentProvider,
+    phoneNumber?: string,
+    delayMs?: number,
+  ) {
+    const delaySec = delayMs ? Math.round(delayMs / 1000) : 2;
+
+    switch (provider) {
+      case PaymentProvider.MTN_MOMO:
+        return {
+          provider: 'MTN Mobile Money',
+          action: 'USSD_PUSH',
+          details: phoneNumber
+            ? `Un paiement de ${delaySec}s sera simulé. En production, vous recevrez une demande de paiement MTN MoMo sur le ${phoneNumber}.`
+            : `Paiement MTN MoMo simulé (${delaySec}s).`,
+          expectedDelay: `${delaySec}s`,
+        };
+      case PaymentProvider.ORANGE_MONEY:
+        return {
+          provider: 'Orange Money',
+          action: 'USSD_PUSH',
+          details: phoneNumber
+            ? `Un paiement de ${delaySec}s sera simulé. En production, vous recevrez une demande Orange Money sur le ${phoneNumber}.`
+            : `Paiement Orange Money simulé (${delaySec}s).`,
+          expectedDelay: `${delaySec}s`,
+        };
+      case PaymentProvider.STRIPE:
+        return {
+          provider: 'Stripe',
+          action: 'REDIRECT',
+          details: 'Redirection vers Stripe Checkout (non implémentée en mode mock). Le paiement sera simulé après 2s.',
+          expectedDelay: '2s',
+        };
+      default:
+        return {
+          provider,
+          action: 'PROCESSING',
+          expectedDelay: '2s',
+        };
     }
   }
 

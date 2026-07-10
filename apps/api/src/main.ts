@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
@@ -26,6 +27,27 @@ async function bootstrap() {
     transform: true,
   }));
 
+  // Swagger / OpenAPI
+  const config = new DocumentBuilder()
+    .setTitle('OPEP API')
+    .setDescription('Plateforme de Gestion de Transport Interurbain')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
+    .addServer(`http://localhost:${process.env.PORT || 3000}`, 'Développement local')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'method',
+    },
+  });
+
   app.enableCors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -33,5 +55,7 @@ async function bootstrap() {
   });
 
   await app.listen(process.env.PORT || 3000);
+  console.log(`Application démarrée sur http://localhost:${process.env.PORT || 3000}`);
+  console.log(`Swagger UI: http://localhost:${process.env.PORT || 3000}/api/docs`);
 }
 bootstrap();

@@ -1,12 +1,13 @@
 import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Reservation, ReservationStatus } from '../entities/reservation.entity';
 import { Passenger } from '../entities/passenger.entity';
 import { Trip } from '../../trips/entities/trip.entity';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
+import { PaymentProvider } from '../../payments/entities/payment.entity';
 import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
@@ -28,7 +29,24 @@ export class ReservationsService {
   ) {}
 
   async create(clientId: string, role: string, createReservationDto: CreateReservationDto): Promise<Reservation> {
-    const { tripId, passengers, type } = createReservationDto;
+    const { tripId, passengers, type, paymentProvider } = createReservationDto;
+
+    // 0. Validate group size
+    if (type === 'GROUP' && (passengers.length < 2 || passengers.length > 10)) {
+      throw new BadRequestException('Une réservation de groupe doit avoir entre 2 et 10 passagers');
+    }
+
+    // 0.1 Check if client already has an active reservation for this trip
+    const existingActiveReservation = await this.reservationRepository.findOne({
+      where: {
+        clientId,
+        tripId,
+        status: In([ReservationStatus.CONFIRMED, ReservationStatus.PENDING_PAYMENT]),
+      },
+    });
+    if (existingActiveReservation) {
+      throw new BadRequestException('Vous avez déjà une réservation active pour ce voyage');
+    }
 
     // 1. Get Trip
     const trip = await this.tripRepository.findOne({
@@ -40,7 +58,7 @@ export class ReservationsService {
     // 2. Check seat availability & lock (atomic operation simulation with Redis)
     for (const passenger of passengers) {
       const lockKey = `lock:trip:${tripId}:seat:${passenger.seatNumber}`;
-      const isLocked = await this.redis.set(lockKey, clientId, 'EX', 600, 'NX'); // 10 minutes lock
+      const isLocked = await this.redis.set(lockKey, clientId, 'EX', 900, 'NX'); // 15 minutes lock
       if (!isLocked) {
         throw new BadRequestException(`Le siège ${passenger.seatNumber} est déjà réservé ou verrouillé`);
       }
@@ -89,12 +107,18 @@ export class ReservationsService {
 
       await queryRunner.commitTransaction();
 
-      // 4. Schedule expiration job (10 minutes)
+      // 4. Schedule expiration job (15 minutes)
       await this.reservationsQueue.add(
         'expire-reservation',
         { reservationId: savedReservation.id },
-        { delay: 600000, removeOnComplete: true }
+        { delay: 900000, removeOnComplete: true }
       );
+
+      // 5. If CASH payment, auto-confirm immediately
+      if (paymentProvider === PaymentProvider.CASH) {
+        savedReservation.status = ReservationStatus.CONFIRMED;
+        await queryRunner.manager.save(savedReservation);
+      }
 
       // Audit après transaction
       this.auditService.log({

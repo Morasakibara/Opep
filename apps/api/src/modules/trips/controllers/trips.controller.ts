@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Param, Patch, Delete, BadRequestException } from '@nestjs/common';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -8,6 +8,7 @@ import { UserRole } from '@opep/shared-types';
 import { TripsService } from '../services/trips.service';
 import { CreateTripDto } from '../dto/create-trip.dto';
 import { TripResponseDto } from '../dto/trip-response.dto';
+import { TripStatus } from '../entities/trip.entity';
 import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
@@ -67,6 +68,28 @@ export class TripsController {
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM, UserRole.CLIENT)
   async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     const trip = await this.tripsService.findOne(agencyId, id);
+    return TripResponseDto.fromEntity(trip);
+  }
+
+  @Get(':id/seats')
+  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  async getSeats(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
+    return this.tripsService.getSeats(agencyId, id);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+    @GetUser('agencyId') agencyId: string,
+  ) {
+    if (!Object.values(TripStatus).includes(status as TripStatus)) {
+      throw new BadRequestException(`Statut invalide. Valeurs acceptées: ${Object.values(TripStatus).join(', ')}`);
+    }
+    const trip = await this.tripsService.updateStatus(agencyId, id, status as TripStatus);
     return TripResponseDto.fromEntity(trip);
   }
 

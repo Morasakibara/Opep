@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { Agency } from '../entities/agency.entity';
 import { CreateAgencyDto } from '../dto/create-agency.dto';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { Trip, TripStatus } from '../../trips/entities/trip.entity';
+import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
+import { Bus } from '../../buses/entities/bus.entity';
 
 @Injectable()
 export class AgenciesService {
@@ -43,6 +46,30 @@ export class AgenciesService {
   async update(id: string, updateAgencyDto: any): Promise<Agency> {
     await this.agencyRepository.update(id, updateAgencyDto);
     return this.findOne(id);
+  }
+
+  async getAgencyStats(agencyId: string): Promise<{
+    totalBuses: number;
+    totalTrips: number;
+    activeTrips: number;
+    totalReservations: number;
+    confirmedReservations: number;
+  }> {
+    const [
+      totalBuses,
+      totalTrips,
+      activeTrips,
+      totalReservations,
+      confirmedReservations,
+    ] = await Promise.all([
+      this.agencyRepository.manager.count(Bus, { where: { agencyId, isActive: true } }),
+      this.agencyRepository.manager.count(Trip, { where: { agencyId } }),
+      this.agencyRepository.manager.count(Trip, { where: { agencyId, status: TripStatus.SCHEDULED } }),
+      this.agencyRepository.manager.count(Reservation, { where: { agencyId } }),
+      this.agencyRepository.manager.count(Reservation, { where: { agencyId, status: ReservationStatus.CONFIRMED } }),
+    ]);
+
+    return { totalBuses, totalTrips, activeTrips, totalReservations, confirmedReservations };
   }
 
   async remove(id: string): Promise<void> {

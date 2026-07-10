@@ -9,6 +9,10 @@ import { Payment, PaymentProvider } from '../entities/payment.entity';
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 
+const mockPaymentsQueue = {
+  add: jest.fn().mockResolvedValue({ id: 'mock-job-1' }),
+};
+
 describe('PaymentsService', () => {
   let service: PaymentsService;
   let auditService: AuditService;
@@ -36,6 +40,7 @@ describe('PaymentsService', () => {
     findOne: jest.fn(),
     find: jest.fn(),
     create: jest.fn().mockImplementation((data) => ({ id: 'pay-1', ...data })),
+    save: jest.fn().mockImplementation((data) => Promise.resolve(data)),
   });
 
   const mockDataSource = (): any => ({
@@ -50,38 +55,33 @@ describe('PaymentsService', () => {
     log: jest.fn().mockResolvedValue(undefined),
   });
 
-  const mockConfigService = () => ({
-    get: jest.fn((key: string, def?: any) => def),
-  });
-
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
       providers: [
         PaymentsService,
-        { provide: ConfigService, useFactory: mockConfigService },
+        { provide: ConfigService, useFactory: () => ({ get: jest.fn((key: string, def?: any) => def) }) },
         { provide: DataSource, useFactory: mockDataSource },
         { provide: 'PaymentRepository', useFactory: mockRepository },
         { provide: 'ReservationRepository', useFactory: mockRepository },
         { provide: TicketsService, useFactory: mockTicketService },
         { provide: AuditService, useFactory: mockAuditService },
         { provide: REDIS_CLIENT, useValue: { on: jest.fn(), quit: jest.fn(), set: jest.fn(), get: jest.fn() } },
+        { provide: 'BullQueue_payments-queue', useValue: mockPaymentsQueue },
       ],
     }).compile();
 
-    // Manually inject the mocked repositories because the service uses @InjectRepository
     const reservationRepo = module.get('ReservationRepository') as jest.Mocked<Repository<Reservation>>;
     const paymentRepo = module.get('PaymentRepository') as jest.Mocked<Repository<Payment>>;
-    // Reset shared state & return a fresh clone so mutations in one test don't leak into the next.
     baseReservation.status = ReservationStatus.PENDING_PAYMENT;
     reservationRepo.findOne.mockResolvedValue({ ...baseReservation } as Reservation);
 
-    // Re-construct service with our mocked repos via constructor injection
     service = new PaymentsService(
       paymentRepo,
       reservationRepo,
       module.get(DataSource),
-      module.get(ConfigService),
+      module.get(REDIS_CLIENT),
+      module.get('BullQueue_payments-queue'),
       module.get(TicketsService),
       module.get(AuditService),
     );

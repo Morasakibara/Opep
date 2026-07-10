@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, Param, UseGuards, Req } from '@nestjs/comm
 import { Throttle } from '@nestjs/throttler';
 import { PaymentsService } from './services/payments.service';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
+import { InitiatePaymentDto } from './dto/initiate-payment.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 import { RefundPaymentDto } from './dto/webhook-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -13,6 +14,16 @@ import { UserRole } from '@opep/shared-types';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+
+  @Post('initiate')
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
+  async initiatePayment(@Body() initiatePaymentDto: InitiatePaymentDto) {
+    const result = await this.paymentsService.initiatePayment(initiatePaymentDto);
+    return {
+      payment: PaymentResponseDto.fromEntity(result.payment),
+      instructions: result.instructions,
+    };
+  }
 
   @Post('process')
   @Throttle({ short: { limit: 5, ttl: 60000 } })

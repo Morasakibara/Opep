@@ -28,6 +28,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { GpsModule } from './modules/gps/gps.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     PaymentsModule,
     TicketsModule,
     NotificationsModule,
+    GpsModule,
     ReportsModule,
   ],
   controllers: [AppController],

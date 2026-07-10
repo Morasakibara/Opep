@@ -1,6 +1,7 @@
 import { IsString, IsNotEmpty, IsUUID, IsArray, ValidateNested, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ReservationType } from '../entities/reservation.entity';
+import { PaymentProvider } from '../../payments/entities/payment.entity';
 
 class PassengerDto {
   @IsString()
@@ -32,4 +33,8 @@ export class CreateReservationDto {
   @ValidateNested({ each: true })
   @Type(() => PassengerDto)
   passengers: PassengerDto[];
+
+  @IsEnum(PaymentProvider)
+  @IsOptional()
+  paymentProvider?: PaymentProvider;
 }
