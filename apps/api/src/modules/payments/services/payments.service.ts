@@ -7,11 +7,18 @@ import { Payment, PaymentProvider, PaymentStatus } from '../entities/payment.ent
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { ProcessPaymentDto } from '../dto/process-payment.dto';
 import { InitiatePaymentDto } from '../dto/initiate-payment.dto';
+import { DepositPaymentDto } from '../dto/deposit-payment.dto';
 import { WebhookPaymentDto, RefundPaymentDto } from '../dto/webhook-payment.dto';
 import { AuditService } from '../../audit/services/audit.service';
 import Redis from 'ioredis';
 import { TicketsService } from '../../tickets/services/tickets.service';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
+
+export enum PaymentType {
+  DEPOSIT = 'DEPOSIT',
+  BALANCE = 'BALANCE',
+  FULL = 'FULL',
+}
 
 @Injectable()
 export class PaymentsService {
@@ -313,6 +320,199 @@ export class PaymentsService {
     }).catch(() => {});
 
     return savedPayment;
+  }
+
+  // ============ Fractional Payment: Deposit ============
+
+  async processDeposit(dto: DepositPaymentDto): Promise<{
+    payment: Payment;
+    reservation: Reservation;
+    ticketsGenerated: boolean;
+  }> {
+    const { reservationId, provider, depositPercentage } = dto;
+
+    // 1. Get Reservation
+    const reservation = await this.reservationRepository.findOne({
+      where: { id: reservationId },
+      relations: ['trip', 'trip.route'],
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Réservation non trouvée');
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING_PAYMENT) {
+      throw new BadRequestException('La réservation n\'est pas en attente de paiement');
+    }
+
+    // 2. Calculate deposit amount (minimum 30%)
+    const pct = Math.max(30, Math.min(100, depositPercentage || 30));
+    const depositAmount = Math.round(reservation.totalAmount * pct / 100);
+    const remainingAmount = reservation.totalAmount - depositAmount;
+
+    if (depositAmount <= 0) {
+      throw new BadRequestException('Le montant de l\'acompte doit être supérieur à 0');
+    }
+
+    // 3. Process payment for deposit amount
+    let transactionId = `DEPT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    let status = PaymentStatus.SUCCESS;
+    let failureReason = null;
+
+    // Mock validation for Mobile Money
+    if (provider === PaymentProvider.MTN_MOMO || provider === PaymentProvider.ORANGE_MONEY) {
+      if (!dto.phoneNumber) throw new BadRequestException('Le numéro de téléphone est requis pour Mobile Money');
+      if (dto.phoneNumber.endsWith('000')) {
+        status = PaymentStatus.FAILED;
+        failureReason = 'Provision insuffisante (Mock)';
+      }
+    }
+
+    if (status === PaymentStatus.FAILED) {
+      throw new BadRequestException(failureReason);
+    }
+
+    // 4. Update Reservation and create Payment in transaction
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const payment = this.paymentRepository.create({
+        reservationId,
+        amount: depositAmount,
+        provider,
+        providerTransactionId: transactionId,
+        status: PaymentStatus.SUCCESS,
+        paymentMethod: provider === PaymentProvider.CASH ? 'cash' : 'mobile_money',
+      });
+
+      const savedPayment = await queryRunner.manager.save(payment);
+
+      // Update reservation with deposit info
+      reservation.depositPercentage = pct;
+      reservation.depositAmount = depositAmount;
+      reservation.remainingAmount = remainingAmount;
+      reservation.depositPaidAt = new Date();
+
+      if (remainingAmount > 0) {
+        // Full payment not yet made — set to PENDING_BALANCE
+        reservation.status = ReservationStatus.PENDING_BALANCE;
+      } else {
+        // Full amount covered by deposit (100%)
+        reservation.status = ReservationStatus.CONFIRMED;
+      }
+
+      await queryRunner.manager.save(reservation);
+
+      await queryRunner.commitTransaction();
+
+      // 5. Generate tickets (after deposit, even if balance is pending)
+      //    The ticket will mention the remaining balance due
+      let ticketsGenerated = false;
+      if (reservation.status === ReservationStatus.CONFIRMED ||
+          reservation.status === ReservationStatus.PENDING_BALANCE) {
+        await this.ticketsService.generateTicketsForReservation(reservationId)
+          .then(() => { ticketsGenerated = true; })
+          .catch(() => {});
+      }
+
+      // Audit
+      this.auditService.log({
+        userId: reservation.clientId,
+        action: 'DEPOSIT_PAID',
+        entityType: 'payment',
+        entityId: savedPayment.id,
+        metadata: {
+          reservationId,
+          totalAmount: reservation.totalAmount,
+          depositAmount,
+          remainingAmount,
+          depositPercentage: pct,
+          provider,
+        },
+      }).catch(() => {});
+
+      return { payment: savedPayment, reservation, ticketsGenerated };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  // ============ Fractional Payment: Balance at Counter ============
+
+  async payBalance(reservationId: string, cashierId?: string): Promise<{
+    payment: Payment;
+    reservation: Reservation;
+  }> {
+    // 1. Get Reservation
+    const reservation = await this.reservationRepository.findOne({
+      where: { id: reservationId },
+      relations: ['trip'],
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Réservation non trouvée');
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING_BALANCE) {
+      throw new BadRequestException('Cette réservation n\'a pas de solde en attente');
+    }
+
+    if (!reservation.remainingAmount || reservation.remainingAmount <= 0) {
+      throw new BadRequestException('Aucun solde restant dû');
+    }
+
+    // 2. Create balance payment
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const payment = this.paymentRepository.create({
+        reservationId,
+        amount: reservation.remainingAmount,
+        provider: PaymentProvider.CASH,
+        providerTransactionId: `BAL-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+        status: PaymentStatus.SUCCESS,
+        paymentMethod: 'cash',
+      });
+
+      const savedPayment = await queryRunner.manager.save(payment);
+
+      // Mark reservation as fully paid
+      reservation.status = ReservationStatus.CONFIRMED;
+      reservation.balancePaidAt = new Date();
+      reservation.balancePaidBy = cashierId || null;
+      reservation.remainingAmount = 0;
+
+      await queryRunner.manager.save(reservation);
+
+      await queryRunner.commitTransaction();
+
+      // Audit
+      this.auditService.log({
+        userId: cashierId,
+        action: 'BALANCE_PAID',
+        entityType: 'payment',
+        entityId: savedPayment.id,
+        metadata: {
+          reservationId,
+          balanceAmount: savedPayment.amount,
+          cashierId,
+        },
+      }).catch(() => {});
+
+      return { payment: savedPayment, reservation };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   // ============ Webhook Handler ============

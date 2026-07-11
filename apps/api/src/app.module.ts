@@ -10,6 +10,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import Redis from 'ioredis';
+import { I18nModule, HeaderResolver } from 'nestjs-i18n';
+import * as path from 'path';
 import { PerUserThrottlerGuard } from './common/guards/per-user-throttler.guard';
 import { CsrfOriginGuard } from './common/guards/csrf-origin.guard';
 import { RedisModule, REDIS_CLIENT } from './common/redis/redis.module';
@@ -30,6 +32,7 @@ import { TicketsModule } from './modules/tickets/tickets.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { GpsModule } from './modules/gps/gps.module';
+import { ReviewModule } from './modules/reviews/review.module';
 
 @Module({
   imports: [
@@ -37,6 +40,12 @@ import { GpsModule } from './modules/gps/gps.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
+    I18nModule.forRoot({
+      fallbackLanguage: 'fr',
+      resolvers: [
+        { use: HeaderResolver, options: ['accept-language'] },
+      ],
+    }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -94,6 +103,7 @@ import { GpsModule } from './modules/gps/gps.module';
     TicketsModule,
     NotificationsModule,
     GpsModule,
+    ReviewModule,
     SchedulesModule,
     ReportsModule,
   ],

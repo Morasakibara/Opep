@@ -48,7 +48,8 @@ export class TicketsService {
     });
 
     if (!reservation) throw new NotFoundException('Réservation non trouvée');
-    if (reservation.status !== ReservationStatus.CONFIRMED) {
+    if (reservation.status !== ReservationStatus.CONFIRMED &&
+        reservation.status !== ReservationStatus.PENDING_BALANCE) {
       throw new BadRequestException('La réservation doit être confirmée pour générer des tickets');
     }
 

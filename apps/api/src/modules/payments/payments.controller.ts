@@ -3,6 +3,7 @@ import { Throttle } from '@nestjs/throttler';
 import { PaymentsService } from './services/payments.service';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
 import { InitiatePaymentDto } from './dto/initiate-payment.dto';
+import { DepositPaymentDto } from './dto/deposit-payment.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 import { RefundPaymentDto } from './dto/webhook-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -36,6 +37,34 @@ export class PaymentsController {
   async getReservationPayment(@Param('id') reservationId: string) {
     const payments = await this.paymentsService.getReservationPayment(reservationId);
     return payments.map(PaymentResponseDto.fromEntity);
+  }
+
+  // ============ Fractional Payment: Deposit ============
+
+  @Post('deposit')
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
+  async payDeposit(@Body() depositPaymentDto: DepositPaymentDto) {
+    const result = await this.paymentsService.processDeposit(depositPaymentDto);
+    return {
+      payment: PaymentResponseDto.fromEntity(result.payment),
+      reservationStatus: result.reservation.status,
+      depositAmount: result.reservation.depositAmount,
+      remainingAmount: result.reservation.remainingAmount,
+      ticketsGenerated: result.ticketsGenerated,
+    };
+  }
+
+  // ============ Fractional Payment: Balance at Counter ============
+
+  @Post(':id/pay-balance')
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
+  @Roles(UserRole.CASHIER, UserRole.AGENCY_MANAGER)
+  async payBalance(@Param('id') reservationId: string, @Req() req: any) {
+    const result = await this.paymentsService.payBalance(reservationId, req.user?.id);
+    return {
+      payment: PaymentResponseDto.fromEntity(result.payment),
+      message: 'Solde encaissé avec succès',
+    };
   }
 
   // ============ Refund ============

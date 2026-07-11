@@ -11,6 +11,7 @@ export enum ReservationType {
 
 export enum ReservationStatus {
   PENDING_PAYMENT = 'PENDING_PAYMENT',
+  PENDING_BALANCE = 'PENDING_BALANCE',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
   USED = 'USED',
@@ -71,6 +72,25 @@ export class Reservation extends BaseEntity {
 
   @Column()
   createdByRole: string;
+
+  // Fractional payment fields
+  @Column('integer', { default: 30 })
+  depositPercentage: number;
+
+  @Column('integer', { nullable: true })
+  depositAmount: number;
+
+  @Column('integer', { nullable: true })
+  remainingAmount: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  depositPaidAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  balancePaidAt: Date;
+
+  @Column({ nullable: true })
+  balancePaidBy: string;
 
   @Column('integer', { nullable: true })
   refundEligibleAmount: number;

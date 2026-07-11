@@ -1,0 +1,61 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "search": "Search"
+  },
+  "auth": {
+    "login_success": "Login successful",
+    "logout_success": "Logout successful",
+    "session_expired": "Session expired, please login again",
+    "invalid_credentials": "Invalid username or password",
+    "account_blocked": "Account blocked after too many attempts",
+    "token_expired": "Session expired",
+    "unauthorized": "Action not allowed for your role"
+  },
+  "reservation": {
+    "created": "Reservation created successfully",
+    "confirmed": "Reservation confirmed",
+    "cancelled": "Reservation cancelled",
+    "not_found": "Reservation not found",
+    "deposit_paid": "Deposit paid successfully",
+    "balance_paid": "Balance collected successfully",
+    "seat_locked": "Seat temporarily locked",
+    "seat_unavailable": "This seat is not available"
+  },
+  "payment": {
+    "success": "Payment successful",
+    "failed": "Payment failed",
+    "refunded": "Payment refunded",
+    "deposit_processed": "Deposit processed successfully",
+    "balance_collected": "Balance collected at counter",
+    "insufficient_funds": "Insufficient funds"
+  },
+  "ticket": {
+    "generated": "Ticket(s) generated successfully",
+    "valid": "Valid ticket",
+    "used": "Ticket already used",
+    "expired": "Expired ticket",
+    "invalid": "Invalid ticket",
+    "scanned": "Ticket scanned successfully"
+  },
+  "notification": {
+    "departure_1h": "Your departure to {departureCity} is in 1 hour",
+    "departure_30min": "Your departure to {departureCity} is in 30 minutes",
+    "departure_15min": "Your departure to {departureCity} is in 15 minutes",
+    "departure_5min": "Your departure to {departureCity} is in 5 minutes",
+    "trip_modified": "Your trip {reservationCode} has been modified",
+    "bus_changed": "The bus for {reservationCode} has been changed",
+    "driver_changed": "The driver for {reservationCode} has been changed"
+  },
+  "error": {
+    "not_found": "Resource not found",
+    "bad_request": "Invalid request",
+    "forbidden": "Access denied",
+    "conflict": "Data conflict",
+    "server_error": "Internal server error"
+  }
+}

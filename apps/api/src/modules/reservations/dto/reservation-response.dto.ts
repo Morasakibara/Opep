@@ -13,6 +13,11 @@ export class ReservationResponseDto {
   cancelledBy?: string;
   cancelReason?: string;
   createdByRole: string;
+  depositPercentage: number;
+  depositAmount?: number;
+  remainingAmount?: number;
+  depositPaidAt?: string;
+  balancePaidAt?: string;
   refundEligibleAmount?: number;
   refundPolicy?: string;
   trip?: { id: string; departureDateTime: string; basePrice: number; status: string; route?: { departureCity: string; arrivalCity: string } };
@@ -34,6 +39,11 @@ export class ReservationResponseDto {
       cancelledBy: reservation.cancelledBy,
       cancelReason: reservation.cancelReason,
       createdByRole: reservation.createdByRole,
+      depositPercentage: reservation.depositPercentage ?? 30,
+      depositAmount: reservation.depositAmount,
+      remainingAmount: reservation.remainingAmount,
+      depositPaidAt: reservation.depositPaidAt?.toISOString?.() ?? reservation.depositPaidAt,
+      balancePaidAt: reservation.balancePaidAt?.toISOString?.() ?? reservation.balancePaidAt,
       refundEligibleAmount: reservation.refundEligibleAmount,
       refundPolicy: reservation.refundPolicy,
       trip: reservation.trip ? {

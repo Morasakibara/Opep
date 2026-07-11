@@ -1,0 +1,61 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "search": "Rechercher"
+  },
+  "auth": {
+    "login_success": "Connexion réussie",
+    "logout_success": "Déconnexion réussie",
+    "session_expired": "Session expirée, veuillez vous reconnecter",
+    "invalid_credentials": "Identifiant ou mot de passe incorrect",
+    "account_blocked": "Compte bloqué après trop de tentatives",
+    "token_expired": "Session expirée",
+    "unauthorized": "Action non autorisée pour votre rôle"
+  },
+  "reservation": {
+    "created": "Réservation créée avec succès",
+    "confirmed": "Réservation confirmée",
+    "cancelled": "Réservation annulée",
+    "not_found": "Réservation non trouvée",
+    "deposit_paid": "Acompte versé avec succès",
+    "balance_paid": "Solde encaissé avec succès",
+    "seat_locked": "Siège verrouillé temporairement",
+    "seat_unavailable": "Ce siège n'est pas disponible"
+  },
+  "payment": {
+    "success": "Paiement réussi",
+    "failed": "Paiement échoué",
+    "refunded": "Paiement remboursé",
+    "deposit_processed": "Acompte traité avec succès",
+    "balance_collected": "Solde encaissé au guichet",
+    "insufficient_funds": "Provision insuffisante"
+  },
+  "ticket": {
+    "generated": "Ticket(s) généré(s) avec succès",
+    "valid": "Ticket valide",
+    "used": "Ticket déjà utilisé",
+    "expired": "Ticket expiré",
+    "invalid": "Ticket invalide",
+    "scanned": "Ticket scanné avec succès"
+  },
+  "notification": {
+    "departure_1h": "Votre départ pour {departureCity} est dans 1 heure",
+    "departure_30min": "Votre départ pour {departureCity} est dans 30 minutes",
+    "departure_15min": "Votre départ pour {departureCity} est dans 15 minutes",
+    "departure_5min": "Votre départ pour {departureCity} est dans 5 minutes",
+    "trip_modified": "Votre voyage {reservationCode} a été modifié",
+    "bus_changed": "Le bus pour {reservationCode} a été changé",
+    "driver_changed": "Le chauffeur pour {reservationCode} a été changé"
+  },
+  "error": {
+    "not_found": "Ressource non trouvée",
+    "bad_request": "Requête invalide",
+    "forbidden": "Accès refusé",
+    "conflict": "Conflit de données",
+    "server_error": "Erreur interne du serveur"
+  }
+}
