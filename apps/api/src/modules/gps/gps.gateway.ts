@@ -7,7 +7,9 @@ import {
   ConnectedSocket,
   MessageBody,
 } from '@nestjs/websockets';
+import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
+import { UserRole } from '@opep/shared-types';
 
 interface LocationUpdate {
   tripId: string;
@@ -17,6 +19,9 @@ interface LocationUpdate {
   heading?: number;
   timestamp: string;
 }
+
+// Rôles autorisés à se connecter au namespace GPS
+const ALLOWED_ROLES: UserRole[] = [UserRole.DRIVER, UserRole.CLIENT];
 
 @WebSocketGateway({
   namespace: '/gps',
@@ -31,8 +36,45 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // Track which trips each client is subscribed to
   private clientSubscriptions = new Map<string, Set<string>>();
 
+  constructor(private readonly jwtService: JwtService) {}
+
   async handleConnection(client: Socket) {
-    console.log(`[GPS] Client connecté: ${client.id}`);
+    try {
+      // Extract token from handshake auth (Socket.IO) or query parameter
+      const token =
+        (client.handshake.auth?.token as string) ||
+        (client.handshake.query?.token as string);
+
+      if (!token) {
+        client.emit('error', { message: 'Token d\'authentification requis' });
+        client.disconnect();
+        return;
+      }
+
+      // Verify JWT token
+      const payload = await this.jwtService.verifyAsync(token);
+      client.data.user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+        agencyId: payload.agencyId,
+      };
+
+      // Vérifier que le rôle est autorisé (DRIVER ou CLIENT)
+      const userRole = payload.role as UserRole;
+      if (!ALLOWED_ROLES.includes(userRole)) {
+        client.emit('error', {
+          message: `Rôle non autorisé: ${userRole}. Seuls DRIVER et CLIENT peuvent se connecter.`,
+        });
+        client.disconnect();
+        return;
+      }
+
+      console.log(`[GPS] Client authentifié: ${client.id} (${userRole})`);
+    } catch (err) {
+      client.emit('error', { message: 'Token invalide ou expiré' });
+      client.disconnect();
+    }
   }
 
   async handleDisconnect(client: Socket) {
