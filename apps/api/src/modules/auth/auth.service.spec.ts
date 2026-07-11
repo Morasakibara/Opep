@@ -2,9 +2,11 @@ import { Test } from '@nestjs/testing';
 import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
+import { PasswordService } from '../../common/password/password.service';
+import { Agency } from '../agencies/entities/agency.entity';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -33,6 +35,14 @@ describe('AuthService', () => {
     update: jest.fn(),
   };
 
+  const mockPasswordService: any = {
+    hash: jest.fn(),
+    verify: jest.fn(),
+    needsRehash: jest.fn().mockReturnValue(false),
+    isArgon2: jest.fn(),
+    isLegacyBcrypt: jest.fn(),
+  };
+
   const mockJwtService: any = {
     sign: jest.fn().mockReturnValue('mock-access-token'),
     verify: jest.fn(),
@@ -40,6 +50,10 @@ describe('AuthService', () => {
 
   const mockConfigService: any = {
     get: jest.fn((key: string, def?: any) => def ?? 'test-secret'),
+  };
+
+  const mockAgencyRepository = {
+    findOne: jest.fn().mockResolvedValue(null),
   };
 
   beforeEach(async () => {
@@ -50,6 +64,10 @@ describe('AuthService', () => {
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: PasswordService, useValue: mockPasswordService },
+        // AuthService injects Repository<Agency> via @InjectRepository; mocked
+        // here so resolveAgencyPlan() returns null (treated as BASIC plan).
+        { provide: getRepositoryToken(Agency), useValue: mockAgencyRepository },
       ],
     }).compile();
     authService = module.get(AuthService);
@@ -57,7 +75,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('returns tokens when credentials are valid', async () => {
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+      mockPasswordService.verify.mockResolvedValue(true);
       mockUsersService.findByIdentifier.mockResolvedValue(mockUser);
       mockJwtService.sign
         .mockReturnValueOnce('access-token')
@@ -79,7 +97,7 @@ describe('AuthService', () => {
     });
 
     it('throws Unauthorized when password is invalid', async () => {
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
+      mockPasswordService.verify.mockResolvedValue(false);
       mockUsersService.findByIdentifier.mockResolvedValue(mockUser);
       await expect(
         authService.login({ identifier: 'awa@opep.test', password: 'wrong-pw' }),
@@ -102,7 +120,7 @@ describe('AuthService', () => {
   describe('resetPassword', () => {
     it('hashes and updates the password for known phone', async () => {
       mockUsersService.findByPhone.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('new-hash' as never);
+      mockPasswordService.hash.mockResolvedValue('new-hash');
       mockUsersService.update.mockResolvedValue({ ...mockUser, passwordHash: 'new-hash' });
 
       const result = await authService.resetPassword('670000001', 'newSecret123');

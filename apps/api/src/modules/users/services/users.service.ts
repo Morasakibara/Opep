@@ -4,13 +4,14 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
-import * as bcrypt from 'bcrypt';
+import { PasswordService } from '../../../common/password/password.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly passwordService: PasswordService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -22,7 +23,7 @@ export class UsersService {
       throw new ConflictException('Utilisateur déjà existant (email ou téléphone)');
     }
 
-    const passwordHash = await bcrypt.hash(createUserDto.password, 10);
+    const passwordHash = await this.passwordService.hash(createUserDto.password);
     
     const user = this.userRepository.create({
       ...createUserDto,

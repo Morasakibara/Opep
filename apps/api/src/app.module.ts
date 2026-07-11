@@ -18,6 +18,7 @@ import { RedisModule, REDIS_CLIENT } from './common/redis/redis.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
+import { PasswordModule } from './common/password/password.module';
 import { dataSourceOptions } from './config/typeorm.config';
 import { AppController } from './app.controller';
 import { BusesModule } from './modules/buses/buses.module';
@@ -62,6 +63,7 @@ import { ReviewModule } from './modules/reviews/review.module';
     SubscriptionsModule,
     MessagesModule,
     MetricsModule,
+    PasswordModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule, RedisModule],
       useFactory: (config: ConfigService, redisClient: Redis) => ({
