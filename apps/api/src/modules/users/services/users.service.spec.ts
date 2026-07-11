@@ -1,11 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { ConflictException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
 import { UserRole } from '@opep/shared-types';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { PasswordService } from '../../../common/password/password.service';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -25,6 +25,13 @@ describe('UsersService', () => {
     deletedAt: null,
   };
 
+  const mockQueryBuilder = {
+    addSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    getOne: jest.fn(),
+  };
+
   const mockRepository = {
     findOne: jest.fn(),
     findOneBy: jest.fn(),
@@ -34,20 +41,23 @@ describe('UsersService', () => {
     save: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-    createQueryBuilder: jest.fn(() => ({
-      addSelect: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      getOne: jest.fn(),
-    })),
+    createQueryBuilder: jest.fn(() => mockQueryBuilder),
+  };
+
+  const mockPasswordService = {
+    hash: jest.fn(),
   };
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockQueryBuilder.addSelect.mockReturnThis();
+    mockQueryBuilder.where.mockReturnThis();
+    mockQueryBuilder.andWhere.mockReturnThis();
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: getRepositoryToken(User), useValue: mockRepository },
+        { provide: PasswordService, useValue: mockPasswordService },
       ],
     }).compile();
     service = module.get<UsersService>(UsersService);
@@ -56,7 +66,7 @@ describe('UsersService', () => {
   describe('create', () => {
     it('creates a user when phone/email are unique', async () => {
       mockRepository.findOne.mockResolvedValue(null);
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed-password' as never);
+      mockPasswordService.hash.mockResolvedValue('hashed-password');
       mockRepository.create.mockReturnValue(mockUser);
       mockRepository.save.mockResolvedValue(mockUser);
 
@@ -70,7 +80,7 @@ describe('UsersService', () => {
       });
 
       expect(result.id).toBe('u-1');
-      expect(bcrypt.hash).toHaveBeenCalledWith('secret123', 10);
+      expect(mockPasswordService.hash).toHaveBeenCalledWith('secret123');
       expect(mockRepository.save).toHaveBeenCalled();
     });
 
@@ -90,16 +100,15 @@ describe('UsersService', () => {
 
   describe('findByIdentifier', () => {
     it('finds user by email or phone', async () => {
-      mockRepository.createQueryBuilder().getOne.mockResolvedValue(mockUser);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
       const result = await service.findByIdentifier('awa@opep.test');
       expect(result?.id).toBe('u-1');
     });
 
     it('appends passwordHash via addSelect', async () => {
-      const qb = mockRepository.createQueryBuilder();
-      qb.getOne.mockResolvedValue(mockUser);
+      mockQueryBuilder.getOne.mockResolvedValue(mockUser);
       await service.findByIdentifier('awa@opep.test');
-      expect(qb.addSelect).toHaveBeenCalledWith('user.passwordHash');
+      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith('user.passwordHash');
     });
   });
 

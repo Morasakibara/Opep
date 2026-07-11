@@ -6,7 +6,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { PasswordService } from '../../common/password/password.service';
+import { LoginAttemptService } from './services/login-attempt.service';
 import { Agency } from '../agencies/entities/agency.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 /**
  * NOTE: Real PasswordService end-to-end coverage (argon2id hash/verify,
@@ -59,6 +61,8 @@ describe('AuthService — password-hash migration flow (PasswordService mocked)'
   let mockUsersService: any;
   let mockJwtService: any;
   let mockPasswordService: any;
+  let mockLoginAttemptService: any;
+  let mockRefreshTokenRepository: any;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -84,14 +88,28 @@ describe('AuthService — password-hash migration flow (PasswordService mocked)'
       isLegacyBcrypt: jest.fn(),
     };
 
+    mockLoginAttemptService = {
+      isLocked: jest.fn().mockResolvedValue({ locked: false, remainingSeconds: 0 }),
+      recordFailedAttempt: jest.fn().mockResolvedValue(1),
+      clearAttempts: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockRefreshTokenRepository = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findOne: jest.fn(),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: { get: (_k: string, d?: any) => d ?? 'test-secret' } },
+        { provide: LoginAttemptService, useValue: mockLoginAttemptService },
         { provide: PasswordService, useValue: mockPasswordService },
         { provide: getRepositoryToken(Agency), useValue: { findOne: jest.fn().mockResolvedValue(null) } },
+        { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepository },
       ],
     }).compile();
 

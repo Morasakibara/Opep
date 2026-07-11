@@ -8,7 +8,9 @@ import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { PasswordService } from '../../common/password/password.service';
+import { LoginAttemptService } from './services/login-attempt.service';
 import { Agency } from '../agencies/entities/agency.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 /**
  * REAL PasswordService end-to-end test for the bcrypt → argon2id migration.
@@ -101,6 +103,8 @@ describe('AuthService — legacy migration (REAL PasswordService end-to-end)', (
   let authService: AuthService;
   let realPasswordService: PasswordService;
   let mockUsersService: any;
+  let mockLoginAttemptService: any;
+  let mockRefreshTokenRepository: any;
 
   beforeEach(async () => {
     // CRITICAL: restore the legacyUser fixture to its freshly-minted bcrypt
@@ -125,16 +129,30 @@ describe('AuthService — legacy migration (REAL PasswordService end-to-end)', (
       }),
     };
 
+    mockLoginAttemptService = {
+      isLocked: jest.fn().mockResolvedValue({ locked: false, remainingSeconds: 0 }),
+      recordFailedAttempt: jest.fn().mockResolvedValue(1),
+      clearAttempts: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockRefreshTokenRepository = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findOne: jest.fn(),
+      update: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: { sign: () => 'mock-access-token', verify: () => ({}) } },
         { provide: ConfigService, useValue: { get: (_k: string, d?: any) => d ?? 'test-secret' } },
+        { provide: LoginAttemptService, useValue: mockLoginAttemptService },
         // REAL PasswordService, not a mock — this is the whole point of
         // the spec.
         PasswordService,
         { provide: getRepositoryToken(Agency), useValue: { findOne: jest.fn().mockResolvedValue(null) } },
+        { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepository },
       ],
     }).compile();
 

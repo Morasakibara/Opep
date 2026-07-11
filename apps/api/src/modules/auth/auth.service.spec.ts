@@ -6,7 +6,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { PasswordService } from '../../common/password/password.service';
+import { LoginAttemptService } from './services/login-attempt.service';
 import { Agency } from '../agencies/entities/agency.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -43,6 +45,12 @@ describe('AuthService', () => {
     isLegacyBcrypt: jest.fn(),
   };
 
+  const mockLoginAttemptService = {
+    isLocked: jest.fn(),
+    recordFailedAttempt: jest.fn(),
+    clearAttempts: jest.fn(),
+  };
+
   const mockJwtService: any = {
     sign: jest.fn().mockReturnValue('mock-access-token'),
     verify: jest.fn(),
@@ -56,18 +64,36 @@ describe('AuthService', () => {
     findOne: jest.fn().mockResolvedValue(null),
   };
 
+  const mockRefreshTokenRepository = {
+    save: jest.fn().mockResolvedValue(undefined),
+    findOne: jest.fn(),
+    update: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockLoginAttemptService.isLocked.mockResolvedValue({ locked: false, remainingSeconds: 0 });
+    mockLoginAttemptService.recordFailedAttempt.mockResolvedValue(1);
+    mockLoginAttemptService.clearAttempts.mockResolvedValue(undefined);
+    mockRefreshTokenRepository.findOne.mockResolvedValue({
+      id: 'rt-1',
+      userId: 'u-1',
+      tokenHash: 'hash',
+      isRevoked: false,
+      expiresAt: new Date(Date.now() + 60_000),
+    });
     const module = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: LoginAttemptService, useValue: mockLoginAttemptService },
         { provide: PasswordService, useValue: mockPasswordService },
         // AuthService injects Repository<Agency> via @InjectRepository; mocked
         // here so resolveAgencyPlan() returns null (treated as BASIC plan).
         { provide: getRepositoryToken(Agency), useValue: mockAgencyRepository },
+        { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepository },
       ],
     }).compile();
     authService = module.get(AuthService);
