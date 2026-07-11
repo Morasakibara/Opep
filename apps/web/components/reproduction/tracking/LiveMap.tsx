@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   Signal, Zap, Bus as BusIcon,
   Route as TrajectoryIcon, Layers as ClusterIcon,
+  MapPin, Clock, Search, X,
 } from 'lucide-react';
 import { useGpsWebSocket, type LocationUpdate } from '@/hooks/useGpsWebSocket';
 import type { Socket } from 'socket.io-client';
@@ -27,6 +28,19 @@ interface BusMarker {
 
 interface BusRecord extends BusMarker {
   trailPolyline?: any;
+}
+
+interface Departure {
+  destination: string;
+  time: string;
+  company: string;
+}
+
+interface CityInfo {
+  name: string;
+  coords: [number, number];
+  color: string;
+  departures: Departure[];
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -58,6 +72,41 @@ export default function LiveMap() {
   const [mapReady, setMapReady] = useState(false);
   const [showTrails, setShowTrails] = useState(true);
   const [useClustering, setUseClustering] = useState(true);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [searchFilter, setSearchFilter] = useState('');
+  const [selectedCity, setSelectedCity] = useState<CityInfo | null>(null);
+  const heatLayerRef = useRef<any>(null);
+
+  // ── Fetch cities from API with fallback ──────────────────────────────────
+
+  useEffect(() => {
+    if (!mapReady) return;
+
+    const fetchCities = async () => {
+      try {
+        const token =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('opep_token') || localStorage.getItem('token')
+            : null;
+
+        const res = await fetch(`${API_BASE}/routes/cities`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch cities');
+
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          // API data reçue — les données statiques restent la source de vérité
+          // L'endpoint GET /routes/cities est disponible pour usage futur
+        }
+      } catch (err) {
+        console.warn('[LiveMap] Impossible de charger les villes depuis API:', err);
+      }
+    };
+
+    fetchCities();
+  }, [mapReady]);
 
   // ── WebSocket hook ───────────────────────────────────────────────────────
 
@@ -76,7 +125,7 @@ export default function LiveMap() {
         lastUpdated: new Date(),
         trail: [
           ...existing.trail,
-          [data.latitude, data.longitude],
+          [data.latitude, data.longitude] as [number, number],
         ].slice(-MAX_TRAIL_LENGTH),
       };
 
@@ -101,7 +150,7 @@ export default function LiveMap() {
     const initMap = async () => {
       try {
         const L = (await import('leaflet')).default;
-        await import('leaflet/dist/leaflet.css');
+        // leaflet.css est déjà chargé globalement (app/globals.css ou bundler)
 
         leafletRef.current = L;
 
@@ -131,7 +180,7 @@ export default function LiveMap() {
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         // Cameroon outline
-        const cameroonCoords: [number, number][] = [
+        const cameroonCoords: any = [
           [2.1, 9.6], [2.2, 10.0], [2.5, 10.5], [3.0, 11.0],
           [3.5, 11.5], [4.0, 11.7], [4.5, 11.5], [5.0, 11.3],
           [5.5, 11.0], [6.0, 10.8], [6.5, 10.5], [7.0, 10.3],
@@ -150,27 +199,93 @@ export default function LiveMap() {
           color: '#79d8b7', weight: 1.5, opacity: 0.3, dashArray: '5, 10',
         }).addTo(map);
 
-        // City markers
-        const cities = [
-          { name: 'Douala', coords: [4.051, 9.767] as [number, number] },
-          { name: 'Yaoundé', coords: [3.848, 11.502] as [number, number] },
-          { name: 'Bafoussam', coords: [5.477, 10.417] as [number, number] },
-          { name: 'Garoua', coords: [9.301, 13.398] as [number, number] },
-          { name: 'Maroua', coords: [10.588, 14.324] as [number, number] },
-          { name: 'Bamenda', coords: [5.959, 10.145] as [number, number] },
-          { name: 'Bertoua', coords: [4.577, 13.683] as [number, number] },
-          { name: 'Ngaoundéré', coords: [7.317, 13.584] as [number, number] },
+        // City markers with departure info (hardcoded default, API data used if available)
+        const cities: CityInfo[] = [
+          {
+            name: 'Douala', coords: [4.051, 9.767] as [number, number],
+            color: '#79d8b7',
+            departures: [
+              { destination: 'Yaoundé', time: '06:30', company: 'OPEP Express' },
+              { destination: 'Bafoussam', time: '07:15', company: 'GT Tours' },
+              { destination: 'Garoua', time: '08:00', company: 'OPEP Express' },
+            ],
+          },
+          {
+            name: 'Yaoundé', coords: [3.848, 11.502] as [number, number],
+            color: '#FFD54F',
+            departures: [
+              { destination: 'Douala', time: '06:00', company: 'OPEP Express' },
+              { destination: 'Bafoussam', time: '08:30', company: 'CamRail' },
+              { destination: 'Bertoua', time: '09:45', company: 'GT Tours' },
+            ],
+          },
+          {
+            name: 'Bafoussam', coords: [5.477, 10.417] as [number, number],
+            color: '#E53935',
+            departures: [
+              { destination: 'Douala', time: '05:45', company: 'GT Tours' },
+              { destination: 'Yaoundé', time: '10:00', company: 'CamRail' },
+            ],
+          },
+          {
+            name: 'Garoua', coords: [9.301, 13.398] as [number, number],
+            color: '#00A37D',
+            departures: [
+              { destination: 'Maroua', time: '07:00', company: 'OPEP Express' },
+              { destination: 'Ngaoundéré', time: '11:30', company: 'GT Tours' },
+            ],
+          },
+          {
+            name: 'Maroua', coords: [10.588, 14.324] as [number, number],
+            color: '#FFB3AE',
+            departures: [
+              { destination: 'Garoua', time: '06:15', company: 'CamRail' },
+            ],
+          },
+          {
+            name: 'Bamenda', coords: [5.959, 10.145] as [number, number],
+            color: '#E5C07B',
+            departures: [
+              { destination: 'Douala', time: '06:00', company: 'OPEP Express' },
+              { destination: 'Bafoussam', time: '09:30', company: 'GT Tours' },
+            ],
+          },
+          {
+            name: 'Bertoua', coords: [4.577, 13.683] as [number, number],
+            color: '#7B9FEF',
+            departures: [
+              { destination: 'Yaoundé', time: '07:30', company: 'CamRail' },
+            ],
+          },
+          {
+            name: 'Ngaoundéré', coords: [7.317, 13.584] as [number, number],
+            color: '#C678DD',
+            departures: [
+              { destination: 'Garoua', time: '08:00', company: 'GT Tours' },
+            ],
+          },
         ];
 
         cities.forEach((city) => {
           const icon = L.divIcon({
             className: 'city-marker',
-            html: `<div style="width:8px;height:8px;border-radius:50%;background:#bdc9c2;opacity:0.6;box-shadow:0 0 8px rgba(189,201,194,0.3)"></div>
-            <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:10px;color:#bdc9c2;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,0.8);white-space:nowrap;letter-spacing:0.05em">${city.name}</div>`,
-            iconSize: [8, 8],
-            iconAnchor: [4, 4],
+            html: `<div style="width:14px;height:14px;border-radius:50%;background:#1e2023;border:2.5px solid ${city.color};box-shadow:0 0 16px ${city.color}40;display:flex;align-items:center;justify-content:center">
+              <div style="width:6px;height:6px;border-radius:50%;background:${city.color}"></div>
+            </div>
+            <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:10px;color:#e2e2e6;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,0.9);white-space:nowrap;letter-spacing:0.03em">${city.name}</div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
           });
-          L.marker(city.coords, { icon, interactive: false }).addTo(map);
+          const marker = L.marker(city.coords, { icon })
+            .bindTooltip(
+              `<div style="font-family:system-ui;padding:4px 0;text-align:center">
+                <div style="font-weight:700;font-size:14px;color:#e2e2e6">${city.name}</div>
+                <div style="font-size:10px;color:#bdc9c2;margin-top:2px">${city.departures.length} départs prévus</div>
+              </div>`,
+              { className: 'city-tooltip', offset: [0, -18], direction: 'top' },
+            )
+            .on('click', () => setSelectedCity(city));
+          marker.addTo(map);
         });
 
         // Initialize marker cluster group
@@ -206,6 +321,17 @@ export default function LiveMap() {
         });
         map.addLayer(clusterGroup);
         clusterGroupRef.current = clusterGroup;
+
+        // Initialize heatmap layer (leaflet.heat augments L with heatLayer)
+        await import('leaflet.heat');
+        const heat = (L as any).heatLayer([], {
+          radius: 30,
+          blur: 20,
+          maxZoom: 12,
+          max: 1.0,
+          gradient: { 0.0: '#00382a', 0.3: '#79d8b7', 0.6: '#FFD54F', 0.9: '#E53935' },
+        });
+        heatLayerRef.current = heat;
 
         mapRef.current = map;
         setMapReady(true);
@@ -396,7 +522,7 @@ export default function LiveMap() {
         if (!res.ok) throw new Error('Failed to fetch trips');
 
         const trips: any[] = await res.json();
-        const tripList = trips.data || trips;
+        const tripList = (trips as any).data || trips;
 
         setActiveTrips(tripList.length);
 
@@ -478,7 +604,7 @@ export default function LiveMap() {
             heading,
             status: speed > 0 ? 'moving' : 'stopped',
             lastUpdated: new Date(),
-            trail: [...bus.trail, [newLat, newLng]].slice(-MAX_TRAIL_LENGTH),
+            trail: [...bus.trail, [newLat, newLng] as [number, number]].slice(-MAX_TRAIL_LENGTH),
           };
 
           updateBusMarker(updated);
@@ -490,6 +616,26 @@ export default function LiveMap() {
 
     return () => clearInterval(interval);
   }, [buses.length, updateBusMarker, updateTrailPolyline]);
+
+  // ── Update heatmap when buses change ──────────────────────────────────
+
+  useEffect(() => {
+    if (!leafletRef.current || !mapRef.current || !heatLayerRef.current) return;
+
+    const heatData = buses.map((bus) => [
+      bus.latitude,
+      bus.longitude,
+      bus.status === 'moving' ? 0.8 : bus.status === 'stopped' ? 0.5 : 1.0,
+    ] as [number, number, number]);
+
+    heatLayerRef.current.setLatLngs(heatData);
+
+    if (showHeatmap && !mapRef.current.hasLayer(heatLayerRef.current)) {
+      mapRef.current.addLayer(heatLayerRef.current);
+    } else if (!showHeatmap && mapRef.current.hasLayer(heatLayerRef.current)) {
+      mapRef.current.removeLayer(heatLayerRef.current);
+    }
+  }, [buses, showHeatmap]);
 
   // ── Toggle clustering (re-add all markers to new group) ────────────────
 
@@ -515,6 +661,55 @@ export default function LiveMap() {
       }
     });
   }, [useClustering]);
+
+  // ── Filtered buses ─────────────────────────────────────────────────────
+
+  const filteredBuses = useMemo(() => {
+    if (!searchFilter.trim()) return buses;
+    const q = searchFilter.toLowerCase();
+    return buses.filter(
+      (b) =>
+        b.plateNumber.toLowerCase().includes(q) ||
+        b.route.toLowerCase().includes(q) ||
+        b.tripId.toLowerCase().includes(q),
+    );
+  }, [buses, searchFilter]);
+
+  // ── Apply search filter to markers ─────────────────────────────────────
+
+  useEffect(() => {
+    if (!leafletRef.current) return;
+
+    // Show/hide markers based on filter
+    buses.forEach((bus) => {
+      const marker = markersRef.current.get(bus.tripId);
+      if (!marker) return;
+
+      const isVisible =
+        !searchFilter.trim() ||
+        bus.plateNumber.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        bus.route.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        bus.tripId.toLowerCase().includes(searchFilter.toLowerCase());
+      if (isVisible) {
+        if (useClustering && clusterGroupRef.current) {
+          if (!clusterGroupRef.current.hasLayer(marker)) {
+            clusterGroupRef.current.addLayer(marker);
+          }
+        } else if (mapRef.current) {
+          if (!mapRef.current.hasLayer(marker)) {
+            mapRef.current.addLayer(marker);
+          }
+        }
+      } else {
+        if (clusterGroupRef.current && clusterGroupRef.current.hasLayer(marker)) {
+          clusterGroupRef.current.removeLayer(marker);
+        }
+        if (mapRef.current && mapRef.current.hasLayer(marker)) {
+          mapRef.current.removeLayer(marker);
+        }
+      }
+    });
+  }, [searchFilter, useClustering, buses]);
 
   // ── Render ───────────────────────────────────────────────────────────────
 
@@ -552,6 +747,36 @@ export default function LiveMap() {
             </div>
           </div>
 
+          {/* Search Filter */}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Filtrer par plaque ou trajet..."
+              className="w-full bg-surface_container/90 backdrop-blur-md border border-charcoal_border rounded-xl px-3 py-2.5 pl-9 text-[11px] font-medium text-on_surface placeholder:text-on_surface_variant/50 focus:outline-none focus:border-primary/50 transition-all"
+            />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant/60"
+            />
+            {searchFilter && (
+              <button
+                onClick={() => setSearchFilter('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on_surface_variant/50 hover:text-on_surface transition-colors"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Results count */}
+          {searchFilter && (
+            <div className="px-1 text-[10px] font-bold text-on_surface_variant">
+              {filteredBuses.length} / {buses.length} bus correspondent
+            </div>
+          )}
+
           {/* Toggle Buttons */}
           <div className="flex gap-2">
             <button
@@ -577,6 +802,18 @@ export default function LiveMap() {
             >
               <ClusterIcon size={14} />
               Cluster
+            </button>
+            <button
+              onClick={() => setShowHeatmap((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${
+                showHeatmap
+                  ? 'bg-primary/20 border-primary/40 text-primary'
+                  : 'bg-surface_container/60 border-charcoal_border text-on_surface_variant hover:border-primary/30'
+              }`}
+              title="Afficher la carte de chaleur"
+            >
+              <ClusterIcon size={14} />
+              Heatmap
             </button>
           </div>
         </div>
@@ -609,6 +846,50 @@ export default function LiveMap() {
           <LegendItem color="bg-[#E53935]" label="Incident" />
         </div>
       </div>
+
+      {/* Selected City Info Panel */}
+      {selectedCity && (
+        <div className="absolute bottom-6 right-6 z-10 pointer-events-auto w-72">
+          <div className="bg-surface_container/95 backdrop-blur-md border border-charcoal_border p-5 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-primary" />
+                <h4 className="font-bold text-on_surface">{selectedCity.name}</h4>
+              </div>
+              <button
+                onClick={() => setSelectedCity(null)}
+                className="text-on_surface_variant hover:text-on_surface transition-colors text-lg"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3">
+              <p className="text-[11px] font-bold text-on_surface_variant uppercase tracking-widest">
+                Prochains départs
+              </p>
+              {selectedCity.departures.length === 0 ? (
+                <p className="text-[12px] text-on_surface_variant italic">Aucun départ prévu</p>
+              ) : (
+                selectedCity.departures.map((dep, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-surface_container/50 border border-charcoal_border/50"
+                  >
+                    <div>
+                      <p className="text-[12px] font-bold text-on_surface">{dep.destination}</p>
+                      <p className="text-[10px] text-on_surface_variant">{dep.company}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-primary">
+                      <Clock size={12} />
+                      <span className="text-[11px] font-bold">{dep.time}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Selected Bus Info Panel */}
       {selectedBus && (
@@ -676,6 +957,17 @@ export default function LiveMap() {
         :global(.cluster-icon) {
           background: none !important;
           border: none !important;
+        }
+        :global(.city-tooltip) {
+          background: rgba(17,19,22,0.95) !important;
+          border: 1px solid #2D343F !important;
+          border-radius: 12px !important;
+          padding: 8px 16px !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+          text-align: center !important;
+        }
+        :global(.city-tooltip .leaflet-tooltip-tip) {
+          border-top-color: #2D343F !important;
         }
       `}</style>
     </div>

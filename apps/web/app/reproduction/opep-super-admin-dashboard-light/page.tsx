@@ -21,7 +21,7 @@ export default function OpepSuperAdminDashboardLightReproductionPage() {
     items={items}
   bottomItems={bottom}
   activeIndex={0}
-  onNavChange={setActiveNav}
+  onNavChange={(index: number) => setActiveNav(String(index))}
   subtitle="Super Admin"
 />
 {/* Main Content Area */}

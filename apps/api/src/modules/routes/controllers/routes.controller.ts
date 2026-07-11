@@ -31,6 +31,13 @@ export class RoutesController {
     return paginate(items.map(RouteResponseDto.fromEntity), total, paginationDto);
   }
 
+  @Get('cities')
+  @SkipThrottle({ long: true, medium: true, short: true })
+  @Throttle({ public: { limit: 30, ttl: 60000 } })
+  async getCities() {
+    return this.routesService.getCities();
+  }
+
   @Get('search')
   @SkipThrottle({ long: true, medium: true, short: true })
   @Throttle({ public: { limit: 30, ttl: 60000 } })

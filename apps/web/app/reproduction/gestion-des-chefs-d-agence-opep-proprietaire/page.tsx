@@ -20,7 +20,7 @@ export default function GestionDesChefsDAgenceOpepProprietaireReproductionPage()
         items={items}
         bottomItems={bottom}
   activeIndex={2}
-  onNavChange={setActiveTab}
+  onNavChange={(index: number) => setActiveTab(String(index))}
   logo={<div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container"><span className="material-symbols-outlined">corporate_fare</span></div>}
 />
 

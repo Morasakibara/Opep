@@ -1,4 +1,4 @@
-import { Trip, Ticket, User, Reservation, Payment, Route, Bus } from '@opep/shared-types';
+import { Trip, Ticket, User, Reservation, Payment, Route, Bus, Agency } from '@opep/shared-types';
 
 // API response types include joined/nested data beyond the base entities.
 // These enriched types eliminate the need for `as any` casts in consumer code.

@@ -37,8 +37,8 @@ export default function DashboardPage() {
           apiClient.getReservations().catch(() => []),
           apiClient.getTrips().catch(() => []),
         ]);
-        if (reservations.length > 0) {
-          setRecentBookings(reservations.slice(0, 4).map((r: any) => ({
+        if ((reservations as any[]).length > 0) {
+          setRecentBookings((reservations as any[]).slice(0, 4).map((r: any) => ({
             id: r.ticketId || r.code?.slice(0, 8) || `RES-${r.id?.slice(0, 4)}`,
             user: r.client || `${r.passenger?.firstName || ''} ${r.passenger?.lastName || ''}`.trim() || 'Client',
             route: r.trip || `${r.tripRoute || ''}` || 'Trajet',
@@ -47,12 +47,12 @@ export default function DashboardPage() {
             status: r.status === 'CONFIRMED' ? 'Payé' : r.status === 'PENDING_PAYMENT' ? 'En attente' : r.status || '---',
           })));
         }
-        if (trips.length > 0) {
-          const activeTrips = trips.filter((t: any) => t.status === 'SCHEDULED' || t.status === 'BOARDING');
+        if ((trips as any[]).length > 0) {
+          const activeTrips = (trips as any[]).filter((t: any) => t.status === 'SCHEDULED' || t.status === 'BOARDING');
           setStats([
             { label: 'Voyageurs aujourd\'hui', value: activeTrips.length.toString(), icon: <Users className="text-blue-600" />, trend: '+12%', up: true },
             { label: 'Tickets vendus', value: reservations.length.toString(), icon: <Ticket className="text-orange-600" />, trend: '+5%', up: true },
-            { label: 'Revenus (XAF)', value: reservations.reduce((s: number, r: any) => s + (r.totalAmount || r.amount || 0), 0).toLocaleString('fr-FR'), icon: <TrendingUp className="text-green-600" />, trend: '-2%', up: false },
+            { label: 'Revenus (XAF)', value: (reservations as any[]).reduce((s: number, r: any) => s + (r.totalAmount || r.amount || 0), 0).toLocaleString('fr-FR'), icon: <TrendingUp className="text-green-600" />, trend: '-2%', up: false },
             { label: 'Bus actifs', value: `${activeTrips.length}/18`, icon: <Bus className="text-purple-600" />, trend: 'Stable', up: true },
           ]);
         }

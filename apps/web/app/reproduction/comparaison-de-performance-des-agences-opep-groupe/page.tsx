@@ -19,10 +19,10 @@ export default function ComparaisonDePerformanceDesAgencesOpepGroupeReproduction
     <div className="min-h-screen bg-[#111316] text-[#e2e2e6] overflow-x-hidden">
       {/* SECTION: Mockup Layout */}
   <Sidebar
-    items={items}
-  bottomItems={bottom}
+    items={items as any}
+  bottomItems={bottom as any}
   activeIndex={2}
-  onNavChange={setActiveNav}
+  onNavChange={setActiveNav as any}
   logo={<div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container"><span className="material-symbols-outlined">analytics</span></div>}
 />
 

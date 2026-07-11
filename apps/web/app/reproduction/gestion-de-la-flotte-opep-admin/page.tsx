@@ -23,17 +23,16 @@ export default function GestionDeLaFlotteOpepAdminReproductionPage() {
   items={[{"icon":"dashboard","label":"Dashboard"},{"icon":"corporate_fare","label":"Agencies"},{"icon":"route","label":"Trips"},{"icon":"directions_bus","label":"Buses"},{"icon":"group","label":"Staff"},{"icon":"monitoring","label":"Analytics"}]}
   bottomItems={[{"icon":"help","label":"Help Center"},{"icon":"logout","label":"Logout"}]}
   activeIndex={3}
-  onNavChange={setActiveNav}
+  onNavChange={(index: number) => setActiveNav(String(index))}
 />
 
-<main className="flex-1 md:ml-[280px] bg-background">
-{busesError && (
+<main className="flex-1 md:ml-[280px] bg-background">          {busesError && (
             <ErrorState 
               title="Erreur de connexion"
               message={String(busesError?.message || 'Une erreur est survenue')}
               onRetry={() => busesRefetch()}
             />
-          )}}
+          )}
 
 <header className="flex justify-between items-center px-margin-desktop h-16 w-full sticky top-0 z-40 bg-surface-container border-b border-charcoal-border">
 <div className="flex items-center gap-4">

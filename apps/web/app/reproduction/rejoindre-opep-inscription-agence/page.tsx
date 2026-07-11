@@ -245,7 +245,7 @@ export default function RejoindreOpepInscriptionAgenceReproductionPage() {
 <label className="font-body-sm text-body-sm text-on-surface-variant" htmlFor="terms">I agree to the <a className="text-primary underline" href="#">Terms of Partnership</a> and Service Agreement.</label>
 </div>
 </div>
-<button className="w-full bg-success-green text-white font-title-md py-5 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-success-green/20" onClick={() => setShowSuccessModal(true)} type="button">
+<button className="w-full bg-success-green text-white font-title-md py-5 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-success-green/20" onClick={() => setSuccessModal(true)} type="button">
                                 Complete Registration
                                 <span className="material-symbols-outlined">how_to_reg</span>
 </button>

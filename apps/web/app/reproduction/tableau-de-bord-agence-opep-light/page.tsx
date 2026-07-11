@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAvailableTrips, useBuses } from '@/hooks/useTrips';
+import { useAvailableTrips } from '@/hooks/useTrips';
+import { useBuses } from '@/hooks/useEntities';
 
 /**
 undefined

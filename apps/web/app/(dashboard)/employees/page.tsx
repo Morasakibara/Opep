@@ -62,8 +62,8 @@ export default function EmployeesPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.getUsers();
-      setEmployees(data);
+      const data: any[] = await apiClient.getUsers();
+      setEmployees(data as Employee[]);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement du personnel');
     } finally {

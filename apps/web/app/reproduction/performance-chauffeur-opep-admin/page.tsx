@@ -11,7 +11,7 @@ undefined
 export default function PerformanceChauffeurOpepAdminReproductionPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { data: drivers, isLoading: driversLoading, error: driversError, refetch: driversRefetch } = useDrivers();
-  const { data: driverPerf, isLoading: perfLoading } = useDriverPerformance();
+  const { data: driverPerf, isLoading: perfLoading } = useDriverPerformance('default');
   const [activeTab, setActiveTab] = useState('home');
   return (
     <div className="min-h-screen bg-[#111316] text-[#e2e2e6] overflow-x-hidden">

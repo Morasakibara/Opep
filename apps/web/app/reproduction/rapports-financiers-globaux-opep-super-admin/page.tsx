@@ -22,7 +22,7 @@ export default function RapportsFinanciersGlobauxOpepSuperAdminReproductionPage(
     items={items}
   bottomItems={bottom}
   activeIndex={0}
-  onNavChange={setActiveNav}
+  onNavChange={(index: number) => setActiveNav(String(index))}
 />
 {/* Main Content Area */}
 <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col relative">
@@ -121,7 +121,7 @@ export default function RapportsFinanciersGlobauxOpepSuperAdminReproductionPage(
 <div className="border-b border-on-surface-variant w-full h-0"></div>
 </div>
 {/* Line Chart Visual SVG */}
-<svg className="absolute inset-0 w-full h-full overflow-visible" preserveaspectratio="none">
+<svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
 {/* Last Month (Grey) */}
 <path className="opacity-50" d="M0 80 Q 100 90, 200 60 T 400 70 T 600 95 T 800 60 T 1000 85" fill="none" stroke="#88938d" strokeWidth="2"></path>
 {/* This Month (Primary) */}

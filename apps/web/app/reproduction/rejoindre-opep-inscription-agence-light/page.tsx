@@ -245,7 +245,7 @@ export default function RejoindreOpepInscriptionAgenceLightReproductionPage() {
 <label className="font-body-sm text-body-sm text-on-surface-variant" htmlFor="terms">I agree to the <a className="text-primary underline font-medium" href="#">Terms of Partnership</a> and Service Agreement.</label>
 </div>
 </div>
-<button className="w-full bg-success-green text-on-primary font-title-md py-5 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-success-green/20" onClick={() => setShowSuccessModal(true)} type="button">
+<button className="w-full bg-success-green text-on-primary font-title-md py-5 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-success-green/20" onClick={() => setSuccessModal(true)} type="button">
                                 Complete Registration
                                 <span className="material-symbols-outlined">how_to_reg</span>
 </button>
@@ -278,7 +278,7 @@ export default function RejoindreOpepInscriptionAgenceLightReproductionPage() {
 </div>
 <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">Application Received!</h2>
 <p className="font-body-lg text-body-lg text-on-surface-variant mb-8">Your agency registration is being processed. Our team will contact you within 24-48 hours for document verification.</p>
-<button className="w-full bg-primary text-on-primary font-title-md py-4 rounded-xl hover:opacity-90 shadow-md" onClick={() => setShowSuccessModal(false)}>Return to Portal</button>
+<button className="w-full bg-primary text-on-primary font-title-md py-4 rounded-xl hover:opacity-90 shadow-md" onClick={() => setSuccessModal(false)}>Return to Portal</button>
 </div>
 </div>
     </div>

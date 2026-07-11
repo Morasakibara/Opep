@@ -24,7 +24,7 @@ export default function GestionDesIncidentsRemboursementsOpepAdminReproductionPa
   items={[{"icon":"dashboard","label":"Dashboard"},{"icon":"business","label":"Agencies"},{"icon":"route","label":"Trips"},{"icon":"directions_bus","label":"Buses"},{"icon":"badge","label":"Staff"},{"icon":"analytics","label":"Analytics"}]}
   bottomItems={[]}
   activeIndex={0}
-  onNavChange={setActiveTab}
+  onNavChange={(index: number) => setActiveTab(String(index))}
   logo={<div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container"><span className="material-symbols-outlined">security</span></div>}
   subtitle="Sovereign Management"
 />

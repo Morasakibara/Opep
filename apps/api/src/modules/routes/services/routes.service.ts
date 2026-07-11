@@ -51,6 +51,65 @@ export class RoutesService {
     return this.routeRepository.find({ where });
   }
 
+  async getCities(): Promise<{ name: string; color: string; departures: { destination: string; time: string; company: string }[] }[]> {
+    // Récupère toutes les routes actives pour construire les données de villes
+    const routes = await this.routeRepository.find({
+      where: { isActive: true },
+    });
+
+    // Collecte toutes les villes uniques avec leurs coordonnées
+    const cityMap = new Map<string, {
+      destinations: Set<string>;
+      departures: { destination: string; time: string; company: string }[];
+    }>();
+
+    const cityColors: Record<string, string> = {
+      'Douala': '#79d8b7',
+      'Yaoundé': '#FFD54F',
+      'Bafoussam': '#E53935',
+      'Garoua': '#00A37D',
+      'Maroua': '#FFB3AE',
+      'Bamenda': '#E5C07B',
+      'Bertoua': '#7B9FEF',
+      'Ngaoundéré': '#C678DD',
+    };
+
+    const companies = ['OPEP Express', 'GT Tours', 'CamRail'];
+    const baseHours = [6, 7, 8, 9, 10, 11];
+
+    routes.forEach((route, index) => {
+      if (!cityMap.has(route.departureCity)) {
+        cityMap.set(route.departureCity, {
+          destinations: new Set(),
+          departures: [],
+        });
+      }
+      const city = cityMap.get(route.departureCity)!;
+      city.destinations.add(route.arrivalCity);
+
+      // Heure déterministe basée sur l'index de la route (pas de Math.random)
+      const hour = baseHours[index % baseHours.length];
+      const minute = (index * 15) % 60;
+      const company = companies[index % companies.length];
+      city.departures.push({
+        destination: route.arrivalCity,
+        time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+        company,
+      });
+    });
+
+    // Trie les départs par heure
+    cityMap.forEach((city) => {
+      city.departures.sort((a, b) => a.time.localeCompare(b.time));
+    });
+
+    return Array.from(cityMap.entries()).map(([name, data]) => ({
+      name,
+      color: cityColors[name] || '#79d8b7',
+      departures: data.departures.slice(0, 5), // max 5 départs par ville
+    }));
+  }
+
   async remove(agencyId: string, id: string): Promise<void> {
     const route = await this.findOne(agencyId, id);
     route.isActive = false;

@@ -23,7 +23,7 @@ export default function GestionDuPersonnelOpepAdminReproductionPage() {
   items={[{"icon":"dashboard","label":"Dashboard"},{"icon":"corporate_fare","label":"Agencies"},{"icon":"route","label":"Trips"},{"icon":"directions_bus","label":"Buses"},{"icon":"group","label":"Staff"},{"icon":"monitoring","label":"Analytics"}]}
   bottomItems={[{"icon":"help","label":"Help Center"},{"icon":"logout","label":"Logout"}]}
   activeIndex={4}
-  onNavChange={setActiveTab}
+  onNavChange={(index: number) => setActiveTab(String(index))}
   logo={<div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-xl">O</div>}
   ctaButton={{ icon: "person_add", label: "Ajouter un Employé", onClick: () => setAddEmployeeModal(true) }}
 />

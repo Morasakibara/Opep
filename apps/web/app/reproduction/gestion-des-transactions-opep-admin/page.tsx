@@ -22,7 +22,7 @@ export default function GestionDesTransactionsOpepAdminReproductionPage() {
   items={[{"icon":"dashboard","label":"Dashboard"},{"icon":"account_balance_wallet","label":"Transactions"},{"icon":"corporate_fare","label":"Agencies"},{"icon":"route","label":"Trips"},{"icon":"monitoring","label":"Analytics"}]}
   bottomItems={[{"icon":"help","label":"Help Center"},{"icon":"logout","label":"Logout"}]}
   activeIndex={1}
-  onNavChange={setActiveNav}
+  onNavChange={(index: number) => setActiveNav(String(index))}
   logo={<div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container"><span className="material-symbols-outlined">payments</span></div>}
 />
 

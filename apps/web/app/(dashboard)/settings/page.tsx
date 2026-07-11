@@ -78,7 +78,7 @@ export default function SettingsPage() {
         setAvatarUrl(base64);
         // Sauvegarde automatique de la photo
         if (profile?.id) {
-          await apiClient.updateProfile({ avatarUrl: base64 });
+          await apiClient.updateProfile({ avatarUrl: base64 } as any);
           showToast('success', 'Photo de profil mise à jour');
         }
       };
@@ -99,19 +99,19 @@ export default function SettingsPage() {
       setLastName(profileData.lastName || '');
       setEmail(profileData.email || '');
       setPhone(profileData.phone || '');
-      setAvatarUrl(profileData.avatarUrl || null);
-      setNotifChannel(profileData.notificationChannel || 'WHATSAPP');
-      setNotifPhone(profileData.notificationPhone || profileData.phone || '');
-      setPreferredLanguage(profileData.preferredLanguage || 'fr');
+      setAvatarUrl((profileData as any).avatarUrl || null);
+      setNotifChannel((profileData as any).notificationChannel || 'WHATSAPP');
+      setNotifPhone((profileData as any).notificationPhone || (profileData as any).phone || '');
+      setPreferredLanguage((profileData as any).preferredLanguage || 'fr');
 
       if (profileData.agencyId) {
         try {
           const agencyData = await apiClient.getAgency(profileData.agencyId);
           setAgency(agencyData);
-          setAgencyName(agencyData.name || '');
-          setAgencyDesc(agencyData.description || '');
-          setAgencyAddress(agencyData.address || '');
-          setAgencyWebsite(agencyData.website || '');
+          setAgencyName((agencyData as any).name || '');
+          setAgencyDesc((agencyData as any).description || '');
+          setAgencyAddress((agencyData as any).address || '');
+          setAgencyWebsite((agencyData as any).website || '');
         } catch {
           // Agence non trouvée
         }
@@ -132,7 +132,7 @@ export default function SettingsPage() {
     if (!profile?.id) return;
     setSaving(true);
     try {
-      await apiClient.updateProfile({
+      await (apiClient.updateProfile as any)({
         firstName,
         lastName,
         email,
@@ -150,10 +150,10 @@ export default function SettingsPage() {
     if (!profile?.id) return;
     setSaving(true);
     try {
-      await apiClient.updateProfile({
+      await (apiClient.updateProfile as any)({
         notificationChannel: notifChannel,
         notificationPhone: notifPhone,
-        preferredLanguage,
+        preferredLanguage: preferredLanguage,
       });
       showToast('success', 'Préférences de notification mises à jour');
     } catch (err: any) {

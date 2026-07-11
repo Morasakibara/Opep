@@ -14,6 +14,7 @@ import { PerUserThrottlerGuard } from './common/guards/per-user-throttler.guard'
 import { CsrfOriginGuard } from './common/guards/csrf-origin.guard';
 import { RedisModule, REDIS_CLIENT } from './common/redis/redis.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { SchedulesModule } from './modules/schedules/schedules.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { dataSourceOptions } from './config/typeorm.config';
 import { AppController } from './app.controller';
@@ -93,6 +94,7 @@ import { GpsModule } from './modules/gps/gps.module';
     TicketsModule,
     NotificationsModule,
     GpsModule,
+    SchedulesModule,
     ReportsModule,
   ],
   controllers: [AppController],

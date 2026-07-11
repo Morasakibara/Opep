@@ -21,7 +21,7 @@ export default function TableauDeBordProprietaireOpepMultiAgencesReproductionPag
     items={items}
   bottomItems={bottom}
   activeIndex={0}
-  onNavChange={setActiveTab}
+  onNavChange={(index: number) => setActiveTab(String(index))}
 />
 
 <main className="flex-1 md:ml-[280px] w-full min-h-screen">

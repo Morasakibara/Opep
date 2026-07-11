@@ -5,7 +5,7 @@ import React from 'react';
 export interface SidebarItem {
   icon: string;
   label: string;
-  href: string;
+  href?: string;
   active?: boolean;
 }
 
@@ -60,7 +60,7 @@ export default function Sidebar({
         {items.map((item, i) => (
           <a
             key={i}
-            href={item.href}
+            href={item.href || '#'}
             onClick={(e) => {
               e.preventDefault();
               onNavChange?.(i);
@@ -83,7 +83,7 @@ export default function Sidebar({
         {bottomItems.map((item, i) => (
           <a
             key={i}
-            href={item.href}
+            href={item.href || '#'}
             className="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-high hover:text-on-surface rounded-lg transition-all"
           >
             <span className="material-symbols-outlined">{item.icon}</span>

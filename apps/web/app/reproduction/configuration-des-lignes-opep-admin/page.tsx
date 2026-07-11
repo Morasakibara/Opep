@@ -22,7 +22,7 @@ export default function ConfigurationDesLignesOpepAdminReproductionPage() {
     items={items}
   bottomItems={bottom}
   activeIndex={2}
-  onNavChange={setActiveTab}
+  onNavChange={(index: number) => setActiveTab(String(index))}
   ctaButton={{ icon: "add_circle", label: "New Trip", onClick: () => {} }}
 />
 

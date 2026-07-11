@@ -40,8 +40,8 @@ export default function ReservationsPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.getReservations();
-      setReservations(data);
+      const data: any[] = await apiClient.getReservations();
+      setReservations(data as Reservation[]);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement des réservations');
     } finally {
