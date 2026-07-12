@@ -10,6 +10,7 @@ import { InitiatePaymentDto } from '../dto/initiate-payment.dto';
 import { DepositPaymentDto } from '../dto/deposit-payment.dto';
 import { WebhookPaymentDto, RefundPaymentDto } from '../dto/webhook-payment.dto';
 import { AuditService } from '../../audit/services/audit.service';
+import { NotificationService } from '../../notifications/notification.service';
 import Redis from 'ioredis';
 import { TicketsService } from '../../tickets/services/tickets.service';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
@@ -32,6 +33,7 @@ export class PaymentsService {
     @InjectQueue('payments-queue') private readonly paymentsQueue: Queue,
     private readonly ticketsService: TicketsService,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async processPayment(dto: ProcessPaymentDto): Promise<Payment> {
@@ -95,6 +97,9 @@ export class PaymentsService {
       // Trigger ticket generation outside transaction to avoid locking DB too long
       if (status === PaymentStatus.SUCCESS) {
         await this.ticketsService.generateTicketsForReservation(reservationId);
+        // Schedule departure reminders for confirmed reservation
+        this.notificationService.scheduleDepartureReminders(reservationId)
+          .catch(() => {});
       }
 
       // Audit après transaction
@@ -305,6 +310,10 @@ export class PaymentsService {
       await this.reservationRepository.save(reservation);
     }
 
+    // Cancel pending notifications for cancelled reservation
+    this.notificationService.cancelReservationNotifications(payment.reservationId)
+      .catch(() => {});
+
     // Audit
     this.auditService.log({
       userId: refundedBy,
@@ -417,6 +426,12 @@ export class PaymentsService {
           .catch(() => {});
       }
 
+      // 6. Schedule departure reminders if fully paid (CONFIRMED)
+      if (reservation.status === ReservationStatus.CONFIRMED) {
+        this.notificationService.scheduleDepartureReminders(reservationId)
+          .catch(() => {});
+      }
+
       // Audit
       this.auditService.log({
         userId: reservation.clientId,
@@ -493,6 +508,10 @@ export class PaymentsService {
 
       await queryRunner.commitTransaction();
 
+      // Schedule departure reminders now that balance is fully paid
+      this.notificationService.scheduleDepartureReminders(reservationId)
+        .catch(() => {});
+
       // Audit
       this.auditService.log({
         userId: cashierId,
@@ -541,6 +560,9 @@ export class PaymentsService {
           reservation.status = ReservationStatus.CONFIRMED;
           await this.reservationRepository.save(reservation);
           await this.ticketsService.generateTicketsForReservation(existingPayment.reservationId);
+          // Schedule departure reminders
+          this.notificationService.scheduleDepartureReminders(existingPayment.reservationId)
+            .catch(() => {});
         }
       } else if (dto.status === 'FAILED') {
         existingPayment.status = PaymentStatus.FAILED;

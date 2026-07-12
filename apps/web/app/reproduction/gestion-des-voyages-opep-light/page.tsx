@@ -8,12 +8,12 @@ import Header from '@/components/layout/Header';
 import TripList from '@/components/reproduction/trips/TripList';
 import { Button } from '@/components/ui/Button';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslations } from 'next-intl';
 import MobileNav from '@/components/reproduction/dashboard/MobileNav';
 
 export default function GestionDesVoyagesOpepLightReproductionPage() {
   const [activeTab, setActiveTab] = useState('home');
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   return (
     <ProtectedRoute roles={['SUPER_ADMIN', 'AGENCY_ADMIN', 'CONTROLLER']}>

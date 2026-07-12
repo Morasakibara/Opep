@@ -13,7 +13,7 @@ import TransactionsTable from '@/components/reproduction/dashboard/TransactionsT
 import RegionalActivity from '@/components/reproduction/dashboard/RegionalActivity';
 import MobileNav from '@/components/reproduction/dashboard/MobileNav';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslations } from 'next-intl';
 
 /**
 undefined
@@ -21,7 +21,7 @@ undefined
  */
 export default function OpepSuperAdminDashboardReproductionPage() {
   const [activeTab, setActiveTab] = useState('home');
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   return (
     <ProtectedRoute roles={['SUPER_ADMIN']}>

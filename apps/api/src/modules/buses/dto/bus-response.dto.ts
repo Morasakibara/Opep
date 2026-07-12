@@ -1,6 +1,7 @@
 export class BusResponseDto {
   id: string;
   agencyId: string;
+  centreId?: string;
   plateNumber: string;
   model: string;
   totalSeats: number;
@@ -13,6 +14,7 @@ export class BusResponseDto {
     return {
       id: bus.id,
       agencyId: bus.agencyId,
+      centreId: bus.centreId,
       plateNumber: bus.plateNumber,
       model: bus.model,
       totalSeats: bus.totalSeats,

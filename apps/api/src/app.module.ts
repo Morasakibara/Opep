@@ -34,6 +34,10 @@ import { AuditModule } from './modules/audit/audit.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { GpsModule } from './modules/gps/gps.module';
 import { ReviewModule } from './modules/reviews/review.module';
+import { CompaniesModule } from './modules/companies/companies.module';
+import { CentresModule } from './modules/centres/centres.module';
+import { ComplaintsModule } from './modules/complaints/complaints.module';
+import { BillingsModule } from './modules/billings/billings.module';
 
 @Module({
   imports: [
@@ -106,23 +110,20 @@ import { ReviewModule } from './modules/reviews/review.module';
     NotificationsModule,
     GpsModule,
     ReviewModule,
+    CompaniesModule,
+    CentresModule,
+    ComplaintsModule,
+    BillingsModule,
     SchedulesModule,
     ReportsModule,
   ],
   controllers: [AppController],
   providers: [
     {
-      // CSRF is checked FIRST (cheap header/cookie inspection, no Redis
-      // round-trip). This protects Redis from DoS amplification where an
-      // attacker floods the API with cross-origin POSTs. Visibility into
-      // such attempts is preserved by the `csrf_rejections_total` counter.
       provide: APP_GUARD,
       useClass: CsrfOriginGuard,
     },
     {
-      // Throttler runs SECOND — only after the request proves it isn't a
-      // cross-origin forgery. Each tier check increments a Redis-backed
-      // storage key (cheap via ThrottlerStorageRedisService).
       provide: APP_GUARD,
       useClass: PerUserThrottlerGuard,
     },

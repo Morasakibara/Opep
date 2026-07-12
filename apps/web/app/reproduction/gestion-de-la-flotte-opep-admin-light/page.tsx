@@ -9,14 +9,14 @@ import MobileNav from '@/components/reproduction/dashboard/MobileNav';
 import BusStats from '@/components/reproduction/fleet/BusStats';
 import BusList from '@/components/reproduction/fleet/BusList';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslations } from 'next-intl';
 
 /**
 undefined
  * Secured with RBAC and Internationalized
  */
 export default function GestionDeLaFlotteOpepAdminLightReproductionPage() {
-  const { t } = useTranslation();
+  const t = useTranslations();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (

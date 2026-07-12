@@ -17,6 +17,7 @@ export enum ReservationStatus {
   USED = 'USED',
   EXPIRED = 'EXPIRED',
 }
+import { Centre } from '../../centres/entities/centre.entity';
 
 @Entity('reservations')
 export class Reservation extends BaseEntity {
@@ -43,6 +44,13 @@ export class Reservation extends BaseEntity {
   @ManyToOne(() => Agency)
   @JoinColumn({ name: 'agencyId' })
   agency: Agency;
+
+  @Column({ type: 'uuid', nullable: true })
+  centreId: string;
+
+  @ManyToOne(() => Centre, { nullable: true })
+  @JoinColumn({ name: 'centreId' })
+  centre: Centre;
 
   @Column({
     type: 'enum',

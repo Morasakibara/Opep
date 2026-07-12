@@ -12,10 +12,11 @@ export class BusesService {
     private readonly busRepository: Repository<Bus>,
   ) {}
 
-  async create(agencyId: string, createBusDto: CreateBusDto): Promise<Bus> {
+  async create(agencyId: string, centreId: string | undefined, createBusDto: CreateBusDto): Promise<Bus> {
     const bus = this.busRepository.create({
       ...createBusDto,
       agencyId,
+      centreId: centreId ?? undefined,
     });
     return this.busRepository.save(bus);
   }

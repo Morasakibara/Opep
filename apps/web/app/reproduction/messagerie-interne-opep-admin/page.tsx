@@ -6,11 +6,9 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import ChatWindow from '@/components/reproduction/messaging/ChatWindow';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useTranslation } from '@/context/LanguageContext';
 import MobileNav from '@/components/reproduction/dashboard/MobileNav';
 
 export default function MessagerieInterneOpepAdminReproductionPage() {
-  const { t } = useTranslation();
 
   return (
     <ProtectedRoute roles={['SUPER_ADMIN', 'AGENCY_ADMIN', 'CASHIER']}>

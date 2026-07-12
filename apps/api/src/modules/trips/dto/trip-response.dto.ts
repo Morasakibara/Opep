@@ -1,6 +1,7 @@
 export class TripResponseDto {
   id: string;
   agencyId: string;
+  centreId?: string;
   routeId: string;
   busId: string;
   driverId?: string;
@@ -19,6 +20,7 @@ export class TripResponseDto {
     return {
       id: trip.id,
       agencyId: trip.agencyId,
+      centreId: trip.centreId,
       routeId: trip.routeId,
       busId: trip.busId,
       driverId: trip.driverId,

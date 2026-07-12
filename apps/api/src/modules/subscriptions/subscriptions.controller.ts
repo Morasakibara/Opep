@@ -12,21 +12,21 @@ export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   @Get('packages')
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.COMPANY_DIRECTOR, UserRole.ADMIN_PLATFORM)
   getPackages() {
     return this.subscriptionsService.getPackages();
   }
 
   @Post('subscribe')
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.COMPANY_DIRECTOR, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
-  subscribe(@Body() body: { agencyId: string; planId: string }) {
-    return this.subscriptionsService.subscribe(body.agencyId, body.planId);
+  subscribe(@Body() body: { companyId: string; planId: string }) {
+    return this.subscriptionsService.subscribe(body.companyId, body.planId);
   }
 
   @Get('status')
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
-  getStatus(@Query('agencyId') agencyId: string) {
-    return this.subscriptionsService.getStatus(agencyId);
+  @Roles(UserRole.COMPANY_DIRECTOR, UserRole.ADMIN_PLATFORM)
+  getStatus(@Query('companyId') companyId: string) {
+    return this.subscriptionsService.getStatus(companyId);
   }
 }

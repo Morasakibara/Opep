@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 import React from 'react';
 import { Search, Globe, Bell, Settings, LogOut } from 'lucide-react';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/context/AuthContext';
 import NotificationCenter from './NotificationCenter';
 import ThemeToggle from './ThemeToggle';
@@ -17,7 +17,14 @@ export default function Header({
   title = "Super Admin", 
   placeholder = "header.search" 
 }: HeaderProps) {
-  const { language, setLanguage, t } = useTranslation();
+  const locale = useLocale() as 'fr' | 'en';
+  const t = useTranslations();
+
+  const toggleLanguage = () => {
+    const newLang = locale === 'fr' ? 'en' : 'fr';
+    document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000; SameSite=Lax`;
+    window.location.reload();
+  };
   const { logout, user } = useAuth();
 
   return (
@@ -38,12 +45,12 @@ export default function Header({
           <ThemeToggle />
           
           <button 
-            onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+            onClick={toggleLanguage}
             className="flex items-center gap-1.5 hover:text-primary transition-all group px-2 py-1 rounded-lg bg-surface_container_high"
             title="Toggle Language"
           >
             <Globe size={18} className="group-hover:rotate-12 transition-transform" />
-            <span className="text-[11px] font-bold uppercase">{language}</span>
+            <span className="text-[11px] font-bold uppercase">{locale}</span>
           </button>
           
           <NotificationCenter />

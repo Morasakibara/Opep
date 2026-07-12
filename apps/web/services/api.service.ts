@@ -4,8 +4,8 @@
  * This is the canonical API client for the web app — lib/apiClient.ts is deprecated.
  */
 import type {
-  Trip, Route, Bus, User, Agency, Reservation, Ticket,
-  Payment, TripSearchCriteria, TripStatus,
+  Trip, Route, Bus, User, Agency, Company, Centre,
+  Reservation, Ticket, Payment, TripSearchCriteria, TripStatus,
 } from '@opep/shared-types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
@@ -193,11 +193,31 @@ export const incidentsApi = {
   resolve: (id: string) => fetchApi<any>(`/incidents/${id}/resolve`, { method: 'PATCH' }),
 };
 
+// ============ Companies ============
+export const companiesApi = {
+  getAll: () => fetchApi<Company[]>('/companies'),
+  getById: (id: string) => fetchApi<Company>(`/companies/${id}`),
+  create: (data: any) => fetchApi<Company>('/companies', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => fetchApi<Company>(`/companies/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => fetchApi<{ message: string }>(`/companies/${id}`, { method: 'DELETE' }),
+  getStats: (id: string) => fetchApi<any>(`/companies/${id}/stats`),
+};
+
+// ============ Centres ============
+export const centresApi = {
+  getAll: () => fetchApi<Centre[]>('/centres'),
+  getById: (id: string) => fetchApi<Centre>(`/centres/${id}`),
+  create: (data: any) => fetchApi<Centre>('/centres', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => fetchApi<Centre>(`/centres/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: string) => fetchApi<{ message: string }>(`/centres/${id}`, { method: 'DELETE' }),
+  getRanking: () => fetchApi<Centre[]>('/centres/ranking'),
+};
+
 // ============ Subscriptions ============
 export const subscriptionsApi = {
   getPackages: () => fetchApi<any[]>('/subscriptions/packages'),
-  subscribe: (data: any) => fetchApi<any>('/subscriptions/subscribe', { method: 'POST', body: JSON.stringify(data) }),
-  getStatus: () => fetchApi<any>('/subscriptions/status'),
+  subscribe: (data: { companyId: string; planId: string }) => fetchApi<any>('/subscriptions/subscribe', { method: 'POST', body: JSON.stringify(data) }),
+  getStatus: (companyId: string) => fetchApi<any>(`/subscriptions/status?companyId=${companyId}`),
 };
 
 // ============ Messages ============

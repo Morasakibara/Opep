@@ -15,7 +15,7 @@ import {
   Plus,
   ArrowRight
 } from 'lucide-react';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslations } from 'next-intl';
 
 const NAV_ITEMS = [
   { icon: <LayoutDashboard size={20} />, label: 'nav.dashboard', href: '/reproduction/opep-super-admin-dashboard' },
@@ -29,7 +29,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[280px] bg-surface_dim border-r border-charcoal_border hidden md:flex flex-col p-6 z-50">

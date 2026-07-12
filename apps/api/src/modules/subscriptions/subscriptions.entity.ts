@@ -1,6 +1,6 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { Agency } from '../agencies/entities/agency.entity';
+import { Company } from '../companies/entities/company.entity';
 
 @Entity('subscriptions')
 export class Subscription extends BaseEntity {
@@ -20,8 +20,10 @@ export class Subscription extends BaseEntity {
   @Column()
   endDate: Date;
 
-  @ManyToOne(() => Agency)
-  agency: Agency;
+  @Column({ type: 'uuid', nullable: true })
+  companyId: string;
 
-
+  @ManyToOne(() => Company)
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 }

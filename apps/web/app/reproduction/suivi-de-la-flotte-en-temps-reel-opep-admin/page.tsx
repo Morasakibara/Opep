@@ -9,11 +9,9 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import LiveMap from '@/components/reproduction/tracking/LiveMap';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useTranslation } from '@/context/LanguageContext';
 import MobileNav from '@/components/reproduction/dashboard/MobileNav';
 
 export default function SuiviDeLaFlotteEnTempsReelOpepAdminReproductionPage() {
-  const { t } = useTranslation();
 
   return (
     <ProtectedRoute roles={['SUPER_ADMIN', 'AGENCY_ADMIN']}>

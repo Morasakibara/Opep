@@ -7,6 +7,7 @@ import { Trip } from '../trips/entities/trip.entity';
 import { ReservationsService } from './services/reservations.service';
 import { ReservationsController } from './controllers/reservations.controller';
 import { ReservationsProcessor } from './services/reservations.processor';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ReservationsProcessor } from './services/reservations.processor';
     BullModule.registerQueue({
       name: 'reservations-queue',
     }),
+    NotificationsModule,
   ],
   providers: [ReservationsService, ReservationsProcessor],
   controllers: [ReservationsController],

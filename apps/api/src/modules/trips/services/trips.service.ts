@@ -12,10 +12,11 @@ export class TripsService {
     private readonly tripRepository: Repository<Trip>,
   ) {}
 
-  async create(agencyId: string, createTripDto: CreateTripDto): Promise<Trip> {
+  async create(agencyId: string, centreId: string | undefined, createTripDto: CreateTripDto): Promise<Trip> {
     const trip = this.tripRepository.create({
       ...createTripDto,
       agencyId,
+      centreId: centreId ?? undefined,
       departureDateTime: new Date(createTripDto.departureDateTime),
       arrivalDateTime: new Date(createTripDto.arrivalDateTime),
     });

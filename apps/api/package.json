@@ -40,6 +40,7 @@
     "@opep/qr-utils": "*",
     "@opep/shared-types": "*",
     "@willsoto/nestjs-prometheus": "^6.1.0",
+    "africastalking": "^0.8.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.78.0",
     "class-transformer": "^0.5.1",

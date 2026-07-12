@@ -12,10 +12,11 @@ export class RoutesService {
     private readonly routeRepository: Repository<Route>,
   ) {}
 
-  async create(agencyId: string, createRouteDto: CreateRouteDto): Promise<Route> {
+  async create(agencyId: string, centreId: string | undefined, createRouteDto: CreateRouteDto): Promise<Route> {
     const route = this.routeRepository.create({
       ...createRouteDto,
       agencyId,
+      centreId: centreId ?? undefined,
     });
     return this.routeRepository.save(route);
   }

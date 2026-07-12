@@ -15,7 +15,7 @@ export class ReviewService {
     private readonly reservationRepository: Repository<Reservation>,
   ) {}
 
-  async create(clientId: string, data: {
+  async create(clientId: string, centreId: string | undefined, data: {
     tripId: string;
     agencyId: string;
     driverRating: number;
@@ -55,6 +55,7 @@ export class ReviewService {
     const review = this.reviewRepository.create({
       ...data,
       clientId,
+      centreId: centreId ?? undefined,
     });
 
     return this.reviewRepository.save(review);

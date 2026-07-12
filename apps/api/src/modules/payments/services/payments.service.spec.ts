@@ -5,6 +5,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { AuditService } from '../../audit/services/audit.service';
 import { TicketsService } from '../../tickets/services/tickets.service';
+import { NotificationService } from '../../notifications/notification.service';
 import { Payment, PaymentProvider } from '../entities/payment.entity';
 import { Reservation, ReservationStatus } from '../../reservations/entities/reservation.entity';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
@@ -55,6 +56,11 @@ describe('PaymentsService', () => {
     log: jest.fn().mockResolvedValue(undefined),
   });
 
+  const mockNotificationService = () => ({
+    scheduleDepartureReminders: jest.fn().mockResolvedValue(undefined),
+    cancelReservationNotifications: jest.fn().mockResolvedValue(undefined),
+  });
+
   beforeEach(async () => {
     jest.clearAllMocks();
     const module = await Test.createTestingModule({
@@ -66,6 +72,7 @@ describe('PaymentsService', () => {
         { provide: 'ReservationRepository', useFactory: mockRepository },
         { provide: TicketsService, useFactory: mockTicketService },
         { provide: AuditService, useFactory: mockAuditService },
+        { provide: NotificationService, useFactory: mockNotificationService },
         { provide: REDIS_CLIENT, useValue: { on: jest.fn(), quit: jest.fn(), set: jest.fn(), get: jest.fn() } },
         { provide: 'BullQueue_payments-queue', useValue: mockPaymentsQueue },
       ],
@@ -84,6 +91,7 @@ describe('PaymentsService', () => {
       module.get('BullQueue_payments-queue'),
       module.get(TicketsService),
       module.get(AuditService),
+      module.get(NotificationService),
     );
 
     auditService = module.get(AuditService);

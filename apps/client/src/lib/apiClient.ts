@@ -1,4 +1,4 @@
-import { ApiTrip, ApiTicket, ApiUser, Reservation, Payment, Route, Bus } from './apiTypes';
+import { ApiTrip, ApiTicket, ApiUser, Company, Centre, Reservation, Payment, Route, Bus } from './apiTypes';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
@@ -177,6 +177,34 @@ export const routesApi = {
   async getAll() {
     const res = await fetch(`${API_BASE}/routes`, { headers: getAuthHeaders() });
     return handleResponse<Route[]>(res);
+  },
+};
+
+// ============ Companies ============
+export const companiesApi = {
+  async getAll() {
+    const res = await fetch(`${API_BASE}/companies`, { headers: getAuthHeaders() });
+    return handleResponse<Company[]>(res);
+  },
+  async getById(id: string) {
+    const res = await fetch(`${API_BASE}/companies/${id}`, { headers: getAuthHeaders() });
+    return handleResponse<Company>(res);
+  },
+};
+
+// ============ Centres ============
+export const centresApi = {
+  async getAll() {
+    const res = await fetch(`${API_BASE}/centres`, { headers: getAuthHeaders() });
+    return handleResponse<Centre[]>(res);
+  },
+  async getById(id: string) {
+    const res = await fetch(`${API_BASE}/centres/${id}`, { headers: getAuthHeaders() });
+    return handleResponse<Centre>(res);
+  },
+  async getRanking() {
+    const res = await fetch(`${API_BASE}/centres/ranking`, { headers: getAuthHeaders() });
+    return handleResponse<Centre[]>(res);
   },
 };
 

@@ -56,7 +56,7 @@ describe('TripsService', () => {
       mockRepository.create.mockReturnValue(mockTrip);
       mockRepository.save.mockResolvedValue(mockTrip);
 
-      const result = await service.create('ag-1', {
+      const result = await service.create('ag-1', undefined, {
         routeId: 'r-1',
         busId: 'b-1',
         basePrice: 5000,

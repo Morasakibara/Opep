@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Query, UseGuards, Param, Patch, Delete, Ba
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
+import { OwnershipGuard } from '../../../common/guards/ownership.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { TripsService } from '../services/trips.service';
@@ -17,16 +17,16 @@ export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
-  async create(@Body() createTripDto: CreateTripDto, @GetUser('agencyId') agencyId: string) {
-    const trip = await this.tripsService.create(agencyId, createTripDto);
+  async create(@Body() createTripDto: CreateTripDto, @GetUser('agencyId') agencyId: string, @GetUser('centreId') centreId: string) {
+    const trip = await this.tripsService.create(agencyId, centreId, createTripDto);
     return TripResponseDto.fromEntity(trip);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findAll(
     @GetUser('agencyId') agencyId: string,
@@ -64,7 +64,7 @@ export class TripsController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM, UserRole.CLIENT)
   async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     const trip = await this.tripsService.findOne(agencyId, id);
@@ -72,13 +72,13 @@ export class TripsController {
   }
 
   @Get(':id/seats')
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   async getSeats(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     return this.tripsService.getSeats(agencyId, id);
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   async updateStatus(
@@ -94,7 +94,7 @@ export class TripsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   async update(
@@ -107,7 +107,7 @@ export class TripsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {

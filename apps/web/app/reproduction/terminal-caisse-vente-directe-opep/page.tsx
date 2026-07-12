@@ -11,11 +11,9 @@ import TripSelector from '@/components/reproduction/ticketing/TripSelector';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { useTranslation } from '@/context/LanguageContext';
 import MobileNav from '@/components/reproduction/dashboard/MobileNav';
 
 export default function TerminalCaisseVenteDirecteOpepReproductionPage() {
-  const { t } = useTranslation();
   const { data: trips, isLoading: tripsLoading, error: tripsError } = useAvailableTrips();
   const { data: reservations, isLoading: resLoading, error: resError } = useReservations();
 

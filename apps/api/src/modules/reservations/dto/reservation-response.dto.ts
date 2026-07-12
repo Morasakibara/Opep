@@ -6,6 +6,7 @@ export class ReservationResponseDto {
   tripId: string;
   clientId: string;
   agencyId: string;
+  centreId?: string;
   type: string;
   totalAmount: number;
   status: string;
@@ -32,6 +33,7 @@ export class ReservationResponseDto {
       tripId: reservation.tripId,
       clientId: reservation.clientId,
       agencyId: reservation.agencyId,
+      centreId: reservation.centreId,
       type: reservation.type,
       totalAmount: reservation.totalAmount,
       status: reservation.status,

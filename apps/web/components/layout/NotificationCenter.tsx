@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bell, X, Info, AlertTriangle, CheckCircle2, MoreVertical } from 'lucide-react';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslations } from 'next-intl';
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -33,7 +33,7 @@ const MOCK_NOTIFICATIONS = [
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
-  const { t } = useTranslation();
+  const t = useTranslations();
 
   return (
     <div className="relative">

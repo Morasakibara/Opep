@@ -6,6 +6,7 @@ import { Queue } from 'bullmq';
 import { NotificationEntity, NotificationType, NotificationChannel, NotificationStatus } from './entities/notification.entity';
 import { Reservation } from '../reservations/entities/reservation.entity';
 import { AuditService } from '../audit/services/audit.service';
+import { AfricasTalkingService } from './africastalking.service';
 
 @Injectable()
 export class NotificationService {
@@ -16,6 +17,7 @@ export class NotificationService {
     private readonly reservationRepository: Repository<Reservation>,
     @InjectQueue('notifications-queue') private readonly notificationsQueue: Queue,
     private readonly auditService: AuditService,
+    private readonly atService: AfricasTalkingService,
   ) {}
 
   /**
@@ -119,7 +121,7 @@ export class NotificationService {
   }
 
   /**
-   * Send a notification via the appropriate channel (mock implementation)
+   * Send a notification via the appropriate channel (production: Africa's Talking, dev: console.log)
    */
   async sendNotification(notificationId: string): Promise<void> {
     const notification = await this.notificationRepository.findOne({
@@ -129,22 +131,38 @@ export class NotificationService {
     if (!notification || notification.status !== NotificationStatus.PENDING) return;
 
     try {
-      // Mock sending via different channels
+      let result;
+
       switch (notification.channel) {
         case NotificationChannel.SMS:
-          // In production: use Africa's Talking SMS API
-          console.log(`[SMS] Envoi à ${notification.userId}: ${notification.message}`);
+          // Use Africa's Talking SMS API or fall back to mock
+          result = await this.atService.sendSms(
+            notification.userId,
+            notification.message,
+          );
+          if (!result.success) {
+            console.warn(`[SMS Fallback] Envoi à ${notification.userId}: ${notification.message}`);
+          }
           break;
+
         case NotificationChannel.WHATSAPP:
-          // In production: use Africa's Talking WhatsApp API
-          console.log(`[WhatsApp] Envoi à ${notification.userId}: ${notification.message}`);
+          // Use Africa's Talking WhatsApp API or fall back to mock
+          result = await this.atService.sendWhatsApp(
+            notification.userId,
+            notification.message,
+          );
+          if (!result.success) {
+            console.warn(`[WhatsApp Fallback] Envoi à ${notification.userId}: ${notification.message}`);
+          }
           break;
+
         case NotificationChannel.PUSH:
-          // In production: use Firebase Cloud Messaging
+          // Production: Firebase Cloud Messaging. Mock for now.
           console.log(`[Push] Envoi à ${notification.userId}: ${notification.message}`);
           break;
+
         case NotificationChannel.EMAIL:
-          // In production: use Nodemailer
+          // Production: Nodemailer / SendGrid. Mock for now.
           console.log(`[Email] Envoi à ${notification.userId}: ${notification.message}`);
           break;
       }

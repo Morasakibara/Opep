@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,7 +9,7 @@ import { LoginAttemptService } from './services/login-attempt.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Agency, SubscriptionPlan } from '../agencies/entities/agency.entity';
+import { Company } from '../companies/entities/company.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { PasswordService } from '../../common/password/password.service';
 
@@ -22,20 +22,21 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly loginAttemptService: LoginAttemptService,
-    @InjectRepository(Agency)
-    private readonly agencyRepository: Repository<Agency>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly passwordService: PasswordService,
   ) {}
 
-  async generateTokens(user: any, agencyPlan: SubscriptionPlan = SubscriptionPlan.BASIC) {
+  async generateTokens(user: any) {
     const payload = {
       sub: user.id,
       phone: user.phone,
       role: user.role,
       agencyId: user.agencyId ?? null,
-      plan: agencyPlan,
+      companyId: user.companyId ?? null,
+      centreId: user.centreId ?? null,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -124,8 +125,7 @@ export class AuthService {
       }
     }
 
-    const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
-    const tokens = await this.generateTokens(user, agencyPlan);
+    const tokens = await this.generateTokens(user);
 
     return {
       ...tokens,
@@ -137,6 +137,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
         agencyId: user.agencyId,
+        companyId: user.companyId,
+        centreId: user.centreId,
         isActive: user.isActive,
         preferredLanguage: user.preferredLanguage,
         notificationChannel: user.notificationChannel,
@@ -148,7 +150,7 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
-    const tokens = await this.generateTokens(user, SubscriptionPlan.BASIC);
+    const tokens = await this.generateTokens(user);
 
     return {
       ...tokens,
@@ -160,6 +162,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
         agencyId: user.agencyId,
+        companyId: user.companyId,
+        centreId: user.centreId,
         isActive: user.isActive,
         preferredLanguage: user.preferredLanguage,
         notificationChannel: user.notificationChannel,
@@ -167,17 +171,6 @@ export class AuthService {
         updatedAt: user.updatedAt,
       }
     };
-  }
-
-  private async resolveAgencyPlan(agencyId: string | null | undefined): Promise<SubscriptionPlan> {
-    if (!agencyId) {
-      return SubscriptionPlan.BASIC;
-    }
-    const agency = await this.agencyRepository.findOne({
-      where: { id: agencyId },
-      select: ['subscriptionPlan'],
-    });
-    return agency?.subscriptionPlan ?? SubscriptionPlan.BASIC;
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
@@ -232,8 +225,7 @@ export class AuthService {
       const user = await this.usersService.findById(payload.sub);
       if (!user) throw new UnauthorizedException();
 
-      const agencyPlan = await this.resolveAgencyPlan(user.agencyId);
-      return this.generateTokens(user, agencyPlan);
+      return this.generateTokens(user);
     } catch (e) {
       if (e instanceof UnauthorizedException) throw e;
       throw new UnauthorizedException('Token de rafraîchissement invalide');
@@ -253,6 +245,8 @@ export class AuthService {
       email: user.email,
       role: user.role,
       agencyId: user.agencyId,
+      companyId: user.companyId,
+      centreId: user.centreId,
       isActive: user.isActive,
       preferredLanguage: user.preferredLanguage,
       notificationChannel: user.notificationChannel,

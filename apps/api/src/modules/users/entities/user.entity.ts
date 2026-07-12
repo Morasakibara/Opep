@@ -32,6 +32,12 @@ export class User extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   agencyId: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  companyId: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  centreId: string;
+
   @Column({
     type: 'enum',
     enum: Language,

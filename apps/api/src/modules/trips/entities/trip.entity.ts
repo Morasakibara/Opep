@@ -11,6 +11,7 @@ export enum TripStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
+import { Centre } from '../../centres/entities/centre.entity';
 
 @Entity('trips')
 export class Trip extends BaseEntity {
@@ -20,6 +21,13 @@ export class Trip extends BaseEntity {
   @ManyToOne(() => Agency)
   @JoinColumn({ name: 'agencyId' })
   agency: Agency;
+
+  @Column({ type: 'uuid', nullable: true })
+  centreId: string;
+
+  @ManyToOne(() => Centre, { nullable: true })
+  @JoinColumn({ name: 'centreId' })
+  centre: Centre;
 
   @Column({ type: 'uuid' })
   routeId: string;

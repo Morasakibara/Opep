@@ -2,12 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subscription } from './subscriptions.entity';
+import { Company } from '../companies/entities/company.entity';
 
 @Injectable()
 export class SubscriptionsService {
   constructor(
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
   ) {}
 
   async getPackages() {
@@ -18,10 +21,13 @@ export class SubscriptionsService {
     ];
   }
 
-  async subscribe(agencyId: string, planId: string): Promise<Subscription> {
+  async subscribe(companyId: string, planId: string): Promise<Subscription> {
     const packages = await this.getPackages();
     const pkg = packages.find(p => p.id === planId);
     if (!pkg) throw new NotFoundException('Plan non trouvé');
+
+    const company = await this.companyRepository.findOneBy({ id: companyId });
+    if (!company) throw new NotFoundException('Compagnie non trouvée');
 
     const subscription = this.subscriptionRepository.create({
       planName: pkg.name,
@@ -29,15 +35,15 @@ export class SubscriptionsService {
       status: 'ACTIVE',
       startDate: new Date(),
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      agency: { id: agencyId } as any
+      company: { id: companyId } as any
     });
 
     return this.subscriptionRepository.save(subscription);
   }
 
-  async getStatus(agencyId: string): Promise<Subscription[]> {
+  async getStatus(companyId: string): Promise<Subscription[]> {
     return this.subscriptionRepository.find({
-      where: { agency: { id: agencyId } },
+      where: { company: { id: companyId } },
       order: { createdAt: 'DESC' }
     });
   }

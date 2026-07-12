@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, UseGuards, Patch, Delete, Query } f
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
+import { OwnershipGuard } from '../../../common/guards/ownership.guard';
 import { SubscriptionGuard } from '../../auth/guards/subscription.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
@@ -13,15 +13,15 @@ import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
 @Controller('buses')
-@UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard, SubscriptionGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class BusesController {
   constructor(private readonly busesService: BusesService) {}
 
   @Post()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
-  async create(@Body() createBusDto: CreateBusDto, @GetUser('agencyId') agencyId: string) {
-    const bus = await this.busesService.create(agencyId, createBusDto);
+  async create(@Body() createBusDto: CreateBusDto, @GetUser('agencyId') agencyId: string, @GetUser('centreId') centreId: string) {
+    const bus = await this.busesService.create(agencyId, centreId, createBusDto);
     return BusResponseDto.fromEntity(bus);
   }
 

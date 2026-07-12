@@ -44,7 +44,7 @@ describe('RoutesService', () => {
       mockRepository.create.mockReturnValue(mockRoute);
       mockRepository.save.mockResolvedValue(mockRoute);
 
-      const result = await service.create('ag-1', {
+      const result = await service.create('ag-1', undefined, {
         departureCity: 'Dakar',
         arrivalCity: 'Thies',
         distanceKm: 75,

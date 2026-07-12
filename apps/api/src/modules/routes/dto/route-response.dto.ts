@@ -1,6 +1,7 @@
 export class RouteResponseDto {
   id: string;
   agencyId: string;
+  centreId?: string;
   departureCity: string;
   arrivalCity: string;
   distanceKm: number;
@@ -13,6 +14,7 @@ export class RouteResponseDto {
     return {
       id: route.id,
       agencyId: route.agencyId,
+      centreId: route.centreId,
       departureCity: route.departureCity,
       arrivalCity: route.arrivalCity,
       distanceKm: route.distanceKm,

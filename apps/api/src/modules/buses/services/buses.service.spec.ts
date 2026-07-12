@@ -46,7 +46,7 @@ describe('BusesService', () => {
       mockRepository.create.mockReturnValue(mockBus);
       mockRepository.save.mockResolvedValue(mockBus);
 
-      const result = await service.create('ag-1', {
+      const result = await service.create('ag-1', undefined, {
         plateNumber: 'DK-1234-AB',
         model: 'Mercedes Sprinter',
         totalSeats: 30,

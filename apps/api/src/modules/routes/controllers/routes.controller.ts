@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, UseGuards, Param, Patch, Delete, Query } f
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { AgencyOwnershipGuard } from '../../auth/guards/agency-ownership.guard';
+import { OwnershipGuard } from '../../../common/guards/ownership.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { RoutesService } from '../services/routes.service';
@@ -12,15 +12,15 @@ import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
 @Controller('routes')
-@UseGuards(JwtAuthGuard, RolesGuard, AgencyOwnershipGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
 export class RoutesController {
   constructor(private readonly routesService: RoutesService) {}
 
   @Post()
   @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
-  async create(@Body() createRouteDto: CreateRouteDto, @GetUser('agencyId') agencyId: string) {
-    const route = await this.routesService.create(agencyId, createRouteDto);
+  async create(@Body() createRouteDto: CreateRouteDto, @GetUser('agencyId') agencyId: string, @GetUser('centreId') centreId: string) {
+    const route = await this.routesService.create(agencyId, centreId, createRouteDto);
     return RouteResponseDto.fromEntity(route);
   }
 

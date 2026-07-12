@@ -3,6 +3,7 @@ import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../users/entities/user.entity';
 import { Trip } from '../trips/entities/trip.entity';
 import { Agency } from '../agencies/entities/agency.entity';
+import { Centre } from '../centres/entities/centre.entity';
 
 @Entity('reviews')
 @Unique(['tripId', 'clientId'])
@@ -27,6 +28,13 @@ export class Review extends BaseEntity {
   @ManyToOne(() => Agency)
   @JoinColumn({ name: 'agencyId' })
   agency: Agency;
+
+  @Column({ type: 'uuid', nullable: true })
+  centreId: string;
+
+  @ManyToOne(() => Centre, { nullable: true })
+  @JoinColumn({ name: 'centreId' })
+  centre: Centre;
 
   @Column({ type: 'int' })
   driverRating: number; // 1-5

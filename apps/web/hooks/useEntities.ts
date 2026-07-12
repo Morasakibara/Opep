@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { routesApi, busesApi, agenciesApi, driversApi, incidentsApi, subscriptionsApi, reservationsApi } from '@/services/api.service';
+import { routesApi, busesApi, agenciesApi, companiesApi, centresApi, driversApi, incidentsApi, subscriptionsApi, reservationsApi } from '@/services/api.service';
 
 // ============ Routes ============
 export function useRoutes() {
@@ -54,12 +54,53 @@ export function useResolveIncident() {
   return useMutation({ mutationFn: incidentsApi.resolve, onSuccess: () => qc.invalidateQueries({ queryKey: ['incidents'] }) });
 }
 
+// ============ Companies ============
+export function useCompanies() {
+  return useQuery({ queryKey: ['companies'], queryFn: companiesApi.getAll });
+}
+export function useCompanyById(id: string) {
+  return useQuery({ queryKey: ['companies', id], queryFn: () => companiesApi.getById(id), enabled: !!id });
+}
+export function useCreateCompany() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: companiesApi.create, onSuccess: () => qc.invalidateQueries({ queryKey: ['companies'] }) });
+}
+export function useCompanyStats(id: string) {
+  return useQuery({ queryKey: ['companies', id, 'stats'], queryFn: () => companiesApi.getStats(id), enabled: !!id });
+}
+
+// ============ Centres ============
+export function useCentres() {
+  return useQuery({ queryKey: ['centres'], queryFn: centresApi.getAll });
+}
+export function useCentreById(id: string) {
+  return useQuery({ queryKey: ['centres', id], queryFn: () => centresApi.getById(id), enabled: !!id });
+}
+export function useCreateCentre() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: centresApi.create, onSuccess: () => qc.invalidateQueries({ queryKey: ['centres'] }) });
+}
+export function useCentreRanking() {
+  return useQuery({ queryKey: ['centres', 'ranking'], queryFn: centresApi.getRanking });
+}
+
 // ============ Subscriptions ============
 export function useSubscriptionPackages() {
   return useQuery({ queryKey: ['subscriptions', 'packages'], queryFn: subscriptionsApi.getPackages });
 }
-export function useSubscriptionStatus() {
-  return useQuery({ queryKey: ['subscriptions', 'status'], queryFn: subscriptionsApi.getStatus });
+export function useSubscriptionStatus(companyId?: string) {
+  return useQuery({
+    queryKey: ['subscriptions', 'status', companyId],
+    queryFn: () => subscriptionsApi.getStatus(companyId!),
+    enabled: !!companyId,
+  });
+}
+export function useSubscribe() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: subscriptionsApi.subscribe,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['subscriptions'] }),
+  });
 }
 
 // ============ Reservations ============

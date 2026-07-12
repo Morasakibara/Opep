@@ -3,14 +3,14 @@ import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PREMIUM_ONLY } from '../../../common/decorators/premium-only.decorator';
-import { Agency, SubscriptionPlan } from '../../agencies/entities/agency.entity';
+import { Company } from '../../companies/entities/company.entity';
 
 @Injectable()
 export class SubscriptionGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @InjectRepository(Agency)
-    private readonly agencyRepository: Repository<Agency>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -25,26 +25,30 @@ export class SubscriptionGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest();
 
-    if (!user || !user.agencyId) {
-      throw new ForbiddenException('Accès réservé aux utilisateurs d\'une agence');
+    if (!user || !user.companyId) {
+      throw new ForbiddenException('Accès réservé aux utilisateurs d\'une compagnie');
     }
 
-    // Charger l'agence depuis la base de données
-    const agency = await this.agencyRepository.findOne({
-      where: { id: user.agencyId },
+    // Charger la compagnie depuis la base de données
+    const company = await this.companyRepository.findOne({
+      where: { id: user.companyId },
     });
 
-    if (!agency) {
-      throw new ForbiddenException('Agence introuvable');
+    if (!company) {
+      throw new ForbiddenException('Compagnie introuvable');
     }
 
-    if (agency.subscriptionPlan !== SubscriptionPlan.PREMIUM) {
-      throw new ForbiddenException('Cette fonctionnalité nécessite un abonnement PREMIUM');
-    }
+    // Vérifier l'abonnement premium — ici on vérifie via le statut de l'abonnement
+    const subscription = await this.companyRepository.manager
+      .createQueryBuilder()
+      .select()
+      .from('subscriptions', 'sub')
+      .where('sub.companyId = :companyId', { companyId: user.companyId })
+      .andWhere('sub.status = :status', { status: 'ACTIVE' })
+      .getRawOne();
 
-    // Vérifier l'expiration
-    if (agency.subscriptionExpiresAt && new Date(agency.subscriptionExpiresAt) < new Date()) {
-      throw new ForbiddenException('Votre abonnement PREMIUM a expiré');
+    if (!subscription) {
+      throw new ForbiddenException('Cette fonctionnalité nécessite un abonnement actif');
     }
 
     return true;

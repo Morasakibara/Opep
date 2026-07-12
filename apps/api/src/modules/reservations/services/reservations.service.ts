@@ -9,6 +9,7 @@ import { Trip } from '../../trips/entities/trip.entity';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { PaymentProvider } from '../../payments/entities/payment.entity';
 import { AuditService } from '../../audit/services/audit.service';
+import { NotificationService } from '../../notifications/notification.service';
 import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
@@ -26,6 +27,7 @@ export class ReservationsService {
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     private readonly dataSource: DataSource,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(clientId: string, role: string, createReservationDto: CreateReservationDto): Promise<Reservation> {
@@ -90,6 +92,7 @@ export class ReservationsService {
         tripId,
         clientId,
         agencyId: trip.agencyId,
+        centreId: trip.centreId ?? undefined,
         type,
         totalAmount: trip.basePrice * passengers.length,
         status: ReservationStatus.PENDING_PAYMENT,
@@ -114,10 +117,14 @@ export class ReservationsService {
         { delay: 900000, removeOnComplete: true }
       );
 
-      // 5. If CASH payment, auto-confirm immediately
+      // 5. If CASH payment, auto-confirm immediately and schedule reminders
       if (paymentProvider === PaymentProvider.CASH) {
         savedReservation.status = ReservationStatus.CONFIRMED;
         await queryRunner.manager.save(savedReservation);
+        
+        // Schedule departure reminders for confirmed reservation
+        this.notificationService.scheduleDepartureReminders(savedReservation.id)
+          .catch(() => {});
       }
 
       // Audit après transaction

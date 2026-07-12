@@ -19,8 +19,9 @@ export class ReviewController {
   async create(
     @Body() body: { tripId: string; agencyId: string; driverRating: number; comfortRating: number; comment?: string },
     @GetUser('id') clientId: string,
+    @GetUser('centreId') centreId: string,
   ) {
-    return this.reviewService.create(clientId, body);
+    return this.reviewService.create(clientId, centreId, body);
   }
 
   @Get('agency/:agencyId')

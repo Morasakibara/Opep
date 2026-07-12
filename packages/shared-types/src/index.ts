@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
-// Enums (déjà existants)
+// Enums
 export enum UserRole {
   ADMIN_PLATFORM = 'ADMIN_PLATFORM',
+  COMPANY_DIRECTOR = 'COMPANY_DIRECTOR',
+  CENTRE_MANAGER = 'CENTRE_MANAGER',
   AGENCY_MANAGER = 'AGENCY_MANAGER',
   CASHIER = 'CASHIER',
   CONTROLLER = 'CONTROLLER',
@@ -23,6 +25,7 @@ export enum NotificationChannel {
 
 export enum ReservationStatus {
   PENDING_PAYMENT = 'PENDING_PAYMENT',
+  PENDING_BALANCE = 'PENDING_BALANCE',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
   USED = 'USED',
@@ -60,8 +63,41 @@ export enum TripStatus {
 }
 
 export enum SubscriptionPlan {
+  FREE_TRIAL = 'FREE_TRIAL',
   BASIC = 'BASIC',
   PREMIUM = 'PREMIUM',
+}
+
+export enum SubscriptionStatus {
+  TRIALING = 'TRIALING',
+  ACTIVE = 'ACTIVE',
+  PAST_DUE = 'PAST_DUE',
+  SUSPENDED = 'SUSPENDED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum InvoiceStatus {
+  UNPAID = 'UNPAID',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum ComplaintCategory {
+  COMPORTEMENT_CHAUFFEUR = 'COMPORTEMENT_CHAUFFEUR',
+  RETARD = 'RETARD',
+  PROPRETE_CONFORT = 'PROPRETE_CONFORT',
+  SECURITE = 'SECURITE',
+  BAGAGE = 'BAGAGE',
+  SERVICE_GUICHET = 'SERVICE_GUICHET',
+  AUTRE = 'AUTRE',
+}
+
+export enum ComplaintStatus {
+  OPEN = 'OPEN',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
+  REJECTED = 'REJECTED',
 }
 
 // UUID helpers
@@ -69,6 +105,44 @@ const uuid = z.string().uuid();
 const optionalUuid = z.string().uuid().optional();
 
 // Schémas partagés
+export const CompanySchema = z.object({
+  id: uuid,
+  name: z.string().min(1),
+  directorUserId: optionalUuid,
+  address: z.string().min(1),
+  city: z.string().min(1),
+  phone: z.string().min(1),
+  email: z.string().email(),
+  logoUrl: z.string().url().optional(),
+  isActive: z.boolean(),
+  publicRatingAverage: z.number().optional(),
+  reviewsCount: z.number().int().default(0),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type Company = z.infer<typeof CompanySchema>;
+
+export const CentreSchema = z.object({
+  id: uuid,
+  companyId: uuid,
+  managerUserId: optionalUuid,
+  name: z.string().min(1),
+  city: z.string().min(1),
+  address: z.string().min(1),
+  phone: z.string().min(1),
+  email: z.string().email(),
+  isActive: z.boolean(),
+  cancellationPenaltyPercent: z.number().optional(),
+  maxFreeReports: z.number().int().optional(),
+  minDepositPercent: z.number().int().optional(),
+  publicRatingAverage: z.number().optional(),
+  reviewsCount: z.number().int().default(0),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type Centre = z.infer<typeof CentreSchema>;
 
 export const AgencySchema = z.object({
   id: uuid,
@@ -90,6 +164,7 @@ export type Agency = z.infer<typeof AgencySchema>;
 export const RouteSchema = z.object({
   id: uuid,
   agencyId: uuid,
+  centreId: optionalUuid,
   departureCity: z.string().min(1),
   arrivalCity: z.string().min(1),
   distanceKm: z.number().positive(),
@@ -104,10 +179,11 @@ export type Route = z.infer<typeof RouteSchema>;
 export const BusSchema = z.object({
   id: uuid,
   agencyId: uuid,
+  centreId: optionalUuid,
   plateNumber: z.string().min(1),
   model: z.string().min(1),
   totalSeats: z.number().int().positive(),
-  seatLayout: z.record(z.any()), // JSON layout
+  seatLayout: z.record(z.any()),
   isActive: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -118,6 +194,7 @@ export type Bus = z.infer<typeof BusSchema>;
 export const TripSchema = z.object({
   id: uuid,
   agencyId: uuid,
+  centreId: optionalUuid,
   routeId: uuid,
   busId: uuid,
   driverId: optionalUuid,
@@ -144,6 +221,8 @@ export const UserSchema = z.object({
   role: z.nativeEnum(UserRole),
   isActive: z.boolean(),
   agencyId: optionalUuid,
+  companyId: optionalUuid,
+  centreId: optionalUuid,
   preferredLanguage: z.nativeEnum(Language),
   notificationChannel: z.nativeEnum(NotificationChannel),
   createdAt: z.date(),
@@ -171,6 +250,7 @@ export const ReservationSchema = z.object({
   tripId: uuid,
   clientId: uuid,
   agencyId: uuid,
+  centreId: optionalUuid,
   type: z.enum(['INDIVIDUAL', 'GROUP']),
   totalAmount: z.number().int().positive(),
   status: z.nativeEnum(ReservationStatus),
@@ -217,8 +297,7 @@ export const PaymentSchema = z.object({
 
 export type Payment = z.infer<typeof PaymentSchema>;
 
-// DTOs pour les requêtes
-
+// DTOs
 export const TripSearchCriteriaSchema = z.object({
   departureCity: z.string().min(1),
   arrivalCity: z.string().min(1),
@@ -241,7 +320,6 @@ export const CreateReservationDtoSchema = z.object({
 
 export type CreateReservationDto = z.infer<typeof CreateReservationDtoSchema>;
 
-// QR Ticket validation
 export const QrTicketPayloadSchema = z.object({
   passengerId: uuid,
   tripId: uuid,
@@ -251,8 +329,9 @@ export const QrTicketPayloadSchema = z.object({
 
 export type QrTicketPayload = z.infer<typeof QrTicketPayloadSchema>;
 
-// Export des schémas pour validation
 export const Schemas = {
+  Company: CompanySchema,
+  Centre: CentreSchema,
   Agency: AgencySchema,
   Route: RouteSchema,
   Bus: BusSchema,
