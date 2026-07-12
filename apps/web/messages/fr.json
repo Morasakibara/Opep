@@ -42,6 +42,11 @@
     "register_title": "Créez votre compte",
     "session_expired": "Session expirée, veuillez vous reconnecter"
   },
+  "header": {
+    "search": "Rechercher...",
+    "logout": "Déconnexion",
+    "notifications": "Notifications"
+  },
   "nav": {
     "dashboard": "Tableau de bord",
     "agencies": "Agences",
@@ -66,7 +71,11 @@
     "centers": "Centres",
     "drivers": "Chauffeurs",
     "reviews": "Avis",
-    "complaints": "Litiges"
+    "complaints": "Litiges",
+    "help": "Centre d'aide"
+  },
+  "staff": {
+    "add": "Ajouter"
   },
   "dashboard": {
     "title": "Tableau de bord",

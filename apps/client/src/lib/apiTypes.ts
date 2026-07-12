@@ -22,4 +22,4 @@ export interface ApiUser extends User {
 }
 
 // Re-export shared types that don't need enrichment
-export type { Reservation, Payment, Route, Bus, Agency };
+export type { Reservation, Payment, Route, Bus, Agency, Company, Centre };

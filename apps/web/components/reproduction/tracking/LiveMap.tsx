@@ -930,35 +930,35 @@ export default function LiveMap() {
       )}
 
       {/* Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.3; }
           50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
           100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.3; }
         }
-        :global(.bus-tooltip) {
+        .bus-tooltip {
           background: rgba(17,19,22,0.95) !important;
           border: 1px solid #2D343F !important;
           border-radius: 12px !important;
           padding: 8px 12px !important;
           box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
         }
-        :global(.bus-tooltip .leaflet-tooltip-tip) {
+        .bus-tooltip .leaflet-tooltip-tip {
           border-top-color: #2D343F !important;
         }
-        :global(.leaflet-control-zoom a) {
+        .leaflet-control-zoom a {
           background: rgba(30,32,35,0.95) !important;
           color: #e2e2e6 !important;
           border-color: #2D343F !important;
         }
-        :global(.leaflet-control-zoom a:hover) {
+        .leaflet-control-zoom a:hover {
           background: rgba(40,42,45,0.95) !important;
         }
-        :global(.cluster-icon) {
+        .cluster-icon {
           background: none !important;
           border: none !important;
         }
-        :global(.city-tooltip) {
+        .city-tooltip {
           background: rgba(17,19,22,0.95) !important;
           border: 1px solid #2D343F !important;
           border-radius: 12px !important;
@@ -966,7 +966,7 @@ export default function LiveMap() {
           box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
           text-align: center !important;
         }
-        :global(.city-tooltip .leaflet-tooltip-tip) {
+        .city-tooltip .leaflet-tooltip-tip {
           border-top-color: #2D343F !important;
         }
       `}</style>

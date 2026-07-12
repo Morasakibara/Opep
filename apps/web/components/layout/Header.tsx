@@ -19,6 +19,9 @@ export default function Header({
 }: HeaderProps) {
   const locale = useLocale() as 'fr' | 'en';
   const t = useTranslations();
+  const searchPlaceholder = placeholder.includes('.') && !placeholder.includes(' ')
+    ? t(placeholder)
+    : placeholder;
 
   const toggleLanguage = () => {
     const newLang = locale === 'fr' ? 'en' : 'fr';
@@ -34,7 +37,7 @@ export default function Header({
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
           <input 
             className="w-full bg-surface_dim border border-charcoal_border rounded-full py-2 pl-10 pr-4 text-[14px] focus:border-primary focus:ring-0 outline-none placeholder:text-on_surface_variant/50 text-on_surface" 
-            placeholder={t(placeholder)}
+            placeholder={searchPlaceholder}
             type="text"
           />
         </div>

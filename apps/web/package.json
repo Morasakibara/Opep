@@ -39,11 +39,11 @@
     "zod": "^3.25.76"
   },
   "optionalDependencies": {
-    "@next/swc-win32-x64-msvc": "14.2.3",
-    "@next/swc-linux-x64-musl": "14.2.3",
-    "@next/swc-linux-x64-gnu": "14.2.3",
+    "@next/swc-darwin-arm64": "14.2.3",
     "@next/swc-darwin-x64": "14.2.3",
-    "@next/swc-darwin-arm64": "14.2.3"
+    "@next/swc-linux-x64-gnu": "14.2.3",
+    "@next/swc-linux-x64-musl": "14.2.3",
+    "@next/swc-win32-x64-msvc": "14.2.3"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

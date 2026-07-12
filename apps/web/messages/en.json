@@ -42,6 +42,11 @@
     "register_title": "Create your account",
     "session_expired": "Session expired, please login again"
   },
+  "header": {
+    "search": "Search...",
+    "logout": "Logout",
+    "notifications": "Notifications"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "agencies": "Agencies",
@@ -66,7 +71,11 @@
     "centers": "Centers",
     "drivers": "Drivers",
     "reviews": "Reviews",
-    "complaints": "Complaints"
+    "complaints": "Complaints",
+    "help": "Help Center"
+  },
+  "staff": {
+    "add": "Add"
   },
   "dashboard": {
     "title": "Dashboard",
