@@ -19,7 +19,9 @@ import {
   BarChart3,
   X,
   User,
-  ChevronDown
+  ChevronDown,
+  Building2,
+  Store
 } from 'lucide-react';
 
 export default function DashboardLayout({
@@ -63,6 +65,8 @@ export default function DashboardLayout({
 
   const allMenuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Tableau de bord', href: '/dashboard', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER', 'CASHIER'] },
+    { icon: <Building2 size={20} />, label: 'Compagnies', href: '/companies', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
+    { icon: <Store size={20} />, label: 'Centres', href: '/centres', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
     { icon: <Bus size={20} />, label: 'Gestion des Bus', href: '/buses', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
     { icon: <Map size={20} />, label: 'Lignes & Trajets', href: '/trips', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER'] },
     { icon: <Ticket size={20} />, label: 'Réservations', href: '/reservations', roles: ['ADMIN_PLATFORM', 'AGENCY_MANAGER', 'CASHIER'] },

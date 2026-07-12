@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Building2, 
+  Store,
   Route, 
   Bus, 
   Users2, 
@@ -19,7 +20,8 @@ import { useTranslations } from 'next-intl';
 
 const NAV_ITEMS = [
   { icon: <LayoutDashboard size={20} />, label: 'nav.dashboard', href: '/reproduction/opep-super-admin-dashboard' },
-  { icon: <Building2 size={20} />, label: 'nav.agencies', href: '#' },
+  { icon: <Building2 size={20} />, label: 'nav.companies', href: '/companies' },
+  { icon: <Store size={20} />, label: 'nav.centers', href: '/centres' },
   { icon: <Route size={20} />, label: 'nav.trips', href: '/reproduction/gestion-des-voyages-opep-light' },
   { icon: <Bus size={20} />, label: 'nav.buses', href: '#' },
   { icon: <Users2 size={20} />, label: 'nav.staff', href: '/reproduction/gestion-du-personnel-opep-admin-light' },

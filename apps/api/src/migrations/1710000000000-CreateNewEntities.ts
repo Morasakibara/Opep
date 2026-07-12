@@ -115,18 +115,20 @@ export class CreateNewEntities1710000000000 implements MigrationInterface {
       columnNames: ['scheduledAt'],
     }));
 
-    // 4. sessions table
+    // 4. sessions table (matches current Session entity: tokenHash, revokedAt, lastUsedAt)
     await queryRunner.createTable(
       new Table({
         name: 'sessions',
         columns: [
           { name: 'id', type: 'uuid', isPrimary: true, generationStrategy: 'uuid', default: 'uuid_generate_v4()' },
           { name: 'userId', type: 'uuid', isNullable: false },
-          { name: 'token', type: 'varchar', isNullable: false },
+          { name: 'tokenHash', type: 'varchar', isNullable: false, isUnique: true },
           { name: 'ipAddress', type: 'varchar', isNullable: true },
           { name: 'userAgent', type: 'varchar', isNullable: true },
           { name: 'isRevoked', type: 'boolean', default: false },
           { name: 'expiresAt', type: 'timestamp', isNullable: false },
+          { name: 'revokedAt', type: 'timestamp', isNullable: true },
+          { name: 'lastUsedAt', type: 'timestamp', isNullable: true },
           { name: 'createdAt', type: 'timestamp', default: 'NOW()' },
           { name: 'updatedAt', type: 'timestamp', default: 'NOW()' },
         ],
@@ -143,13 +145,13 @@ export class CreateNewEntities1710000000000 implements MigrationInterface {
     );
 
     await queryRunner.createIndex('sessions', new TableIndex({
-      name: 'IDX_SESSIONS_TOKEN',
-      columnNames: ['token'],
+      name: 'IDX_SESSIONS_USER_IS_REVOKED',
+      columnNames: ['userId', 'isRevoked'],
     }));
 
     await queryRunner.createIndex('sessions', new TableIndex({
-      name: 'IDX_SESSIONS_USER',
-      columnNames: ['userId'],
+      name: 'IDX_SESSIONS_EXPIRES',
+      columnNames: ['expiresAt'],
     }));
 
     // 5. Add deposit fields to reservations table
@@ -189,18 +191,6 @@ export class CreateNewEntities1710000000000 implements MigrationInterface {
       isNullable: true,
     }));
 
-    await queryRunner.addColumn('reservations', new TableColumn({
-      name: 'refundEligibleAmount',
-      type: 'integer',
-      isNullable: true,
-    }));
-
-    await queryRunner.addColumn('reservations', new TableColumn({
-      name: 'refundPolicy',
-      type: 'varchar',
-      isNullable: true,
-    }));
-
     // 6. Alter reservation status enum to add PENDING_BALANCE
     await queryRunner.query(`
       ALTER TYPE "public"."reservations_status_enum" 
@@ -216,8 +206,6 @@ export class CreateNewEntities1710000000000 implements MigrationInterface {
     await queryRunner.dropTable('reviews');
 
     // Remove deposit columns from reservations
-    await queryRunner.dropColumn('reservations', 'refundPolicy');
-    await queryRunner.dropColumn('reservations', 'refundEligibleAmount');
     await queryRunner.dropColumn('reservations', 'balancePaidBy');
     await queryRunner.dropColumn('reservations', 'balancePaidAt');
     await queryRunner.dropColumn('reservations', 'depositPaidAt');

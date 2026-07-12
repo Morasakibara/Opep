@@ -4,7 +4,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
   name = 'CreateV2Schema1720000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // 0. Add companyId/centreId columns to existing users table
+    // 1. Add companyId/centreId columns to existing users table
     await queryRunner.addColumn('users', new TableColumn({
       name: 'companyId',
       type: 'uuid',
@@ -17,27 +17,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
       isNullable: true,
     }));
 
-    // Add companyId column to existing subscriptions table
-    await queryRunner.addColumn('subscriptions', new TableColumn({
-      name: 'companyId',
-      type: 'uuid',
-      isNullable: true,
-    }));
-
-    await queryRunner.createForeignKey('subscriptions', new TableForeignKey({
-      name: 'FK_subscriptions_company',
-      columnNames: ['companyId'],
-      referencedColumnNames: ['id'],
-      referencedTableName: 'companies',
-      onDelete: 'SET NULL',
-    }));
-
-    await queryRunner.createIndex('subscriptions', new TableIndex({
-      name: 'IDX_SUBSCRIPTIONS_COMPANY',
-      columnNames: ['companyId'],
-    }));
-
-    // Add centreId columns to existing operational entities
+    // 2. Add centreId columns to existing operational entities
     const operationalTables = ['trips', 'routes', 'buses', 'reservations', 'reviews'];
     for (const table of operationalTables) {
       await queryRunner.addColumn(table, new TableColumn({
@@ -52,7 +32,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
       }));
     }
 
-    // 1. companies
+    // 3. companies table (must exist before subscriptions FK)
     await queryRunner.createTable(
       new Table({
         name: 'companies',
@@ -76,13 +56,46 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey('companies', new TableForeignKey({
+      name: 'FK_companies_director',
       columnNames: ['directorUserId'],
       referencedColumnNames: ['id'],
       referencedTableName: 'users',
       onDelete: 'SET NULL',
     }));
 
-    // 2. centres
+    // 4. subscriptions table (with companyId FK to companies)
+    await queryRunner.createTable(
+      new Table({
+        name: 'subscriptions',
+        columns: [
+          { name: 'id', type: 'uuid', isPrimary: true, generationStrategy: 'uuid', default: 'uuid_generate_v4()' },
+          { name: 'companyId', type: 'uuid', isNullable: true },
+          { name: 'planName', type: 'varchar' },
+          { name: 'price', type: 'decimal', precision: 10, scale: 2 },
+          { name: 'status', type: 'varchar', default: "'ACTIVE'" },
+          { name: 'startDate', type: 'timestamp' },
+          { name: 'endDate', type: 'timestamp' },
+          { name: 'createdAt', type: 'timestamp', default: 'NOW()' },
+          { name: 'updatedAt', type: 'timestamp', default: 'NOW()' },
+        ],
+      }),
+      true,
+    );
+
+    await queryRunner.createForeignKey('subscriptions', new TableForeignKey({
+      name: 'FK_subscriptions_company',
+      columnNames: ['companyId'],
+      referencedColumnNames: ['id'],
+      referencedTableName: 'companies',
+      onDelete: 'SET NULL',
+    }));
+
+    await queryRunner.createIndex('subscriptions', new TableIndex({
+      name: 'IDX_SUBSCRIPTIONS_COMPANY',
+      columnNames: ['companyId'],
+    }));
+
+    // 5. centres table
     await queryRunner.createTable(
       new Table({
         name: 'centres',
@@ -109,6 +122,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey('centres', new TableForeignKey({
+      name: 'FK_centres_company',
       columnNames: ['companyId'],
       referencedColumnNames: ['id'],
       referencedTableName: 'companies',
@@ -116,6 +130,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
     }));
 
     await queryRunner.createForeignKey('centres', new TableForeignKey({
+      name: 'FK_centres_manager',
       columnNames: ['managerUserId'],
       referencedColumnNames: ['id'],
       referencedTableName: 'users',
@@ -132,7 +147,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
       columnNames: ['publicRatingAverage', 'reviewsCount'],
     }));
 
-    // 3. complaints
+    // 6. complaints table
     await queryRunner.createTable(
       new Table({
         name: 'complaints',
@@ -158,6 +173,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey('complaints', new TableForeignKey({
+      name: 'FK_complaints_client',
       columnNames: ['clientId'],
       referencedColumnNames: ['id'],
       referencedTableName: 'users',
@@ -174,7 +190,7 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
       columnNames: ['companyId', 'status'],
     }));
 
-    // 4. invoices
+    // 7. invoices table
     await queryRunner.createTable(
       new Table({
         name: 'invoices',
@@ -203,12 +219,21 @@ export class CreateV2Schema1720000000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropIndex('invoices', 'IDX_INVOICES_COMPANY');
+    await queryRunner.dropTable('invoices');
+    await queryRunner.dropIndex('complaints', 'IDX_COMPLAINTS_COMPANY');
+    await queryRunner.dropIndex('complaints', 'IDX_COMPLAINTS_CENTRE');
+    await queryRunner.dropForeignKey('complaints', 'FK_complaints_client');
+    await queryRunner.dropTable('complaints');
+    await queryRunner.dropIndex('centres', 'IDX_CENTRES_RATING');
+    await queryRunner.dropIndex('centres', 'IDX_CENTRES_COMPANY');
+    await queryRunner.dropForeignKey('centres', 'FK_centres_manager');
+    await queryRunner.dropForeignKey('centres', 'FK_centres_company');
+    await queryRunner.dropTable('centres');
     await queryRunner.dropIndex('subscriptions', 'IDX_SUBSCRIPTIONS_COMPANY');
     await queryRunner.dropForeignKey('subscriptions', 'FK_subscriptions_company');
-    await queryRunner.dropColumn('subscriptions', 'companyId');
-    await queryRunner.dropTable('invoices');
-    await queryRunner.dropTable('complaints');
-    await queryRunner.dropTable('centres');
+    await queryRunner.dropTable('subscriptions');
+    await queryRunner.dropForeignKey('companies', 'FK_companies_director');
     await queryRunner.dropTable('companies');
 
     // Reverse operational entity centreId columns
