@@ -3,7 +3,7 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { OwnershipGuard } from '../../../common/guards/ownership.guard';
-import { SubscriptionGuard } from '../../auth/guards/subscription.guard';
+import { SubscriptionGuard } from '../../../common/guards/subscription.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { BusesService } from '../services/buses.service';

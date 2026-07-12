@@ -10,11 +10,12 @@ import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import Redis from 'ioredis';
-import { I18nModule, HeaderResolver } from 'nestjs-i18n';
+import { I18nModule, AcceptLanguageResolver } from 'nestjs-i18n';
 import * as path from 'path';
 import { PerUserThrottlerGuard } from './common/guards/per-user-throttler.guard';
 import { CsrfOriginGuard } from './common/guards/csrf-origin.guard';
 import { RedisModule, REDIS_CLIENT } from './common/redis/redis.module';
+import { getRedisConnectionOptions } from './common/redis/redis.config';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
@@ -45,21 +46,28 @@ import { OfflineScanModule } from './modules/offline-scan/offline-scan.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [
+        path.join(process.cwd(), '.env.local'),
+        path.join(process.cwd(), '.env'),
+        path.join(process.cwd(), '../../.env.local'),
+        path.join(process.cwd(), '../../.env'),
+      ],
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     I18nModule.forRoot({
       fallbackLanguage: 'fr',
+      loaderOptions: {
+        path: path.join(process.cwd(), 'i18n'),
+        watch: true,
+      },
       resolvers: [
-        { use: HeaderResolver, options: ['accept-language'] },
+        { use: AcceptLanguageResolver, options: { matchType: 'strict-loose' } },
       ],
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        connection: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: configService.get('REDIS_PORT', 6379),
-        },
+        connection: getRedisConnectionOptions(configService),
       }),
       inject: [ConfigService],
     }),

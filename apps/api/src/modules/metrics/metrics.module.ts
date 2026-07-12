@@ -5,6 +5,10 @@ import {
   makeHistogramProvider,
 } from '@willsoto/nestjs-prometheus';
 
+const THROTTLER_HITS_METRIC = 'PROM_METRIC_THROTTLER_HITS_TOTAL';
+const THROTTLER_DURATION_METRIC = 'PROM_METRIC_THROTTLER_REQUEST_DURATION_SECONDS';
+const CSRF_REJECTIONS_METRIC = 'PROM_METRIC_CSRF_REJECTIONS_TOTAL';
+
 /**
  * Prometheus observability for the OPEP API.
  *
@@ -37,7 +41,7 @@ import {
     makeHistogramProvider({
       name: 'throttler_request_duration_seconds',
       help: 'Duration of throttler.handleRequest execution (incl. Redis storage round-trip).',
-      labelNames: ['tier', 'route'],
+      labelNames: ['tier', 'route', 'result'],
       buckets: [0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5],
     }),
     makeCounterProvider({
@@ -46,6 +50,11 @@ import {
       labelNames: ['reason', 'method'],
     }),
   ],
-  exports: [PrometheusModule],
+  exports: [
+    PrometheusModule,
+    THROTTLER_HITS_METRIC,
+    THROTTLER_DURATION_METRIC,
+    CSRF_REJECTIONS_METRIC,
+  ],
 })
 export class MetricsModule {}
