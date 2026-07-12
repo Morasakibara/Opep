@@ -5,8 +5,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { NotificationEntity, NotificationType, NotificationChannel, NotificationStatus } from './entities/notification.entity';
 import { Reservation } from '../reservations/entities/reservation.entity';
+import { User } from '../users/entities/user.entity';
 import { AuditService } from '../audit/services/audit.service';
 import { AfricasTalkingService } from './africastalking.service';
+import { FirebaseCloudMessagingService } from './firebase-cloud-messaging.service';
 
 @Injectable()
 export class NotificationService {
@@ -15,9 +17,12 @@ export class NotificationService {
     private readonly notificationRepository: Repository<NotificationEntity>,
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectQueue('notifications-queue') private readonly notificationsQueue: Queue,
     private readonly auditService: AuditService,
     private readonly atService: AfricasTalkingService,
+    private readonly fcmService: FirebaseCloudMessagingService,
   ) {}
 
   /**
@@ -157,8 +162,27 @@ export class NotificationService {
           break;
 
         case NotificationChannel.PUSH:
-          // Production: Firebase Cloud Messaging. Mock for now.
-          console.log(`[Push] Envoi à ${notification.userId}: ${notification.message}`);
+          // Send via Firebase Cloud Messaging using user's registered device token
+          const user = await this.userRepository.findOne({
+            where: { id: notification.userId },
+            select: ['id', 'fcmToken'],
+          });
+          if (user?.fcmToken) {
+            result = await this.fcmService.sendPush(user.fcmToken, {
+              title: notification.title,
+              body: notification.message,
+              data: {
+                type: notification.type,
+                reservationId: notification.reservationId || '',
+                tripId: notification.tripId || '',
+              },
+            });
+            if (!result.success) {
+              console.warn(`[Push Fallback] Envoi à user ${notification.userId}: ${notification.message}`);
+            }
+          } else {
+            console.log(`[Push] Pas de FCM token pour user ${notification.userId} — fallback log: ${notification.message}`);
+          }
           break;
 
         case NotificationChannel.EMAIL:

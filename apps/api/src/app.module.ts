@@ -38,6 +38,8 @@ import { CompaniesModule } from './modules/companies/companies.module';
 import { CentresModule } from './modules/centres/centres.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { BillingsModule } from './modules/billings/billings.module';
+import { SeatsModule } from './modules/seats/seats.module';
+import { OfflineScanModule } from './modules/offline-scan/offline-scan.module';
 
 @Module({
   imports: [
@@ -114,6 +116,8 @@ import { BillingsModule } from './modules/billings/billings.module';
     CentresModule,
     ComplaintsModule,
     BillingsModule,
+    SeatsModule,
+    OfflineScanModule,
     SchedulesModule,
     ReportsModule,
   ],

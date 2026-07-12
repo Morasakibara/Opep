@@ -72,4 +72,7 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   privacyPolicyAcceptedLang: string;
+
+  @Column({ nullable: true })
+  fcmToken: string;
 }

@@ -2,11 +2,13 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } f
 import { Throttle } from '@nestjs/throttler';
 import { UsersService } from './services/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 
 @Controller('users')
@@ -56,6 +58,16 @@ export class UsersController {
   async toggleActivation(@Param('id') id: string, @Body('isActive') isActive: boolean) {
     const user = await this.usersService.toggleActivation(id, isActive);
     return UserResponseDto.fromEntity(user);
+  }
+
+  @Post('fcm-token')
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
+  async updateFcmToken(
+    @Body() dto: UpdateFcmTokenDto,
+    @GetUser('id') userId: string,
+  ) {
+    await this.usersService.update(userId, { fcmToken: dto.fcmToken });
+    return { message: 'Token FCM mis à jour avec succès' };
   }
 
   @Delete(':id')
