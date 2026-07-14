@@ -8,6 +8,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { JwtService } from '@nestjs/jwt';
+import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { UserRole } from '@opep/shared-types';
 
@@ -28,6 +29,8 @@ const ALLOWED_ROLES: UserRole[] = [UserRole.DRIVER, UserRole.CLIENT];
   cors: { origin: '*', credentials: true },
 })
 export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private readonly logger = new Logger(GpsGateway.name);
+
   @WebSocketServer()
   server: Server;
 
@@ -70,7 +73,7 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      console.log(`[GPS] Client authentifié: ${client.id} (${userRole})`);
+      this.logger.log(`Client authentifié: ${client.id} (${userRole})`);
     } catch (err) {
       client.emit('error', { message: 'Token invalide ou expiré' });
       client.disconnect();
@@ -92,7 +95,7 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       this.clientSubscriptions.delete(client.id);
     }
-    console.log(`[GPS] Client déconnecté: ${client.id}`);
+    this.logger.log(`Client déconnecté: ${client.id}`);
   }
 
   @SubscribeMessage('subscribe-trip')
@@ -118,7 +121,7 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Join the Socket.IO room for this trip
     client.join(`trip:${tripId}`);
 
-    console.log(`[GPS] Client ${client.id} abonné au voyage ${tripId}`);
+    this.logger.log(`Client ${client.id} abonné au voyage ${tripId}`);
     return { event: 'subscribed', data: { tripId } };
   }
 
@@ -149,7 +152,7 @@ export class GpsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     client.leave(`trip:${tripId}`);
-    console.log(`[GPS] Client ${client.id} désabonné du voyage ${tripId}`);
+    this.logger.log(`Client ${client.id} désabonné du voyage ${tripId}`);
     return { event: 'unsubscribed', data: { tripId } };
   }
 

@@ -5,11 +5,13 @@ import { Repository } from 'typeorm';
 import { Reservation, ReservationStatus } from '../entities/reservation.entity';
 import { Passenger } from '../entities/passenger.entity';
 import Redis from 'ioredis';
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 
 @Processor('reservations-queue')
 export class ReservationsProcessor extends WorkerHost {
+  private readonly logger = new Logger(ReservationsProcessor.name);
+
   constructor(
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
@@ -42,7 +44,7 @@ export class ReservationsProcessor extends WorkerHost {
           await this.redis.del(lockKey);
         }
 
-        console.log(`[RESERVATION] Expirée: ${reservationId}`);
+        this.logger.log(`Expirée: ${reservationId}`);
       }
     }
   }

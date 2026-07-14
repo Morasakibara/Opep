@@ -1,5 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
+import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment, PaymentProvider, PaymentStatus } from '../entities/payment.entity';
@@ -17,6 +18,8 @@ interface MockPaymentJob {
 
 @Processor('payments-queue')
 export class PaymentsMockProcessor extends WorkerHost {
+  private readonly logger = new Logger(PaymentsMockProcessor.name);
+
   constructor(
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
@@ -46,12 +49,12 @@ export class PaymentsMockProcessor extends WorkerHost {
     });
 
     if (!payment) {
-      console.warn(`[PAYMENT_MOCK] Paiement introuvable: ${paymentId}`);
+      this.logger.warn(`Paiement introuvable: ${paymentId}`);
       return { received: false, reason: 'Payment not found' };
     }
 
     if (payment.status !== PaymentStatus.PENDING) {
-      console.log(`[PAYMENT_MOCK] Paiement déjà traité: ${paymentId} (${payment.status})`);
+      this.logger.log(`Paiement déjà traité: ${paymentId} (${payment.status})`);
       return { received: true, status: payment.status };
     }
 
@@ -61,7 +64,7 @@ export class PaymentsMockProcessor extends WorkerHost {
       payment.metadata = { ...payment.metadata, mockProcessedAt: new Date().toISOString() };
       await this.paymentRepository.save(payment);
 
-      console.log(`[PAYMENT_MOCK] Échec simulé ${provider}: ${paymentId}`);
+      this.logger.warn(`Échec simulé ${provider}: ${paymentId}`);
     } else {
       payment.status = PaymentStatus.SUCCESS;
       payment.providerTransactionId = `${provider === PaymentProvider.MTN_MOMO ? 'MTN' : 'OM'}_MOCK_${paymentId.substring(0, 8).toUpperCase()}`;
@@ -80,7 +83,7 @@ export class PaymentsMockProcessor extends WorkerHost {
         // Generate tickets
         await this.ticketsService.generateTicketsForReservation(reservationId);
 
-        console.log(`[PAYMENT_MOCK] Succès ${provider}: ${paymentId} — Réservation ${reservationId} confirmée`);
+        this.logger.log(`Succès ${provider}: ${paymentId} — Réservation ${reservationId} confirmée`);
       }
     }
 

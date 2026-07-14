@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -12,6 +12,8 @@ import { FirebaseCloudMessagingService } from './firebase-cloud-messaging.servic
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name);
+
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
@@ -146,7 +148,7 @@ export class NotificationService {
             notification.message,
           );
           if (!result.success) {
-            console.warn(`[SMS Fallback] Envoi à ${notification.userId}: ${notification.message}`);
+            this.logger.warn(`SMS Fallback — Envoi à ${notification.userId}: ${notification.message}`);
           }
           break;
 
@@ -157,7 +159,7 @@ export class NotificationService {
             notification.message,
           );
           if (!result.success) {
-            console.warn(`[WhatsApp Fallback] Envoi à ${notification.userId}: ${notification.message}`);
+            this.logger.warn(`WhatsApp Fallback — Envoi à ${notification.userId}: ${notification.message}`);
           }
           break;
 
@@ -178,16 +180,16 @@ export class NotificationService {
               },
             });
             if (!result.success) {
-              console.warn(`[Push Fallback] Envoi à user ${notification.userId}: ${notification.message}`);
+              this.logger.warn(`Push Fallback — Envoi à user ${notification.userId}: ${notification.message}`);
             }
           } else {
-            console.log(`[Push] Pas de FCM token pour user ${notification.userId} — fallback log: ${notification.message}`);
+            this.logger.log(`Push (pas de FCM token) — ${notification.userId}: ${notification.message}`);
           }
           break;
 
         case NotificationChannel.EMAIL:
           // Production: Nodemailer / SendGrid. Mock for now.
-          console.log(`[Email] Envoi à ${notification.userId}: ${notification.message}`);
+          this.logger.log(`Email — Envoi à ${notification.userId}: ${notification.message}`);
           break;
       }
 

@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuditLog } from '../entities/audit-log.entity';
 
 @Injectable()
 export class AuditService {
+  private readonly logger = new Logger(AuditService.name);
+
   constructor(
     @InjectRepository(AuditLog)
     private readonly auditRepository: Repository<AuditLog>,
@@ -31,7 +33,7 @@ export class AuditService {
       })
       .catch((err) => {
         // Never block the main flow for audit logging
-        console.error(`[AUDIT] Failed to log action ${params.action}:`, err.message);
+        this.logger.error(`Failed to log action ${params.action}: ${err.message}`);
       });
   }
 

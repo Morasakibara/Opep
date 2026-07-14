@@ -14,7 +14,6 @@
     "@hookform/resolvers": "^5.4.0",
     "@opep/qr-utils": "*",
     "@opep/shared-types": "*",
-    "@rolldown/binding-win32-x64-msvc": "^1.1.5",
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-table": "^8.21.3",
     "@types/leaflet": "^1.9.21",

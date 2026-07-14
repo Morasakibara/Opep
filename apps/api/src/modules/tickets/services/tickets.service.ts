@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ticket, TicketStatus } from '../entities/ticket.entity';
@@ -12,6 +12,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class TicketsService {
+  private readonly logger = new Logger(TicketsService.name);
   private privateKey: string;
   private publicKey: string;
 
@@ -160,7 +161,7 @@ export class TicketsService {
   }> {
     // 1. Cryptographic validation
     if (!this.publicKey) {
-      console.error('[TICKETS] Public key missing - validation not available');
+      this.logger.error('Public key missing — validation not available');
       return { valid: false, reason: 'Validation non disponible (cle publique manquante)' };
     }
 

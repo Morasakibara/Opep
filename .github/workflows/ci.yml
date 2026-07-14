@@ -77,10 +77,9 @@ jobs:
           JWT_SECRET: ci_jwt_secret
           JWT_REFRESH_SECRET: ci_refresh_secret
 
-      - name: Run Web unit tests (if any)
-        run: npx jest --passWithNoTests
+      - name: Run Web unit tests (Vitest)
+        run: npx vitest run
         working-directory: apps/web
-        continue-on-error: true
 
   e2e-tests:
     name: E2E Tests

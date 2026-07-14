@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Incident } from './incidents.entity';
 import { IncidentsService } from './incidents.service';
+import { CreateIncidentDto, IncidentType } from './dto/create-incident.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 describe('IncidentsService', () => {
@@ -12,7 +13,7 @@ describe('IncidentsService', () => {
 
   const mockIncident = {
     id: 'inc-1',
-    type: 'MECHANICAL_BREAKDOWN',
+    type: IncidentType.MECHANICAL_BREAKDOWN,
     description: 'Panne moteur sur la N3',
     status: 'PENDING',
     refundTriggered: false,
@@ -44,7 +45,7 @@ describe('IncidentsService', () => {
 
   describe('create', () => {
     it('creates and saves a new incident', async () => {
-      const data = { type: 'ACCIDENT', description: 'Collision' };
+      const data: CreateIncidentDto = { type: IncidentType.ACCIDENT, description: 'Collision' };
       mockRepository.create.mockReturnValue(mockIncident);
       mockRepository.save.mockResolvedValue(mockIncident);
 
@@ -53,11 +54,11 @@ describe('IncidentsService', () => {
       expect(mockRepository.create).toHaveBeenCalledWith(data);
       expect(mockRepository.save).toHaveBeenCalledWith(mockIncident);
       expect(result.id).toBe('inc-1');
-      expect(result.type).toBe('MECHANICAL_BREAKDOWN');
+      expect(result.type).toBe(IncidentType.MECHANICAL_BREAKDOWN);
     });
 
     it('handles save returning an array by returning first element', async () => {
-      const data = { type: 'DELAY', description: 'Retard de 2h' };
+      const data: CreateIncidentDto = { type: IncidentType.DELAY, description: 'Retard de 2h' };
       mockRepository.create.mockReturnValue(mockIncident);
       // TypeORM save() can return T | T[], so test the array path
       mockRepository.save.mockResolvedValue([mockIncident]);

@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -22,6 +22,8 @@ export enum PaymentType {
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
@@ -577,7 +579,7 @@ export class PaymentsService {
       }).catch(() => {});
     } else {
       // Payment not found in our system — log for investigation but don't fail
-      console.warn(`[WEBHOOK] Paiement inconnu: ${provider} / ${dto.transactionId}`);
+      this.logger.warn(`Webhook: Paiement inconnu: ${provider} / ${dto.transactionId}`);
     }
 
     return { received: true };
