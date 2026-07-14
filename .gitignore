@@ -10,6 +10,7 @@ build/
 .claude/
  skills/karpathy-guidelines/
  andrej-karpathy-skills-main/
+ skills-main/
 
 # Environment
 .env
