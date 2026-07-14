@@ -13,16 +13,40 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  /** Disable ripple effect animation */
+  noRipple?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', isLoading, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
+  ({ className, variant = 'primary', size = 'md', isLoading, leftIcon, rightIcon, children, disabled, noRipple, ...props }, ref) => {
+    const buttonRef = React.useRef<HTMLButtonElement | null>(null);
+
+    React.useImperativeHandle(ref, () => buttonRef.current!);
+
+    const handleMouseMove = React.useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+      const el = buttonRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      el.style.setProperty('--mouse-x', `${x}%`);
+      el.style.setProperty('--mouse-y', `${y}%`);
+    }, []);
+
+    // Reset ripple on mouse leave
+    const handleMouseLeave = React.useCallback(() => {
+      const el = buttonRef.current;
+      if (!el) return;
+      el.style.removeProperty('--mouse-x');
+      el.style.removeProperty('--mouse-y');
+    }, []);
+
     const variants = {
-      primary: 'bg-primary text-on_primary shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95',
-      secondary: 'bg-secondary text-on_secondary shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-95',
-      outline: 'bg-transparent border border-charcoal_border text-on_surface hover:bg-surface_container_high active:scale-95',
-      ghost: 'bg-transparent text-on_surface_variant hover:text-on_surface hover:bg-surface_container_high active:scale-95',
-      danger: 'bg-error_red/10 text-error_red border border-error_red/20 hover:bg-error_red hover:text-white active:scale-95',
+      primary: 'bg-primary text-on_primary shadow-lg shadow-primary/20 hover:brightness-110 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
+      secondary: 'bg-secondary text-on_secondary shadow-lg shadow-secondary/20 hover:brightness-110 hover:shadow-xl hover:shadow-secondary/30 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
+      outline: 'bg-transparent border border-charcoal_border text-on_surface hover:bg-surface_container_high hover:border-primary/50 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
+      ghost: 'bg-transparent text-on_surface_variant hover:text-on_surface hover:bg-surface_container_high active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
+      danger: 'bg-error_red/10 text-error_red border border-error_red/20 hover:bg-error_red hover:text-white hover:shadow-lg hover:shadow-error_red/20 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
     };
 
     const sizes = {
@@ -34,12 +58,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
-        ref={ref}
+        ref={buttonRef}
         disabled={disabled || isLoading}
+        onMouseMove={!noRipple ? handleMouseMove : undefined}
+        onMouseLeave={!noRipple ? handleMouseLeave : undefined}
         className={cn(
           'flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
           variants[variant],
           sizes[size],
+          noRipple ? '' : 'btn-ripple',
           className
         )}
         {...props}

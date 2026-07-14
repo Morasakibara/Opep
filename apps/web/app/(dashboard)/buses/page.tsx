@@ -1,50 +1,29 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Bus as BusIcon, 
-  Plus, 
-  Search, 
-  MoreVertical, 
-  Settings, 
-  X,
-  Check,
-  LayoutGrid,
-  User,
-  Loader2,
-  Wrench,
-  AlertCircle
-} from 'lucide-react';
-import { apiClient } from '@/lib/apiClient';
+import { Bus as BusIcon, Plus, Search, Settings, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { busesApi } from '@/services/api.service';
+import { AddBusModal, SeatConfigModal, BusHistoryModal } from '@/components/buses';
 
 export default function BusesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showSeatConfig, setShowSeatConfig] = useState<string | null>(null);
-  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-  const [seatCapacity, setSeatCapacity] = useState(48);
+  const [seatConfigBus, setSeatConfigBus] = useState<string | null>(null);
+  const [historyModal, setHistoryModal] = useState<{ id: string; model: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [buses, setBuses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [historyModal, setHistoryModal] = useState<{ id: string; model: string } | null>(null);
-
-  // Form state for Add Bus modal
-  const [newPlateNumber, setNewPlateNumber] = useState('');
-  const [newModel, setNewModel] = useState('');
-  const [newType, setNewType] = useState('Classique');
-  const [newCapacity, setNewCapacity] = useState(48);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   async function loadBuses() {
     setLoading(true);
     try {
-      const data = await apiClient.getBuses();
+      const data = await busesApi.getAll();
       setBuses(data);
     } catch (err: any) {
-      setError(err.message || 'Erreur de chargement des bus');
-    } finally {
-      setLoading(false);
-    }
+      setError(err.message || 'Erreur de chargement');
+    } finally { setLoading(false); }
   }
 
   useEffect(() => { loadBuses(); }, []);
@@ -53,128 +32,98 @@ export default function BusesPage() {
     id: bus.plateNumber || bus.id?.slice(0, 7) || 'BUS',
     model: bus.model || 'Inconnu',
     capacity: bus.totalSeats || 0,
-    type: bus.totalSeats > 45 ? 'VIP' : 'Classique',
-    status: bus.isActive !== false ? 'Actif' : 'Maintenance',
+    type: bus.totalSeats > 45 ? 'VIP' : 'Classique' as const,
+    status: bus.isActive !== false ? 'Actif' : 'Maintenance' as const,
     lastService: bus.updatedAt ? new Date(bus.updatedAt).toLocaleDateString('fr-FR') : 'N/A',
   }));
 
-  const filteredBuses = displayBuses.filter(bus => 
-    bus.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    bus.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    bus.type.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBuses = displayBuses.filter(bus =>
+    bus.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    bus.model.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toggleSeat = (index: number) => {
-    if (selectedSeats.includes(index)) {
-      setSelectedSeats(selectedSeats.filter(s => s !== index));
-    } else {
-      setSelectedSeats([...selectedSeats, index]);
-    }
-  };
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 size={32} className="text-blue-600 animate-spin" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end">
+      {toast && (
+        <div className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right ${
+          toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white'
+        }`}>
+          {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+          <p className="text-sm font-bold">{toast.message}</p>
+        </div>
+      )}
+
+      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
         <div>
-          <h2 className="text-2xl font-black text-gray-900">Gestion des Bus</h2>
-          <p className="text-gray-500">Gérez la flotte de véhicules de votre agence.</p>
-        </div>          <button 
-            onClick={() => { setNewPlateNumber(''); setNewModel(''); setNewType('Classique'); setNewCapacity(48); setShowAddModal(true); }}
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg shadow-blue-100"
-          >
-          <Plus size={20} className="mr-2" />
-          Ajouter un bus
+          <h2 className="text-2xl font-bold text-on_surface">Gestion des Bus</h2>
+          <p className="text-on_surface_variant">Gérez la flotte de véhicules de votre agence.</p>
+        </div>
+        <button onClick={() => setShowAddModal(true)}
+          className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+          <Plus size={20} /> Ajouter un bus
         </button>
       </div>
 
-      {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-6 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <AlertCircle className="text-red-500" size={24} />
-            <div>
-              <p className="font-bold text-red-700">Erreur de chargement</p>
-              <p className="text-sm text-red-500">{error}</p>
-            </div>
+        <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="text-error_red" size={24} />
+            <div><p className="font-bold text-on_surface">Erreur</p><p className="text-sm text-on_surface_variant">{error}</p></div>
           </div>
-          <button onClick={() => { setError(null); loadBuses(); }} className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 transition">
+          <button onClick={() => { setError(null); loadBuses(); }} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">
             Réessayer
           </button>
         </div>
       )}
 
-      {/* Search & Filters */}
-      <div className="flex space-x-4">
-        <div className="flex-1 bg-white rounded-xl border border-gray-100 flex items-center px-4 shadow-sm">
-          <Search size={18} className="text-gray-400 mr-2" />
-          <input 
-            type="text" 
-            placeholder="Rechercher par immatriculation, modèle..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="py-3 bg-transparent border-none outline-none text-sm w-full text-gray-900" 
-          />
+      <div className="flex gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+          <input type="text" placeholder="Rechercher par immatriculation, modèle..." value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)} className="input-field pl-10" />
         </div>
-        <select className="bg-white rounded-xl border border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 outline-none shadow-sm">
-          <option>Tous les types</option>
-          <option>VIP</option>
-          <option>Classique</option>
+        <select className="input-field max-w-[180px]">
+          <option>Tous les types</option><option>VIP</option><option>Classique</option>
         </select>
       </div>
 
-      {/* Buses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom duration-500">
         {filteredBuses.map((bus) => (
-          <div key={bus.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-200 transition group">
+          <div key={bus.id} className="glass-card-hover rounded-2xl overflow-hidden group">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
-                <div className={`p-3 rounded-xl ${bus.type === 'VIP' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'}`}>
+                <div className={`p-3 rounded-xl ${bus.type === 'VIP' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'}`}>
                   <BusIcon size={24} />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${bus.status === 'Actif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`status-badge ${bus.status === 'Actif' ? 'status-badge-success' : 'status-badge-warning'}`}>
                     {bus.status}
                   </span>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <MoreVertical size={18} />
-                  </button>
                 </div>
               </div>
-
-              <h4 className="text-lg font-black text-gray-900 mb-1">{bus.id}</h4>
-              <p className="text-sm text-gray-500 mb-4">{bus.model}</p>
-
-              <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-50">
+              <h4 className="text-lg font-bold text-on_surface mb-1">{bus.id}</h4>
+              <p className="text-sm text-on_surface_variant mb-4">{bus.model}</p>
+              <div className="grid grid-cols-2 gap-4 py-4 border-t border-charcoal_border">
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Capacité</p>
-                  <p className="text-sm font-bold text-gray-900">{bus.capacity} places</p>
+                  <p className="text-[10px] text-on_surface_variant font-bold uppercase mb-1">Capacité</p>
+                  <p className="text-sm font-bold text-on_surface">{bus.capacity} places</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Dernière révision</p>
-                  <p className="text-sm font-bold text-gray-900">{bus.lastService}</p>
+                  <p className="text-[10px] text-on_surface_variant font-bold uppercase mb-1">Dernière révision</p>
+                  <p className="text-sm font-bold text-on_surface">{bus.lastService}</p>
                 </div>
               </div>
             </div>
-            
-            <div className="px-6 py-4 bg-gray-50 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <button 
-                onClick={() => {
-                  setShowSeatConfig(bus.id);
-                  setSeatCapacity(bus.capacity);
-                }}
-                className="text-xs font-bold text-blue-600 hover:underline flex items-center"
-              >
-                <Settings size={14} className="mr-1" /> Configurer les sièges
+            <div className="px-6 py-4 bg-surface_container_low flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => setSeatConfigBus(bus.id)}
+                className="text-xs font-bold text-primary flex items-center gap-1">
+                <Settings size={14} /> Configurer les sièges
               </button>
-              <button onClick={() => setHistoryModal({ id: bus.id, model: bus.model })} className="text-xs font-bold text-gray-500 hover:text-gray-700">
+              <button onClick={() => setHistoryModal({ id: bus.id, model: bus.model })} className="text-xs font-bold text-on_surface_variant hover:text-on_surface">
                 Historique
               </button>
             </div>
@@ -182,201 +131,25 @@ export default function BusesPage() {
         ))}
       </div>
 
-      {/* Add Bus Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setShowAddModal(false)}>
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-              <h3 className="text-xl font-black text-gray-900">Ajouter un nouveau bus</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-8 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Immatriculation</label>
-                  <input type="text" value={newPlateNumber} onChange={(e) => setNewPlateNumber(e.target.value)} placeholder="ex: LT-123-AA" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Modèle</label>
-                  <input type="text" value={newModel} onChange={(e) => setNewModel(e.target.value)} placeholder="ex: Mercedes Travego" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Type</label>
-                  <select value={newType} onChange={(e) => setNewType(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition font-bold text-gray-700">
-                    <option>VIP</option>
-                    <option>Classique</option>
-                    <option>Premium</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Capacité</label>
-                  <input type="number" value={newCapacity} onChange={(e) => setNewCapacity(Number(e.target.value))} placeholder="ex: 70" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition text-gray-900" />
-                </div>
-              </div>
-              <button 
-                onClick={async () => {
-                  if (!newPlateNumber || !newModel) return;
-                  setSaving(true);
-                  try {
-                    await apiClient.createBus({
-                      plateNumber: newPlateNumber,
-                      model: newModel,
-                      totalSeats: newCapacity,
-                    });
-                    setShowAddModal(false);
-                    loadBuses();
-                  } catch (err: any) {
-                    setError(err.message || 'Erreur lors de la création du bus');
-                    setTimeout(() => setError(null), 4000);
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-                disabled={saving || !newPlateNumber || !newModel}
-                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {saving ? 'Création...' : "Confirmer l'ajout"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddBusModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={loadBuses}
+      />
 
-      {/* Bus History Modal */}
-      {historyModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setHistoryModal(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-              <h3 className="text-xl font-black text-gray-900">Historique - {historyModal.id}</h3>
-              <button onClick={() => setHistoryModal(null)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-8 space-y-6">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                  <BusIcon size={24} />
-                </div>
-                <div>
-                  <p className="text-lg font-black text-gray-900">{historyModal.model}</p>
-                  <p className="text-sm text-gray-500">{historyModal.id}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { date: '15/06/2026', event: 'Révision générale', type: 'maintenance', detail: 'Vidange + Freins + Pneus' },
-                  { date: '01/06/2026', event: 'Trajet Yaoundé - Douala', type: 'trip', detail: '45 passagers, 5h de trajet' },
-                  { date: '28/05/2026', event: 'Changement batterie', type: 'maintenance', detail: 'Batterie 12V 200Ah' },
-                  { date: '20/05/2026', event: 'Trajet Yaoundé - Bafoussam', type: 'trip', detail: '30 passagers, 4h de trajet' },
-                  { date: '10/05/2026', event: 'Contrôle technique', type: 'maintenance', detail: 'Certificat valide jusqu\'à 2027' },
-                ].map((entry, i) => (
-                  <div key={i} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
-                    <div className={`p-2 rounded-lg ${entry.type === 'maintenance' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
-                      {entry.type === 'maintenance' ? <Wrench size={16} /> : <BusIcon size={16} />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <p className="text-sm font-bold text-gray-900">{entry.event}</p>
-                        <span className="text-[10px] text-gray-400 font-bold">{entry.date}</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">{entry.detail}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-6 bg-gray-50 border-t border-gray-100">
-              <button onClick={() => setHistoryModal(null)} className="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 transition">
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <BusHistoryModal
+        isOpen={!!historyModal}
+        busId={historyModal?.id || ''}
+        busModel={historyModal?.model || ''}
+        onClose={() => setHistoryModal(null)}
+      />
 
-      {/* Seat Config View */}
-      {showSeatConfig && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setShowSeatConfig(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-black text-gray-900">Configuration des sièges - {showSeatConfig}</h3>
-                <p className="text-sm text-gray-500">Définissez la disposition des sièges pour ce véhicule. Cliquez sur un siège pour le marquer comme VIP ou indisponible.</p>
-              </div>
-              <button onClick={() => setShowSeatConfig(null)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-8 bg-gray-50 flex flex-col items-center">
-              <div className="mb-6 flex space-x-8 bg-white p-4 rounded-2xl border border-gray-100">
-                <div className="text-center">
-                  <p className="text-[10px] text-gray-400 font-black uppercase">Capacité</p>
-                  <p className="text-xl font-black text-gray-900">{seatCapacity}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[10px] text-gray-400 font-black uppercase">Sièges VIP</p>
-                  <p className="text-xl font-black text-orange-600">{selectedSeats.length}</p>
-                </div>
-              </div>
-
-              <div className="w-64 bg-white border border-gray-200 rounded-[3rem] p-8 shadow-inner relative">
-                {/* Driver seat */}
-                <div className="flex justify-end mb-8">
-                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
-                    <User size={18} />
-                  </div>
-                </div>
-                
-                {/* Seats Grid */}
-                <div className="grid grid-cols-4 gap-3">
-                  {Array.from({ length: seatCapacity }).map((_, i) => {
-                    const isVip = selectedSeats.includes(i);
-                    return (
-                      <React.Fragment key={i}>
-                        {i % 4 === 2 && <div className="w-4"></div>}
-                        <button 
-                          onClick={() => toggleSeat(i)}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all transform active:scale-95 ${
-                            isVip 
-                            ? 'bg-orange-500 text-white border-b-4 border-orange-700 shadow-lg' 
-                            : 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100'
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-            <div className="p-6 border-t border-gray-50 bg-white flex justify-between items-center">
-              <div className="flex space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-blue-50 border border-blue-100 rounded"></div>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase">Standard</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase">Siège VIP</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => {
-                  setShowSeatConfig(null);
-                }}
-                className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100"
-              >
-                Sauvegarder la config
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SeatConfigModal
+        isOpen={!!seatConfigBus}
+        busId={seatConfigBus || ''}
+        seatCapacity={displayBuses.find(b => b.id === seatConfigBus)?.capacity || 48}
+        onClose={() => setSeatConfigBus(null)}
+      />
     </div>
   );
 }

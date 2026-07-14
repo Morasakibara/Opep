@@ -31,6 +31,7 @@ describe('AuthService', () => {
 
   const mockUsersService = {
     findByIdentifier: jest.fn(),
+    findByIdentifierByUserId: jest.fn(),
     findById: jest.fn(),
     findByPhone: jest.fn(),
     create: jest.fn(),
@@ -112,6 +113,7 @@ describe('AuthService', () => {
       expect(result.access_token).toBe('access-token');
       expect(result.refresh_token).toBe('refresh-token');
       expect(result.user.id).toBe('u-1');
+      expect(result.user.firstName).toBe('Awa');
       expect(mockUsersService.findByIdentifier).toHaveBeenCalledWith('awa@opep.test');
     });
 
@@ -128,6 +130,27 @@ describe('AuthService', () => {
       await expect(
         authService.login({ identifier: 'awa@opep.test', password: 'wrong-pw' }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws Forbidden when account is locked', async () => {
+      mockLoginAttemptService.isLocked.mockResolvedValue({ locked: true, remainingSeconds: 300 });
+      await expect(
+        authService.login({ identifier: 'locked@opep.test', password: 'any' }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('upgrades password hash when needsRehash is true', async () => {
+      mockPasswordService.verify.mockResolvedValue(true);
+      mockPasswordService.needsRehash.mockReturnValue(true);
+      mockPasswordService.hash.mockResolvedValue('argon2-hash');
+      mockUsersService.findByIdentifier.mockResolvedValue(mockUser);
+      mockUsersService.update.mockResolvedValue({ ...mockUser, passwordHash: 'argon2-hash' });
+
+      const result = await authService.login({ identifier: 'awa@opep.test', password: 'secret123' });
+
+      expect(result.access_token).toBe('mock-access-token');
+      expect(mockPasswordService.hash).toHaveBeenCalledWith('secret123');
+      expect(mockUsersService.update).toHaveBeenCalled();
     });
   });
 
@@ -177,6 +200,59 @@ describe('AuthService', () => {
         throw new Error('bad signature');
       });
       await expect(authService.refreshToken('bad')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws Unauthorized for revoked token', async () => {
+      mockJwtService.verify.mockReturnValue({ sub: 'u-1' });
+      mockRefreshTokenRepository.findOne.mockResolvedValue(null);
+      await expect(authService.refreshToken('revoked-token')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('logout', () => {
+    it('revokes a specific refresh token', async () => {
+      const result = await authService.logout('u-1', 'specific-token');
+      expect(result.message).toContain('Déconnexion');
+    });
+
+    it('revokes all refresh tokens for the user', async () => {
+      const result = await authService.logout('u-1');
+      expect(result.message).toContain('Déconnexion');
+    });
+  });
+
+  describe('changePassword', () => {
+    it('updates password when current password is correct', async () => {
+      mockUsersService.findByIdentifierByUserId.mockResolvedValue(mockUser);
+      mockPasswordService.verify.mockResolvedValue(true);
+      mockPasswordService.hash.mockResolvedValue('new-hash');
+
+      const result = await authService.changePassword('u-1', 'current-pw', 'new-pw');
+      expect(result.message).toContain('modifié');
+      expect(mockUsersService.update).toHaveBeenCalled();
+    });
+
+    it('throws Unauthorized when current password is wrong', async () => {
+      mockUsersService.findByIdentifierByUserId.mockResolvedValue(mockUser);
+      mockPasswordService.verify.mockResolvedValue(false);
+      await expect(
+        authService.changePassword('u-1', 'wrong-pw', 'new-pw'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('getProfile', () => {
+    it('returns user profile for valid user', async () => {
+      mockUsersService.findById.mockResolvedValue(mockUser);
+      const profile = await authService.getProfile('u-1');
+      expect(profile.id).toBe('u-1');
+      expect(profile.firstName).toBe('Awa');
+      expect(profile.lastName).toBe('Ndiaye');
+    });
+
+    it('throws NotFound for unknown user', async () => {
+      mockUsersService.findById.mockResolvedValue(null);
+      await expect(authService.getProfile('ghost')).rejects.toThrow(NotFoundException);
     });
   });
 });

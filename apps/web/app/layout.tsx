@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getLocale } from "next-intl/server";
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: "OPEP Agence - Management Portal",
@@ -34,20 +34,15 @@ export const metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-
   return (
-    <html lang={locale}>
+    <html lang="fr" suppressHydrationWarning>
       <body className="antialiased selection:bg-primary/30 selection:text-primary">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
-        </NextIntlClientProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

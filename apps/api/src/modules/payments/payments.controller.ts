@@ -1,8 +1,7 @@
 import { Controller, Post, Body, Get, Param, UseGuards, Req } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { PaymentsService } from './services/payments.service';
-import { ProcessPaymentDto } from './dto/process-payment.dto';
-import { InitiatePaymentDto } from './dto/initiate-payment.dto';
+import { ProcessPaymentDto, InitiatePaymentDto } from './dto/process-payment.dto';
 import { DepositPaymentDto } from './dto/deposit-payment.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 import { RefundPaymentDto } from './dto/webhook-payment.dto';

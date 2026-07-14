@@ -20,7 +20,6 @@ export class OtpService {
     // Ajout à la file pour envoi (SMS/WhatsApp)
     await this.otpQueue.add('send-otp', { phone, otp }, { removeOnComplete: true });
     
-    console.log(`[OTP DEBUG] Code pour ${phone}: ${otp}`);
     return otp;
   }
 

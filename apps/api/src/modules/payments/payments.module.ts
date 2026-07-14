@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import { Payment } from './entities/payment.entity';
 import { PaymentsService } from './services/payments.service';
-import { PaymentsMockProcessor } from './services/payments-mock.processor';
+import { PaymentsMockProcessor } from './test/payments-mock.processor';
 import { PaymentsController } from './payments.controller';
 import { PaymentsWebhookController } from './payments-webhook.controller';
 import { Reservation } from '../reservations/entities/reservation.entity';

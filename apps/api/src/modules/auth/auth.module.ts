@@ -13,12 +13,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../users/entities/user.entity';
 import { Company } from '../companies/entities/company.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { Session } from './entities/session.entity';
 
 @Module({
   imports: [
     UsersModule,
-    TypeOrmModule.forFeature([User, Company, RefreshToken, Session]),
+    TypeOrmModule.forFeature([User, Company, RefreshToken]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

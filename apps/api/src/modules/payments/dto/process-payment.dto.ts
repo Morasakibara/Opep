@@ -22,3 +22,6 @@ export class ProcessPaymentDto {
   @IsOptional()
   paymentMethod?: string; // e.g., 'mobile_money', 'card', 'cash'
 }
+
+/** @alias ProcessPaymentDto — identical fields except paymentMethod */
+export class InitiatePaymentDto extends ProcessPaymentDto {}

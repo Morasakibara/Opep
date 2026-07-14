@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('opep_token', token);
     localStorage.setItem('opep_user', JSON.stringify(userData));
     setUser(userData);
-    router.push('/reproduction/opep-super-admin-dashboard');
+    router.push('/dashboard');
   };
 
   const logout = () => {

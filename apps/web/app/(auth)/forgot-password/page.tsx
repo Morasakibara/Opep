@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/apiClient';
+import { authApi } from '@/services/api.service';
+import { Bus, Loader2, ArrowLeft, Smartphone, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -22,75 +23,72 @@ export default function ForgotPasswordPage() {
     }
     setLoading(true);
     try {
-      await apiClient.sendOtp(phone);
+      await authApi.sendOtp(phone);
       localStorage.setItem('otp_phone', phone);
       setSuccess(`Code envoyé au ${phone}. Vérifiez votre téléphone.`);
       setTimeout(() => router.push('/otp'), 2000);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'envoi du code.');
+      setError(err.message || "Erreur lors de l'envoi du code.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-login relative overflow-hidden">
-      <div className="absolute inset-0 overlay-dark z-0"></div>
-      
-      <div className="w-full max-w-md space-y-8 bg-white/95 p-10 rounded-[2.5rem] shadow-2xl relative z-10 hover-float">
-        <div>
-          <div className="flex justify-center mb-6">
-            <h1 className="text-4xl font-black italic tracking-tighter text-blue-600">OPEP</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 right-40 w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-40 left-40 w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom duration-500">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-on_primary font-bold text-3xl shadow-2xl shadow-primary/30">
+              <Smartphone size={32} />
+            </div>
           </div>
-          <h2 className="text-center text-3xl font-black tracking-tight text-gray-900">
-            Mot de passe oublié
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-500 font-medium">
-            Entrez votre numéro pour recevoir un code
-          </p>
+          <h1 className="text-3xl font-bold text-on_surface">Mot de passe oublié</h1>
+          <p className="text-on_surface_variant mt-2">Entrez votre numéro pour recevoir un code</p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 border-l-4 border-red-500">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="bg-green-50 text-green-700 p-3 rounded-xl text-xs font-bold mb-4 border-l-4 border-green-500">
-              {success}
-            </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Numéro de téléphone</label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder="6XX XX XX XX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-          </div>
+        <div className="glass-card rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-bottom duration-700">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-error_red/10 border border-error_red/20 text-error_red p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                <AlertCircle size={14} /> {error}
+              </div>
+            )}
+            {success && (
+              <div className="bg-success_green/10 border border-success_green/20 text-success_green p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 size={14} /> {success}
+              </div>
+            )}
 
-          <div>
-            <button
-              type="submit"
-              className="group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all"
-            >
-              {loading ? 'ENVOI EN COURS...' : 'ENVOYER LE CODE'}
+            <div className="space-y-2">
+              <label className="input-label">Numéro de téléphone</label>
+              <div className="relative">
+                <Smartphone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="6XX XX XX XX" className="input-field pl-10" autoFocus />
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading}
+              className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {loading ? <><Loader2 size={20} className="animate-spin" /> Envoi...</> : 'Envoyer le code'}
             </button>
-          </div>
+          </form>
 
-          <div className="text-center mt-6">
-            <Link href="/login" className="font-black text-blue-600 hover:text-blue-500 text-sm">
-              Retour à la connexion
+          <div className="mt-8 pt-6 border-t border-charcoal_border text-center">
+            <Link href="/login" className="font-bold text-primary hover:underline text-sm flex items-center justify-center gap-2">
+              <ArrowLeft size={16} /> Retour à la connexion
             </Link>
           </div>
-        </form>
+        </div>
+
+        <p className="text-center text-xs text-on_surface_variant mt-8">
+          &copy; 2026 OPEP Cameroun. Projet Souverain.
+        </p>
       </div>
     </div>
   );

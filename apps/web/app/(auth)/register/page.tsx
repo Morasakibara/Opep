@@ -3,13 +3,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/apiClient';
+import { authApi } from '@/services/api.service';
+import { Bus, Loader2, ArrowRight, Eye, EyeOff, User, Phone, Mail, Lock } from 'lucide-react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -27,119 +29,103 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      const data = await apiClient.register({
+      const data = await authApi.register({
         firstName: name.split(' ')[0] || name,
         lastName: name.split(' ').slice(1).join(' ') || 'Utilisateur',
-        email: email,
-        phone: phone,
-        password: password,
+        email,
+        phone,
+        password,
         role: 'CLIENT',
       });
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('opep_token', data.access_token);
+      localStorage.setItem('opep_user', JSON.stringify(data.user));
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'inscription');
+      setError(err.message || "Erreur lors de l'inscription");
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-register relative overflow-hidden">
-      <div className="absolute inset-0 overlay-dark z-0"></div>
-      
-      <div className="w-full max-w-md space-y-8 bg-white/95 p-10 rounded-[2.5rem] shadow-2xl relative z-10 hover-float">
-        <div>
-          <div className="flex justify-center mb-6">
-            <h1 className="text-4xl font-black italic tracking-tighter text-blue-600">OPEP</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-40 -right-40 w-[50%] h-[50%] bg-tertiary/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom duration-500">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-on_primary font-bold text-3xl shadow-2xl shadow-primary/30 -rotate-6 transition-transform hover:rotate-0 duration-500">
+              O
+            </div>
           </div>
-          <h2 className="text-center text-3xl font-black tracking-tight text-gray-900">
-            Créer un compte
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-500 font-medium">
-            Rejoignez la plateforme OPEP dès aujourd'hui
-          </p>
+          <h1 className="text-3xl font-bold text-on_surface">Créer un compte</h1>
+          <p className="text-on_surface_variant mt-2">Rejoignez la plateforme OPEP</p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 border-l-4 border-red-500">
-              {error}
-            </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nom complet</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder="Jean Dupont"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Téléphone</label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder="+237 XXXXXXXXX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Adresse email</label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder="jean@exemple.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mot de passe</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="block w-full px-4 py-4 mt-1 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
+        <div className="glass-card rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-bottom duration-700">
+          <form onSubmit={handleRegister} className="space-y-5">
+            {error && (
+              <div className="bg-error_red/10 border border-error_red/20 text-error_red p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-error_red flex-shrink-0" />
+                {error}
+              </div>
+            )}
 
-          <div>
-            <button
-              type="submit"
-              className="group relative flex w-full justify-center rounded-2xl bg-blue-600 px-3 py-4 text-sm font-black text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-xl shadow-blue-200 transition-all"
-            >
-              {loading ? 'INSCRIPTION...' : "S'INSCRIRE"}
+            <div className="space-y-2">
+              <label className="input-label">Nom complet</label>
+              <div className="relative">
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean Dupont" className="input-field pl-10" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="input-label">Téléphone</label>
+              <div className="relative">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+237 XXXXXXXXX" className="input-field pl-10" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="input-label">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jean@exemple.com" className="input-field pl-10" autoComplete="email" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="input-label">Mot de passe</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="input-field pl-10 pr-12" autoComplete="new-password" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface transition-colors">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading}
+              className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {loading ? <><Loader2 size={20} className="animate-spin" /> Inscription...</> : <><span>S'inscrire</span> <ArrowRight size={20} /></>}
             </button>
-          </div>
+          </form>
 
-          <div className="text-center mt-6">
-            <p className="text-xs text-gray-500 font-medium">
+          <div className="mt-8 pt-6 border-t border-charcoal_border text-center">
+            <p className="text-sm text-on_surface_variant">
               Déjà inscrit ?{' '}
-              <Link href="/login" className="font-black text-blue-600 hover:text-blue-500">
-                Se connecter
-              </Link>
+              <Link href="/login" className="font-bold text-primary hover:underline">Se connecter</Link>
             </p>
           </div>
-        </form>
+        </div>
+
+        <p className="text-center text-xs text-on_surface_variant mt-8">
+          &copy; 2026 OPEP Cameroun. Projet Souverain.
+        </p>
       </div>
     </div>
   );

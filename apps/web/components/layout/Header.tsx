@@ -3,7 +3,6 @@ import Image from 'next/image';
 
 import React from 'react';
 import { Search, Globe, Bell, Settings, LogOut } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/context/AuthContext';
 import NotificationCenter from './NotificationCenter';
 import ThemeToggle from './ThemeToggle';
@@ -15,20 +14,16 @@ interface HeaderProps {
 
 export default function Header({ 
   title = "Super Admin", 
-  placeholder = "header.search" 
+  placeholder = "Rechercher..." 
 }: HeaderProps) {
-  const locale = useLocale() as 'fr' | 'en';
-  const t = useTranslations();
-  const searchPlaceholder = placeholder.includes('.') && !placeholder.includes(' ')
-    ? t(placeholder)
-    : placeholder;
+  const { logout, user } = useAuth();
 
   const toggleLanguage = () => {
+    const locale = 'fr';
     const newLang = locale === 'fr' ? 'en' : 'fr';
     document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000; SameSite=Lax`;
     window.location.reload();
   };
-  const { logout, user } = useAuth();
 
   return (
     <header className="flex justify-between items-center px-8 h-16 w-full sticky top-0 z-40 bg-surface_container/80 backdrop-blur-md border-b border-charcoal_border">
@@ -37,7 +32,7 @@ export default function Header({
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
           <input 
             className="w-full bg-surface_dim border border-charcoal_border rounded-full py-2 pl-10 pr-4 text-[14px] focus:border-primary focus:ring-0 outline-none placeholder:text-on_surface_variant/50 text-on_surface" 
-            placeholder={searchPlaceholder}
+            placeholder={placeholder}
             type="text"
           />
         </div>
@@ -49,16 +44,16 @@ export default function Header({
           
           <button 
             onClick={toggleLanguage}
-            className="flex items-center gap-1.5 hover:text-primary transition-all group px-2 py-1 rounded-lg bg-surface_container_high"
-            title="Toggle Language"
+            className="flex items-center gap-1.5 hover:text-primary transition-all group px-2 py-1 rounded-lg bg-surface_container_high active:scale-95 click-feedback"
+            title="Changer de langue"
           >
-            <Globe size={18} className="group-hover:rotate-12 transition-transform" />
-            <span className="text-[11px] font-bold uppercase">{locale}</span>
+            <Globe size={18} className="group-hover:rotate-12 transition-transform duration-500" />
+            <span className="text-[11px] font-bold uppercase">fr</span>
           </button>
           
           <NotificationCenter />
           
-          <button onClick={logout} className="p-2.5 rounded-full hover:bg-error_red/10 hover:text-error_red transition-all" title={t('header.logout')}>
+          <button onClick={logout} className="p-2.5 rounded-full hover:bg-error_red/10 hover:text-error_red hover:scale-110 transition-all duration-200 active:scale-90" title="Déconnexion">
             <LogOut size={20} />
           </button>
         </div>

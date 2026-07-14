@@ -129,22 +129,26 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phone: user.phone,
-        email: user.email,
-        role: user.role,
-        agencyId: user.agencyId,
-        companyId: user.companyId,
-        centreId: user.centreId,
-        isActive: user.isActive,
-        preferredLanguage: user.preferredLanguage,
-        notificationChannel: user.notificationChannel,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      }
+      user: this.toUserResponse(user),
+    };
+  }
+
+  private toUserResponse(user: any) {
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      email: user.email,
+      role: user.role,
+      agencyId: user.agencyId,
+      companyId: user.companyId,
+      centreId: user.centreId,
+      isActive: user.isActive,
+      preferredLanguage: user.preferredLanguage,
+      notificationChannel: user.notificationChannel,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 
@@ -154,22 +158,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phone: user.phone,
-        email: user.email,
-        role: user.role,
-        agencyId: user.agencyId,
-        companyId: user.companyId,
-        centreId: user.centreId,
-        isActive: user.isActive,
-        preferredLanguage: user.preferredLanguage,
-        notificationChannel: user.notificationChannel,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      }
+      user: this.toUserResponse(user),
     };
   }
 
@@ -238,22 +227,9 @@ export class AuthService {
     const user = await this.usersService.findById(userId);
     if (!user) throw new NotFoundException('Utilisateur introuvable');
     return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      email: user.email,
-      role: user.role,
-      agencyId: user.agencyId,
-      companyId: user.companyId,
-      centreId: user.centreId,
-      isActive: user.isActive,
-      preferredLanguage: user.preferredLanguage,
-      notificationChannel: user.notificationChannel,
+      ...this.toUserResponse(user),
       notificationPhone: user.notificationPhone,
       avatarUrl: user.avatarUrl,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
     };
   }
 

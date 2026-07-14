@@ -3,20 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Zap, Globe, ArrowRight, Bus, Users, MapPin, CheckCircle2 } from 'lucide-react';
+import { Shield, Zap, Globe, ArrowRight, Bus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#111316] text-[#e2e2e6] font-jakarta overflow-x-hidden">
+    <div className="min-h-screen bg-background text-on_surface font-jakarta overflow-x-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-[#111316]/80 backdrop-blur-md border-b border-charcoal_border">
+      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-charcoal_border">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on_primary font-bold text-xl shadow-lg shadow-primary/20 rotate-3">
               O
             </div>
-            <span className="text-2xl font-bold tracking-tight">OPEP</span>
+            <span className="text-2xl font-bold tracking-tight text-on_surface">OPEP</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-[14px] font-bold uppercase tracking-widest text-on_surface_variant">
             <a href="#features" className="hover:text-primary transition-colors">Solutions</a>
@@ -51,7 +51,7 @@ export default function HomePage() {
             Digitalisez vos agences avec une infrastructure robuste et souveraine.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000">
-            <Link href="/reproduction/rejoindre-opep-inscription-agence">
+            <Link href="/register">
               <Button className="rounded-full px-10 py-5 text-lg" rightIcon={<ArrowRight size={20} />}>
                 Rejoindre le Réseau
               </Button>
@@ -67,7 +67,7 @@ export default function HomePage() {
         {/* Hero Visual */}
         <div className="mt-24 max-w-6xl mx-auto relative group">
           <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full scale-75 group-hover:scale-100 transition-transform duration-1000"></div>
-          <div className="glass-card rounded-[40px] border border-charcoal_border overflow-hidden shadow-2xl relative z-10">
+          <div className="glass-card rounded-[40px] overflow-hidden shadow-2xl relative z-10">
             <Image 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuA642ETJenAC14xUztknNM5fqRssExwnPi-24B2Def_gUUEXSMIexszon5qFyQcijxARQTjQV7x4wROkqiRHBhLYVtFX0hrp-EQiROVRCH27ik4qAh6ibnnClkHE63S_V1xMKyFfjdbwZumuMRjtl9Rcltc3QsAdz4JnmT-0ElW8D07PN0hOSFtMvaStqIXq3kl9TrHffWL7npxjhs35I0eq-uJBY1kHrU7JKh227rtnmsfkpdzauolFTnpepfo7DaWj46XbU8ghPs" 
               alt="OPEP Dashboard" 
@@ -84,7 +84,7 @@ export default function HomePage() {
       <section id="features" className="py-24 px-6 bg-surface_dim">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Une Infrastructure Intégrale</h2>
+            <h2 className="text-4xl font-bold text-on_surface mb-4">Une Infrastructure Intégrale</h2>
             <p className="text-on_surface_variant">Tout ce dont vous avez besoin pour piloter votre agence de transport.</p>
           </div>
 
@@ -123,9 +123,9 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto glass-card rounded-[48px] p-12 md:p-20 text-center border border-primary/20 bg-primary/5 relative overflow-hidden group">
+        <div className="max-w-5xl mx-auto glass-card rounded-[48px] p-12 md:p-20 text-center border border-primary/20 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000"></div>
-          <h2 className="text-4xl md:text-6xl font-bold mb-8">Prêt à transformer votre mobilité ?</h2>
+          <h2 className="text-4xl md:text-6xl font-bold text-on_surface mb-8">Prêt à transformer votre mobilité ?</h2>
           <p className="text-xl text-on_surface_variant mb-12 max-w-2xl mx-auto">
             Rejoignez l'écosystème OPEP aujourd'hui et bénéficiez d'une visibilité nationale accrue.
           </p>
@@ -145,7 +145,7 @@ export default function HomePage() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on_primary font-bold shadow-lg shadow-primary/20">
               O
             </div>
-            <span className="text-xl font-bold tracking-tight">OPEP</span>
+            <span className="text-xl font-bold tracking-tight text-on_surface">OPEP</span>
           </div>
           <p className="text-on_surface_variant text-sm">© 2026 OPEP Cameroun. Tous droits réservés. Projet Souverain.</p>
           <div className="flex gap-6 text-on_surface_variant">
@@ -160,11 +160,11 @@ export default function HomePage() {
 
 function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="glass-card p-10 rounded-[32px] border border-charcoal_border hover:border-primary transition-all group hover:-translate-y-2 duration-300">
+    <div className="glass-card p-10 rounded-[32px] hover:border-primary transition-all group hover:-translate-y-2 duration-300">
       <div className="w-16 h-16 rounded-2xl bg-surface_container_high flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
         {icon}
       </div>
-      <h3 className="text-2xl font-bold mb-4">{title}</h3>
+      <h3 className="text-2xl font-bold text-on_surface mb-4">{title}</h3>
       <p className="text-on_surface_variant leading-relaxed">{desc}</p>
     </div>
   );
@@ -174,7 +174,7 @@ function StatItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-center group">
       <p className="text-[12px] font-bold text-on_surface_variant uppercase tracking-widest mb-2 group-hover:text-primary transition-colors">{label}</p>
-      <p className="text-4xl md:text-5xl font-bold tracking-tighter group-hover:scale-110 transition-transform duration-500">{value}</p>
+      <p className="text-4xl md:text-5xl font-bold tracking-tighter text-on_surface group-hover:scale-110 transition-transform duration-500">{value}</p>
     </div>
   );
 }

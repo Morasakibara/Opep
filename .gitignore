@@ -7,6 +7,9 @@ build/
 *.log
 .agents/
 .codebuff/
+.claude/
+ skills/karpathy-guidelines/
+ andrej-karpathy-skills-main/
 
 # Environment
 .env
@@ -39,3 +42,4 @@ MCP_CONFIG.md
 nul
 OPEP_CLAUDE (1).md
 cahier_de_charge (2).md
+skills-lock.json
