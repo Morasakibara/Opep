@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } f
 import { Throttle } from '@nestjs/throttler';
 import { UsersService } from './services/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -39,7 +40,7 @@ export class UsersController {
 
   @Patch(':id')
   @Throttle({ short: { limit: 20, ttl: 60000 } })
-  async update(@Param('id') id: string, @Body() updateUserDto: any) {
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const user = await this.usersService.update(id, updateUserDto);
     return UserResponseDto.fromEntity(user);
   }
