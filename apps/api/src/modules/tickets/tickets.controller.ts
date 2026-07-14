@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { TicketsService } from './services/tickets.service';
 import { TicketResponseDto } from './dto/ticket-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 
 @Controller('tickets')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -18,8 +19,8 @@ export class TicketsController {
   }
 
   @Get('my')
-  async getMyTickets(@Req() req: any) {
-    const tickets = await this.ticketsService.getMyTickets(req.user.id);
+  async getMyTickets(@GetUser('id') userId: string) {
+    const tickets = await this.ticketsService.getMyTickets(userId);
     return tickets.map(TicketResponseDto.fromEntity);
   }
 
@@ -31,8 +32,8 @@ export class TicketsController {
 
   @Post('validate')
   @Throttle({ short: { limit: 60, ttl: 60000 } })
-  async validateTicket(@Body() body: { qrString: string }, @Req() req: any) {
-    const result = await this.ticketsService.validateAndScan(body.qrString, req.user?.id);
+  async validateTicket(@Body() body: { qrString: string }, @GetUser('id') userId: string) {
+    const result = await this.ticketsService.validateAndScan(body.qrString, userId);
     return result;
   }
 
