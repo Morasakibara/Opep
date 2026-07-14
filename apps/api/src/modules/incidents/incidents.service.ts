@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Incident } from './incidents.entity';
+import { CreateIncidentDto } from './dto/create-incident.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class IncidentsService {
     private readonly incidentRepository: Repository<Incident>,
   ) {}
 
-  async create(data: any): Promise<Incident> {
+  async create(data: CreateIncidentDto): Promise<Incident> {
     const incident = this.incidentRepository.create(data);
     const saved = await this.incidentRepository.save(incident);
     return Array.isArray(saved) ? saved[0] : saved;

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { IncidentsService } from './incidents.service';
+import { CreateIncidentDto } from './dto/create-incident.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -15,8 +16,8 @@ export class IncidentsController {
   @Post()
   @Roles(UserRole.CLIENT, UserRole.CONTROLLER, UserRole.DRIVER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 20, ttl: 60000 } })
-  create(@Body() body: any) {
-    return this.incidentsService.create(body);
+  create(@Body() createIncidentDto: CreateIncidentDto) {
+    return this.incidentsService.create(createIncidentDto);
   }
 
   @Get()
