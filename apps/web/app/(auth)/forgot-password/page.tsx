@@ -68,8 +68,8 @@ export default function ForgotPasswordPage() {
             <div className="space-y-2">
               <label className="input-label">Numéro de téléphone</label>
               <div className="relative">
-                <Smartphone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="6XX XX XX XX" className="input-field pl-10" autoFocus />
+                <Smartphone size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on_surface_variant pointer-events-none" />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+237 6XX XX XX XX" className="input-field pl-12" autoFocus />
               </div>
             </div>
 

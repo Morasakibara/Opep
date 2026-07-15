@@ -77,32 +77,32 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <label className="input-label">Nom complet</label>
               <div className="relative">
-                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean Dupont" className="input-field pl-10" />
+                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant pointer-events-none" />
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean Dupont" className="input-field pl-12" />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="input-label">Téléphone</label>
               <div className="relative">
-                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+237 XXXXXXXXX" className="input-field pl-10" />
+                <Phone size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant pointer-events-none" />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+237 XXXXXXXXX" className="input-field pl-12" />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="input-label">Email</label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jean@exemple.com" className="input-field pl-10" autoComplete="email" />
+                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant pointer-events-none" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jean@exemple.com" className="input-field pl-12" autoComplete="email" />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="input-label">Mot de passe</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
-                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="input-field pl-10 pr-12" autoComplete="new-password" />
+                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant pointer-events-none" />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="input-field pl-12 pr-12" autoComplete="new-password" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface transition-colors">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>

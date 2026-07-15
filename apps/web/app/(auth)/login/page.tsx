@@ -147,8 +147,9 @@ export default function LoginPage() {
           <div className="mt-6 p-4 bg-surface_container_low rounded-2xl border border-charcoal_border">
             <p className="text-[10px] font-bold text-on_surface_variant uppercase tracking-widest mb-2">Comptes de démonstration</p>
             <div className="space-y-1.5 text-xs text-on_surface_variant">
-              <p><span className="font-bold text-primary">Admin :</span> admin@opep.cm / admin123</p>
-              <p><span className="font-bold text-primary">Manager :</span> manager@opep.cm / manager123</p>
+              <p><span className="font-bold text-primary">Admin :</span> admin@opep.cm / 123456</p>
+              <p><span className="font-bold text-primary">Manager :</span> manager@finexs.cm / 123456</p>
+              <p><span className="font-bold text-primary">Client :</span> adrian@email.com / 123456</p>
             </div>
           </div>
         </div>
