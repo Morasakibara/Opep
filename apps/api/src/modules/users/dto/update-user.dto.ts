@@ -57,4 +57,8 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   fcmToken?: string;
+
+  @IsString()
+  @IsOptional()
+  passwordHash?: string;
 }

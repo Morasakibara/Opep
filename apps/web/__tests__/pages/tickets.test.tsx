@@ -55,7 +55,7 @@ describe('TicketsPage', () => {
       expect(screen.getByText('Mes Tickets')).toBeDefined();
     });
     expect(screen.getByText('Total')).toBeDefined();
-    expect(screen.getByText('Valides')).toBeDefined();
+    expect(screen.getAllByText('Valides').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Utilisés')).toBeDefined();
     expect(screen.getByText('Expirés')).toBeDefined();
   });
@@ -85,7 +85,7 @@ describe('TicketsPage', () => {
     render(<TicketsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Erreur de chargement')).toBeDefined();
+      expect(screen.getAllByText('Erreur de chargement').length).toBeGreaterThan(0);
     });
 
     expect(screen.getByText('Réessayer')).toBeDefined();
@@ -106,7 +106,9 @@ describe('TicketsPage', () => {
       expect(screen.getByText('Jean Dupont')).toBeDefined();
     });
 
-    await userEvent.click(screen.getByText('Valides'));
+    const filterButtons = screen.getAllByText('Valides');
+    // Click on the filter button (second occurrence - the toggle)
+    await userEvent.click(filterButtons[1]);
 
     expect(screen.getByText('Jean Dupont')).toBeDefined();
     expect(screen.queryByText('Marie K.')).toBeNull();

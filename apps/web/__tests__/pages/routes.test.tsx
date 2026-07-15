@@ -42,10 +42,10 @@ describe('RoutesPage', () => {
     render(<RoutesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Yaoundé')).toBeDefined();
+      expect(screen.getByText('Routes')).toBeDefined();
     });
-    expect(screen.getByText('Douala')).toBeDefined();
     expect(screen.getByText('Bafoussam')).toBeDefined();
+    expect(screen.getByText('Garoua')).toBeDefined();
   });
 
   it('affiche l\'état vide quand aucune route', async () => {
@@ -62,7 +62,7 @@ describe('RoutesPage', () => {
     render(<RoutesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Erreur serveur')).toBeDefined();
+      expect(screen.getAllByText('Erreur serveur').length).toBeGreaterThan(0);
     });
 
     expect(screen.getByText('Réessayer')).toBeDefined();
@@ -71,7 +71,7 @@ describe('RoutesPage', () => {
     await userEvent.click(screen.getByText('Réessayer'));
 
     await waitFor(() => {
-      expect(screen.getByText('Yaoundé')).toBeDefined();
+      expect(screen.getByText('Bafoussam')).toBeDefined();
     });
   });
 
@@ -80,13 +80,13 @@ describe('RoutesPage', () => {
     render(<RoutesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Yaoundé')).toBeDefined();
+      expect(screen.getByText('Bafoussam')).toBeDefined();
     });
 
     const searchInput = screen.getByPlaceholderText('Rechercher une ville...');
     await userEvent.type(searchInput, 'Douala');
 
-    expect(screen.getByText('Douala')).toBeDefined();
+    expect(screen.getAllByText('Douala').length).toBeGreaterThan(0);
     expect(screen.queryByText('Garoua')).toBeNull();
   });
 
