@@ -9,6 +9,7 @@ import { Trip } from '../../trips/entities/trip.entity';
 import { AuditService } from '../../audit/services/audit.service';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
+import { NotificationService } from '../../notifications/notification.service';
 
 const mockRedis = {
   set: jest.fn(),
@@ -73,6 +74,7 @@ describe('ReservationsService', () => {
         { provide: REDIS_CLIENT, useValue: mockRedis },
         { provide: DataSource, useFactory: mockDataSource },
         { provide: AuditService, useFactory: mockAuditService },
+        { provide: NotificationService, useValue: { send: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 

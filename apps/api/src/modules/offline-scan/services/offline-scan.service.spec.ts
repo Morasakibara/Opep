@@ -44,17 +44,17 @@ describe('OfflineScanService', () => {
     find: jest.fn(),
     findAndCount: jest.fn(),
     create: jest.fn(),
-    save: jest.fn(),
+    save: jest.fn().mockResolvedValue(undefined),
     update: jest.fn(),
   };
 
   const mockTicketRepository = {
     findOne: jest.fn(),
-    save: jest.fn(),
+    save: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockAuditService = {
-    log: jest.fn(),
+    log: jest.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(async () => {

@@ -17,37 +17,37 @@ describe('AuthController throttle configuration', () => {
 
   it('login is throttled at 30/minute', () => {
     const block = extractMethodBlock('login');
-    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*default:\s*\{\s*limit:\s*30,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
+    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*short:\s*\{\s*limit:\s*30,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
   });
 
   it('register is throttled at 5/minute', () => {
     const block = extractMethodBlock('register');
-    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*default:\s*\{\s*limit:\s*5,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
+    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*short:\s*\{\s*limit:\s*5,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
   });
 
   it('refresh is throttled at 15/minute', () => {
     const block = extractMethodBlock('refresh');
-    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*default:\s*\{\s*limit:\s*15,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
+    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*short:\s*\{\s*limit:\s*15,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
   });
 
   it('reset-password is throttled strictly at 3/minute', () => {
     const block = extractMethodBlock('resetPassword');
-    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*default:\s*\{\s*limit:\s*3,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
+    expect(block).toMatch(/@Throttle\s*\(\s*\{\s*short:\s*\{\s*limit:\s*3,\s*ttl:\s*60000\s*\}\s*\}\s*\)/);
   });
 
-  it('sendOtp uses @SkipThrottle', () => {
+  it('sendOtp uses @Throttle', () => {
     const block = extractMethodBlock('sendOtp');
-    expect(block).toMatch(/@SkipThrottle\s*\(\s*\)/);
+    expect(block).toMatch(/@Throttle\s*\(/);
   });
 
-  it('verifyOtp uses @SkipThrottle', () => {
+  it('verifyOtp uses @Throttle', () => {
     const block = extractMethodBlock('verifyOtp');
-    expect(block).toMatch(/@SkipThrottle\s*\(\s*\)/);
+    expect(block).toMatch(/@Throttle\s*\(/);
   });
 
-  it('imports both Throttle and SkipThrottle from @nestjs/throttler', () => {
+  it('imports Throttle from @nestjs/throttler', () => {
     expect(source).toMatch(
-      /import\s*\{\s*Throttle\s*,\s*SkipThrottle\s*\}\s*from\s*['"]@nestjs\/throttler['"]/,
+      /import\s*\{\s*[^}]*\bThrottle\b[^}]*\}\s*from\s*['"]@nestjs\/throttler['"]/,
     );
   });
 });

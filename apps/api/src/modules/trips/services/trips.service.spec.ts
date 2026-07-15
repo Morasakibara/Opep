@@ -23,20 +23,22 @@ describe('TripsService', () => {
     updatedAt: new Date(),
   };
 
+  const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
+    getManyAndCount: jest.fn().mockResolvedValue([[mockTrip], 1]),
+    orderBy: jest.fn().mockReturnThis(),
+  };
+
   const mockRepository = {
     findOne: jest.fn(),
     findAndCount: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
-    createQueryBuilder: jest.fn(() => ({
-      leftJoinAndSelect: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      skip: jest.fn().mockReturnThis(),
-      take: jest.fn().mockReturnThis(),
-      getManyAndCount: jest.fn(),
-      orderBy: jest.fn().mockReturnThis(),
-    })),
+    createQueryBuilder: jest.fn(() => mockQueryBuilder),
   };
 
   beforeEach(async () => {
@@ -73,9 +75,6 @@ describe('TripsService', () => {
 
   describe('search', () => {
     it('returns paginated search results', async () => {
-      const qb = mockRepository.createQueryBuilder();
-      qb.getManyAndCount.mockResolvedValue([[mockTrip], 1]);
-
       const paginationDto = new PaginationDto();
       const result = await service.search(
         { departureCity: 'Dakar', arrivalCity: 'Thies' },

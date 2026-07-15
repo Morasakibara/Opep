@@ -23,9 +23,9 @@ describe('ReportsService', () => {
       andWhere: jest.fn().mockReturnThis(),
       groupBy: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
-      getRawOne: jest.fn(),
-      getRawMany: jest.fn(),
-      getCount: jest.fn(),
+      getRawOne: jest.fn().mockResolvedValue({ total: '50000' }),
+      getRawMany: jest.fn().mockResolvedValue([]),
+      getCount: jest.fn().mockResolvedValue(0),
     })),
   });
 

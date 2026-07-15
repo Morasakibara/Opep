@@ -65,10 +65,11 @@ describe('CompaniesService', () => {
 
   describe('create', () => {
     it('creates a company when name is unique', async () => {
-      mockCompanyRepo.findOne.mockResolvedValue(null);
+      mockCompanyRepo.findOne
+        .mockResolvedValueOnce(null)     // 1er appel: vérification unicité → pas de doublon
+        .mockResolvedValueOnce(mockCompany); // 2e appel: retour après save
       mockCompanyRepo.create.mockReturnValue(mockCompany);
       mockCompanyRepo.save.mockResolvedValue(mockCompany);
-      mockCompanyRepo.findOne.mockResolvedValue(mockCompany);
 
       const result = await service.create({
         name: 'OPEP Express',
