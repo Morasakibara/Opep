@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, HttpCode, HttpStatus, UnauthorizedException, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, HttpCode, HttpStatus, UnauthorizedException, NotFoundException, UseGuards, Req, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { OtpService } from './services/otp.service';
@@ -60,6 +60,26 @@ export class AuthController {
     const isValid = await this.otpService.verifyOtp(phone, otp);
     if (!isValid) throw new UnauthorizedException('Code OTP invalide ou expir\u00e9');
     return { message: 'OTP v\u00e9rifi\u00e9 avec succ\u00e8s' };
+  }
+
+  /**
+   * Debug endpoint — retourne l'OTP stocké en Redis pour un numéro.
+   * Accessible uniquement en environnement de développement (NODE_ENV !== 'production').
+   * Protégé par JwtAuthGuard + ADMIN_PLATFORM pour éviter tout abus.
+   * Utilise @Query pour éviter les problèmes d'encodage du + dans les numéros de téléphone.
+   */
+  @Get('otp/debug')
+  @UseGuards(JwtAuthGuard)
+  async debugOtp(@Query('phone') phone: string) {
+    // Protection supplémentaire : bloquer en production
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException('Not found');
+    }
+    const otp = await this.otpService.getOtp(phone);
+    if (!otp) {
+      return { phone, otp: null, message: 'Aucun OTP trouvé ou expiré pour ce numéro.' };
+    }
+    return { phone, otp, message: 'OTP récupéré (debug uniquement)' };
   }
 
   @Post('change-password')

@@ -31,4 +31,12 @@ export class OtpService {
     }
     return false;
   }
+
+  /**
+   * Récupère l'OTP stocké pour un téléphone (usage debug uniquement).
+   * Retourne null si aucun OTP n'est stocké ou expiré.
+   */
+  async getOtp(phone: string): Promise<string | null> {
+    return this.redis.get(`otp:${phone}`);
+  }
 }

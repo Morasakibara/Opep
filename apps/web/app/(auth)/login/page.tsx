@@ -82,8 +82,10 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <label className="input-label">Email</label>
+              <label htmlFor="login-email" className="input-label">Email</label>
               <input
+                id="login-email"
+                name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -95,9 +97,11 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="input-label">Mot de passe</label>
+              <label htmlFor="login-password" className="input-label">Mot de passe</label>
               <div className="relative">
                 <input
+                  id="login-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
