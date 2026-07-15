@@ -35,7 +35,12 @@ async function fetchApi<T>(
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
-  return response.json();
+  const json = await response.json();
+  // Auto-unwrap paginated responses: { data: T[], total, page, limit } → T[]
+  if (json && typeof json === 'object' && 'data' in json && Array.isArray(json.data)) {
+    return json.data as unknown as T;
+  }
+  return json as T;
 }
 
 // ============ Auth ============

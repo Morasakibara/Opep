@@ -40,7 +40,7 @@ export default function TicketsPage() {
     setError(null);
     try {
       const data = await ticketsApi.getMyTickets();
-      setTickets(data as TicketData[]);
+      setTickets(data as unknown as TicketData[]);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement');
     } finally {

@@ -46,7 +46,7 @@ export default function RoutesPage() {
     setError(null);
     try {
       const data = await routesApi.getAll();
-      setRoutes(data as AppRoute[]);
+      setRoutes(data as unknown as AppRoute[]);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement');
     } finally {

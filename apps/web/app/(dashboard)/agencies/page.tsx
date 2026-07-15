@@ -50,7 +50,7 @@ export default function AgenciesPage() {
     setError(null);
     try {
       const data = await agenciesApi.getAll();
-      setAgencies(data as Agency[]);
+      setAgencies(data as unknown as Agency[]);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement');
     } finally {
