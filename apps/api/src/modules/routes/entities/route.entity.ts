@@ -1,16 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { Agency } from '../../agencies/entities/agency.entity';
 import { Centre } from '../../centres/entities/centre.entity';
 
 @Entity('routes')
 export class Route extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   agencyId: string;
-
-  @ManyToOne(() => Agency)
-  @JoinColumn({ name: 'agencyId' })
-  agency: Agency;
 
   @Column({ type: 'uuid', nullable: true })
   centreId: string;

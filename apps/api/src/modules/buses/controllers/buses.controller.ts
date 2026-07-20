@@ -18,7 +18,7 @@ export class BusesController {
   constructor(private readonly busesService: BusesService) {}
 
   @Post()
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
   async create(@Body() createBusDto: CreateBusDto, @GetUser('agencyId') agencyId: string, @GetUser('centreId') centreId: string) {
     const bus = await this.busesService.create(agencyId, centreId, createBusDto);
@@ -26,21 +26,21 @@ export class BusesController {
   }
 
   @Get()
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findAll(@GetUser('agencyId') agencyId: string, @Query() paginationDto: PaginationDto) {
     const { items, total } = await this.busesService.findAll(agencyId, paginationDto);
     return paginate(items.map(BusResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get(':id')
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER, UserRole.CASHIER, UserRole.ADMIN_PLATFORM)
   async findOne(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     const bus = await this.busesService.findOne(agencyId, id);
     return BusResponseDto.fromEntity(bus);
   }
 
   @Patch(':id')
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   async update(
     @Param('id') id: string, 
@@ -52,7 +52,7 @@ export class BusesController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.AGENCY_MANAGER, UserRole.ADMIN_PLATFORM)
+  @Roles(UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER, UserRole.ADMIN_PLATFORM)
   @Throttle({ short: { limit: 3, ttl: 60000 } })
   async remove(@Param('id') id: string, @GetUser('agencyId') agencyId: string) {
     await this.busesService.remove(agencyId, id);

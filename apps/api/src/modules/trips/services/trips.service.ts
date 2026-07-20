@@ -15,7 +15,7 @@ export class TripsService {
   async create(agencyId: string, centreId: string | undefined, createTripDto: CreateTripDto): Promise<Trip> {
     const trip = this.tripRepository.create({
       ...createTripDto,
-      agencyId,
+      agencyId: agencyId || undefined,
       centreId: centreId ?? undefined,
       departureDateTime: new Date(createTripDto.departureDateTime),
       arrivalDateTime: new Date(createTripDto.arrivalDateTime),

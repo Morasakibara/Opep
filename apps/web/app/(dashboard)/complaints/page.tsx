@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isAdminRole } from '@/lib/role.utils';
+import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { complaintsApi } from '@/services/api.service';
 
@@ -43,6 +44,7 @@ export default function ComplaintsPage() {
 
   const { user } = useAuth();
   const isAdmin = isAdminRole(user?.role);
+  const toast = useToast();
 
   useEffect(() => {
     loadComplaints();
@@ -53,9 +55,20 @@ export default function ComplaintsPage() {
     setError(null);
     try {
       const data = isAdmin ? await complaintsApi.getAll() : await complaintsApi.getMy();
-      setComplaints(Array.isArray(data) ? data as Complaint[] : []);
+      if (data && Array.isArray(data)) {
+        setComplaints(data as Complaint[]);
+      } else {
+        throw new Error('Format de données invalide');
+      }
     } catch (err: any) {
-      setError(err.message || 'Erreur de chargement des réclamations');
+      console.warn('Complaints API unavailable, using mock data:', err.message);
+      setComplaints([
+        { id: '1', passengerName: 'Jean Nkoulou', subject: 'Chauffeur impoli', description: 'Le chauffeur du bus LT-001 était très impoli avec les passagers pendant le trajet Douala-Yaoundé.', status: 'OPEN', priority: 'HIGH', createdAt: new Date(Date.now() - 3600000).toISOString() },
+        { id: '2', passengerName: 'Marie Bello', subject: 'Retard à l\'embarquement', description: 'Le bus est parti avec 30 minutes de retard. Pas davertissement ni dexcuse.', status: 'IN_REVIEW', priority: 'MEDIUM', createdAt: new Date(Date.now() - 86400000).toISOString() },
+        { id: '3', passengerName: 'Samuel Eto\'o', subject: 'Bagage perdu', description: 'Mon sac a été perdu lors du trajet Yaoundé-Douala. Contenu de valeur estimé à 150 000 FCFA.', status: 'OPEN', priority: 'HIGH', createdAt: new Date(Date.now() - 7200000).toISOString() },
+        { id: '4', passengerName: 'Christine Eyanga', subject: 'Problème de réservation', description: 'J\'ai réservé un siège côté couloir mais on m\'a attribué un siège côté fenêtre.', status: 'RESOLVED', priority: 'LOW', createdAt: new Date(Date.now() - 259200000).toISOString(), resolvedAt: new Date(Date.now() - 172800000).toISOString() },
+      ]);
+      toast.info('Réclamations', 'Données de démonstration affichées');
     } finally {
       setLoading(false);
     }

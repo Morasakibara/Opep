@@ -156,9 +156,9 @@ async function seed() {
   // BUSES
   // ========================================================================
   const busData = [
-    { agencyId: agencies[0].id, plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, seatLayout: { rows: 14, cols: 4, lastRowCols: 2, unavailableSeats: [] } },
-    { agencyId: agencies[0].id, plateNumber: 'LT-002-AB', model: 'Mercedes-Benz Travego', totalSeats: 70, seatLayout: { rows: 14, cols: 4, lastRowCols: 2, unavailableSeats: [] } },
-    { agencyId: agencies[3].id, plateNumber: 'CE-999-ZA', model: 'Scania Touring', totalSeats: 65, seatLayout: { rows: 13, cols: 4, lastRowCols: 1, unavailableSeats: [] } },
+    { agencyId: agencies[0].id, centreId: centres[0].id, plateNumber: 'LT-001-AA', model: 'Mercedes-Benz Travego', totalSeats: 70, seatLayout: { rows: 14, cols: 4, lastRowCols: 2, unavailableSeats: [] } },
+    { agencyId: agencies[0].id, centreId: centres[1].id, plateNumber: 'LT-002-AB', model: 'Mercedes-Benz Travego', totalSeats: 70, seatLayout: { rows: 14, cols: 4, lastRowCols: 2, unavailableSeats: [] } },
+    { agencyId: agencies[3].id, centreId: centres[3].id, plateNumber: 'CE-999-ZA', model: 'Scania Touring', totalSeats: 65, seatLayout: { rows: 13, cols: 4, lastRowCols: 1, unavailableSeats: [] } },
   ];
   const buses = await busRepo.save(busRepo.create(busData));
   console.log(`[SEED] ${buses.length} buses created`);
@@ -167,8 +167,8 @@ async function seed() {
   // ROUTES
   // ========================================================================
   const routeData = [
-    { agencyId: agencies[0].id, departureCity: 'Douala', arrivalCity: 'Yaoundé', distanceKm: 240, estimatedDurationMinutes: 270 },
-    { agencyId: agencies[3].id, departureCity: 'Yaoundé', arrivalCity: 'Douala', distanceKm: 240, estimatedDurationMinutes: 270 },
+    { agencyId: agencies[0].id, centreId: centres[0].id, departureCity: 'Douala', arrivalCity: 'Yaoundé', distanceKm: 240, estimatedDurationMinutes: 270 },
+    { agencyId: agencies[3].id, centreId: centres[3].id, departureCity: 'Yaoundé', arrivalCity: 'Douala', distanceKm: 240, estimatedDurationMinutes: 270 },
   ];
   const routes = await routeRepo.save(routeRepo.create(routeData));
   console.log(`[SEED] ${routes.length} routes created`);
@@ -176,11 +176,14 @@ async function seed() {
   // ========================================================================
   // TRIPS (Past & Future for Stats)
   // ========================================================================
-  const tripData = [];
+  const tripData: any[] = [];
   for (let i = -10; i < 10; i++) {
     const departure = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+    const agencyIndex = i % 2 === 0 ? 0 : 3;
+    const centreIndex = i % 2 === 0 ? 0 : 3;
     tripData.push({
-      agencyId: agencies[i % 2 === 0 ? 0 : 3].id,
+      agencyId: agencies[agencyIndex].id,
+      centreId: centres[centreIndex].id,
       routeId: routes[i % 2 === 0 ? 0 : 1].id,
       busId: buses[i % 2 === 0 ? 0 : 2].id,
       departureDateTime: departure,

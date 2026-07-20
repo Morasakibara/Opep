@@ -31,7 +31,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden dashboard-layout">
       {/* Sidebar - Desktop */}
       <Sidebar />
 

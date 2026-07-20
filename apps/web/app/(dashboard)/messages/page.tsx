@@ -37,9 +37,14 @@ export default function MessagesPage() {
       const data = await messagesApi.getAll();
       setMessages(data as Message[]);
     } catch (err: any) {
-      const msg = err.message || 'Erreur de chargement';
-      setError(msg);
-      toast.error('Messages', msg);
+      console.warn('Messages API unavailable, using mock data:', err.message);
+      setMessages([
+        { id: '1', senderName: 'Admin OPEP', subject: 'Nouvelle mise à jour disponible', preview: 'La version 2.1 de la plateforme apporte des améliorations importantes pour la gestion des réservations.', isRead: false, isUrgent: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
+        { id: '2', senderName: 'Directeur Finexs', subject: 'Demande d\'augmentation de quota', preview: 'Nous souhaiterions augmenter le nombre de trajets mensuels pour la ligne Douala-Yaoundé.', isRead: false, isUrgent: true, createdAt: new Date(Date.now() - 7200000).toISOString() },
+        { id: '3', senderName: 'Support Technique', subject: 'Incident résolu - Paiement MTN', preview: 'Le problème de paiement MTN MoMo du 12 juillet a été résolu. Les transactions sont de nouveau opérationnelles.', isRead: true, isUrgent: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
+        { id: '4', senderName: 'Manager Buca', subject: 'Nouveau conducteur embauché', preview: 'Nous avons embauché un nouveau chauffeur pour renforcer l\'équipe de la ligne Bafoussam.', isRead: true, isUrgent: false, createdAt: new Date(Date.now() - 172800000).toISOString() },
+      ]);
+      toast.info('Messages', 'Données de démonstration affichées');
     } finally {
       setLoading(false);
     }

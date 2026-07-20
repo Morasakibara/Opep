@@ -235,6 +235,22 @@ body {
   @apply text-[11px] font-bold uppercase tracking-widest text-on_surface_variant;
 }
 
+/* ========== LAYOUT FIXES ========== */
+/* ========== LAYOUT FIXES ========== */
+/* Prevent z-index stacking issues on dashboard */
+.dashboard-layout {
+  isolation: isolate;
+}
+/* Fix glass-card backdrop bleed with hardware acceleration */
+@layer components {
+  .glass-card {
+    background: var(--color-surface-container);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-charcoal-border);
+    transform: translateZ(0);
+  }
+}
+
 /* ========== MICRO-INTERACTIONS ========== */
 @layer components {
   /* Hover lift effect for cards */

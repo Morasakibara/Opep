@@ -15,7 +15,7 @@ export class RoutesService {
   async create(agencyId: string, centreId: string | undefined, createRouteDto: CreateRouteDto): Promise<Route> {
     const route = this.routeRepository.create({
       ...createRouteDto,
-      agencyId,
+      agencyId: agencyId || undefined,
       centreId: centreId ?? undefined,
     });
     return this.routeRepository.save(route);

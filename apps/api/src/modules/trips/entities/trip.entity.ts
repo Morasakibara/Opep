@@ -1,8 +1,8 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { Agency } from '../../agencies/entities/agency.entity';
 import { Route } from '../../routes/entities/route.entity';
 import { Bus } from '../../buses/entities/bus.entity';
+import { Centre } from '../../centres/entities/centre.entity';
 
 export enum TripStatus {
   SCHEDULED = 'SCHEDULED',
@@ -11,16 +11,11 @@ export enum TripStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
-import { Centre } from '../../centres/entities/centre.entity';
 
 @Entity('trips')
 export class Trip extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   agencyId: string;
-
-  @ManyToOne(() => Agency)
-  @JoinColumn({ name: 'agencyId' })
-  agency: Agency;
 
   @Column({ type: 'uuid', nullable: true })
   centreId: string;

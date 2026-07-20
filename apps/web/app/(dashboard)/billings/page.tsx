@@ -159,8 +159,12 @@ export default function BillingsPage() {
                       )}
                     </div>
                   </div>
-                  <Download size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-pointer" onClick={() => toast.success('Téléchargement', `Facture ${inv.number} téléchargée`)} />
-                  <ChevronRight size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all flex-shrink-0 cursor-pointer" onClick={() => toast.info(`${inv.number}`, `${inv.companyName} - ${inv.amount?.toLocaleString()} FCFA`)} />
+                  <button className="p-2 hover:bg-surface_container_high rounded-lg transition-all flex-shrink-0" onClick={(e) => { e.stopPropagation(); toast.success('Téléchargement', `Facture ${inv.number} téléchargée`); }}>
+                    <Download size={16} className="text-on_surface_variant hover:text-primary transition-colors" />
+                  </button>
+                  <button className="p-2 hover:bg-surface_container_high rounded-lg transition-all flex-shrink-0" onClick={(e) => { e.stopPropagation(); toast.info(`${inv.number}`, `${inv.companyName} - ${inv.amount?.toLocaleString()} FCFA`); }}>
+                    <ChevronRight size={16} className="text-on_surface_variant hover:text-primary transition-colors" />
+                  </button>
                 </div>
               ))}
             </div>

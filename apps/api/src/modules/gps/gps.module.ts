@@ -1,14 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { JwtModule } from '@nestjs/jwt';
 import { GpsGateway } from './gps.gateway';
 import { GpsController } from './gps.controller';
 import { GpsPing } from './entities/gps-ping.entity';
+import { GpsProcessor } from './gps.processor';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([GpsPing]),
+    BullModule.registerQueue({
+      name: 'gps-queue',
+    }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -19,7 +24,7 @@ import { GpsPing } from './entities/gps-ping.entity';
     }),
   ],
   controllers: [GpsController],
-  providers: [GpsGateway],
+  providers: [GpsGateway, GpsProcessor],
   exports: [GpsGateway],
 })
 export class GpsModule {}

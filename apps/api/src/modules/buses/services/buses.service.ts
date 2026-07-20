@@ -15,7 +15,7 @@ export class BusesService {
   async create(agencyId: string, centreId: string | undefined, createBusDto: CreateBusDto): Promise<Bus> {
     const bus = this.busRepository.create({
       ...createBusDto,
-      agencyId,
+      agencyId: agencyId || undefined,
       centreId: centreId ?? undefined,
     });
     return this.busRepository.save(bus);
