@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Users, Ticket, Bus, QrCode, Clock } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { tripsApi, reservationsApi } from '@/services/api.service';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import RevenueChart from '@/components/dashboard/RevenueChart';
@@ -16,13 +17,14 @@ export default function DashboardPage() {
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [upcomingTrips, setUpcomingTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [reservations, trips] = await Promise.all([
-          reservationsApi.getAll().catch(() => []),
-          tripsApi.getAll().catch(() => []),
+          reservationsApi.getAll().catch(() => [] as any[]),
+          tripsApi.getAll().catch(() => [] as any[]),
         ]);
 
         if ((reservations as any[]).length > 0) {
@@ -59,9 +61,13 @@ export default function DashboardPage() {
             }));
           setUpcomingTrips(nextTrips);
         }
-      } catch {} finally {
+      } catch (err: any) {
+        toast.warning('Tableau de bord', err.message || 'Données partielles affichées');
+      } finally {
         setLoading(false);
       }
+      // Note: individual .catch(() => []) on each API call ensures one failing
+      // doesn't block the other from loading
     };
     fetchData();
   }, []);

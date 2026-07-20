@@ -5,6 +5,7 @@ import {
   Smartphone, Search, AlertCircle, ChevronRight, Clock,
   Wifi, WifiOff, Upload, CheckCircle2, Shield,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { offlineScanApi } from '@/services/api.service';
 
@@ -37,6 +38,7 @@ export default function OfflineScansPage() {
   const [scans, setScans] = useState<OfflineScan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -49,9 +51,11 @@ export default function OfflineScansPage() {
     try {
       const data = await offlineScanApi.getAll();
       setScans(Array.isArray(data) ? data as OfflineScan[] : []);
+      setError(null);
     } catch (err: any) {
       console.warn('Offline-scans API unavailable, using mock data:', err.message);
       setScans(MOCK_SCANS as OfflineScan[]);
+      toast.warning('Scans hors ligne', 'API indisponible, données de démonstration affichées');
     } finally {
       setLoading(false);
     }

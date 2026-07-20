@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Map, Plus, Search, MoreVertical, MapPin, Bus, ArrowRight, Filter, AlertCircle, ChevronRight } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { tripsApi, routesApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 
@@ -13,13 +14,18 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   async function loadData() {
     setLoading(true); setError(null);
     try {
       const [routesData, tripsData] = await Promise.all([routesApi.getAll(), tripsApi.getAll()]);
       setRoutes(routesData); setTrips(tripsData);
-    } catch (err: any) { setError(err.message || 'Erreur de chargement'); }
+    } catch (err: any) {
+      const msg = err.message || 'Erreur de chargement';
+      setError(msg);
+      toast.error('Trajets', msg);
+    }
     finally { setLoading(false); }
   }
 

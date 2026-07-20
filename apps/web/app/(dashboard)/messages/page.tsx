@@ -5,6 +5,7 @@ import {
   MessageSquare, Search, Send, User, Clock,
   AlertCircle, Paperclip, ChevronRight, Star,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { messagesApi } from '@/services/api.service';
 
@@ -22,6 +23,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -35,7 +37,9 @@ export default function MessagesPage() {
       const data = await messagesApi.getAll();
       setMessages(data as Message[]);
     } catch (err: any) {
-      setError(err.message || 'Erreur de chargement');
+      const msg = err.message || 'Erreur de chargement';
+      setError(msg);
+      toast.error('Messages', msg);
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import {
   Building2, Search, MapPin, Phone, Globe, ChevronRight,
   AlertCircle, Plus, X, Loader2, CheckCircle2, Trash2, Edit2,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { agenciesApi } from '@/services/api.service';
 
@@ -29,7 +30,7 @@ export default function AgenciesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const toast = useToast();
 
   const [formName, setFormName] = useState('');
   const [formDesc, setFormDesc] = useState('');
@@ -37,11 +38,6 @@ export default function AgenciesPage() {
   const [formPhone, setFormPhone] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formWebsite, setFormWebsite] = useState('');
-
-  function showToast(type: 'success' | 'error', message: string) {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 3000);
-  }
 
   useEffect(() => { loadAgencies(); }, []);
 
@@ -52,7 +48,9 @@ export default function AgenciesPage() {
       const data = await agenciesApi.getAll();
       setAgencies(data as unknown as Agency[]);
     } catch (err: any) {
-      setError(err.message || 'Erreur de chargement');
+      const msg = err.message || 'Erreur de chargement';
+      setError(msg);
+      toast.error('Agences', msg);
     } finally {
       setLoading(false);
     }
@@ -77,7 +75,7 @@ export default function AgenciesPage() {
   }
 
   async function handleSave() {
-    if (!formName) { showToast('error', 'Le nom est requis'); return; }
+    if (!formName) { toast.warning('Validation', 'Le nom est requis'); return; }
     setSaving(true);
     try {
       if (editingAgency) {
@@ -85,18 +83,18 @@ export default function AgenciesPage() {
           name: formName, description: formDesc, address: formAddress,
           phone: formPhone, email: formEmail, website: formWebsite,
         });
-        showToast('success', 'Agence mise à jour');
+        toast.success('Agence', 'Agence mise à jour');
       } else {
         await agenciesApi.create({
           name: formName, description: formDesc, address: formAddress,
           phone: formPhone, email: formEmail, website: formWebsite,
         });
-        showToast('success', 'Agence créée');
+        toast.success('Agence', 'Agence créée');
       }
       setShowModal(false);
       loadAgencies();
     } catch (err: any) {
-      showToast('error', err.message || 'Erreur');
+      toast.error('Agences', err.message || 'Erreur');
     } finally {
       setSaving(false);
     }
@@ -106,10 +104,10 @@ export default function AgenciesPage() {
     if (!confirm(`Supprimer définitivement "${name}" ?`)) return;
     try {
       await agenciesApi.remove(id);
-      showToast('success', `"${name}" supprimée`);
+      toast.success('Agence', `"${name}" supprimée`);
       loadAgencies();
     } catch (err: any) {
-      showToast('error', err.message || 'Erreur');
+      toast.error('Agences', err.message || 'Erreur');
     }
   }
 
@@ -122,15 +120,6 @@ export default function AgenciesPage() {
 
   return (
     <div className="space-y-8">
-      {toast && (
-        <div className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right ${
-          toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white'
-        }`}>
-          {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-          <p className="text-sm font-bold">{toast.message}</p>
-        </div>
-      )}
-
       <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Agences</h2>

@@ -5,6 +5,7 @@ import {
   AlertTriangle, Search, Shield, Clock,
   AlertCircle, CheckCircle2, ChevronRight, Filter,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { incidentsApi } from '@/services/api.service';
 
@@ -36,6 +37,7 @@ export default function IncidentsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [filter, setFilter] = useState<'all' | 'open'>('all');
 
   useEffect(() => {
@@ -49,7 +51,9 @@ export default function IncidentsPage() {
       const data = await incidentsApi.getAll();
       setIncidents(data as Incident[]);
     } catch (err: any) {
-      setError(err.message || 'Erreur de chargement');
+      const msg = err.message || 'Erreur de chargement';
+      setError(msg);
+      toast.error('Incidents', msg);
     } finally {
       setLoading(false);
     }

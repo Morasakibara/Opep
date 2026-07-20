@@ -5,6 +5,7 @@ import {
   Users, Search, Star, Phone, Mail, MoreVertical,
   Award, AlertCircle, ChevronRight, TrendingUp,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { driversApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 
@@ -31,6 +32,7 @@ export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -44,7 +46,9 @@ export default function DriversPage() {
       const data = await driversApi.getAll();
       setDrivers(data as Driver[]);
     } catch (err: any) {
-      setError(err.message || 'Erreur de chargement des conducteurs');
+      const msg = err.message || 'Erreur de chargement des conducteurs';
+      setError(msg);
+      toast.error('Conducteurs', msg);
     } finally {
       setLoading(false);
     }

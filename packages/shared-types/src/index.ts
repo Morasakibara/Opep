@@ -329,6 +329,10 @@ export const QrTicketPayloadSchema = z.object({
 
 export type QrTicketPayload = z.infer<typeof QrTicketPayloadSchema>;
 
+// Re-export role utilities
+export { isAdminRole, isStaffRole, hasRole } from './role.utils';
+export type { Role } from './role.utils';
+
 export const Schemas = {
   Company: CompanySchema,
   Centre: CentreSchema,
