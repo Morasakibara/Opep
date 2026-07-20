@@ -6,6 +6,7 @@ import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import MobileNav from '@/components/dashboard/MobileNav';
 import PageTransition from '@/components/layout/PageTransition';
 
@@ -41,6 +42,7 @@ export default function DashboardLayout({
 
         {/* Scrollable page content */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-24 md:pb-8 custom-scrollbar">
+          <Breadcrumbs />
           <PageTransition>
             {children}
           </PageTransition>

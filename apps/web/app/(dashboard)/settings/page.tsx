@@ -1,326 +1,501 @@
 'use client';
-import Image from 'next/image';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { User, Building2, Bell, Shield, Camera, Save, Trash2, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Smartphone, Mail, MessageCircle, Languages } from 'lucide-react';
-import { authApi, agenciesApi } from '@/services/api.service';
-import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import React, { useState, useEffect } from 'react';
+import {
+  User, Shield, Bell, Globe, Moon, Sun, Smartphone, Mail,
+  MessageSquare, LogOut, Save, Loader2, CheckCircle2, Eye, EyeOff,
+  Lock, KeyRound, Languages, Palette, Volume2,
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/components/providers/ThemeProvider';
+import { useTranslation } from '@/context/LanguageContext';
+import { useToast } from '@/components/ui/Toast';
+import { authApi } from '@/services/api.service';
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN_PLATFORM: 'Super Administrateur',
+  COMPANY_DIRECTOR: 'Directeur',
+  CENTRE_MANAGER: 'Gestionnaire de centre',
+  AGENCY_MANAGER: "Manager d'agence",
+  CASHIER: 'Caissier',
+  CONTROLLER: 'Contrôleur',
+  DRIVER: 'Chauffeur',
+  CLIENT: 'Client',
+};
+
+const NOTIF_STORAGE_KEY = 'opep-notification-prefs';
+
+interface NotificationPref {
+  id: string;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  enabled: boolean;
+}
+
+function loadNotifPrefs(): NotificationPref[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = localStorage.getItem(NOTIF_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return [];
+}
+
+const DEFAULT_NOTIFICATIONS: NotificationPref[] = [
+  { id: 'whatsapp', label: 'WhatsApp', description: 'Recevoir les notifications sur WhatsApp', icon: null, enabled: false },
+  { id: 'sms', label: 'SMS', description: 'Recevoir les alertes par SMS', icon: null, enabled: true },
+  { id: 'email', label: 'Email', description: 'Recevoir les rapports par email', icon: null, enabled: true },
+];
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'profil' | 'agence' | 'notifications' | 'securite'>('profil');
-  const [profile, setProfile] = useState<any>(null);
-  const [agency, setAgency] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const { language, setLanguage } = useTranslation();
+  const toast = useToast();
 
-  const [firstName, setFirstName] = useState(''); const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState(''); const [phone, setPhone] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null); const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [agencyName, setAgencyName] = useState(''); const [agencyDesc, setAgencyDesc] = useState('');
-  const [agencyAddress, setAgencyAddress] = useState(''); const [agencyWebsite, setAgencyWebsite] = useState('');
-  const [notifChannel, setNotifChannel] = useState('WHATSAPP'); const [notifPhone, setNotifPhone] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState('fr');
-  const [currentPassword, setCurrentPassword] = useState(''); const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState(''); const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  // Profile form
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-  function showToast(type: 'success' | 'error', message: string) {
-    setToast({ type, message }); setTimeout(() => setToast(null), 3000);
-  }
+  // Password change
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
-  useEffect(() => { loadData(); }, []);
+  // Notifications — load from localStorage, fallback to defaults
+  const [notifications, setNotifications] = useState<NotificationPref[]>(() => {
+    const saved = loadNotifPrefs();
+    const base = saved.length === 3 ? saved : DEFAULT_NOTIFICATIONS;
+    return base.map((n) => ({
+      ...n,
+      icon: n.id === 'whatsapp' ? <MessageSquare size={18} /> 
+          : n.id === 'sms' ? <Smartphone size={18} /> 
+          : <Mail size={18} />,
+    }));
+  });
 
-  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { showToast('error', 'Image trop grande (max 5 Mo)'); return; }
-    setUploadingPhoto(true);
+  // Saving state
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setEmail(user.email || '');
+    }
+  }, [user]);
+
+  // Persist notification prefs to localStorage on change
+  useEffect(() => {
     try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        setAvatarUrl(base64);
-        if (profile?.id) {
-          await authApi.updateProfile({ avatarUrl: base64 } as any);
-          showToast('success', 'Photo mise à jour');
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err: any) { showToast('error', err.message || 'Erreur'); }
-    finally { setUploadingPhoto(false); }
-  }
+      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(notifications));
+    } catch {}
+  }, [notifications]);
 
-  async function loadData() {
-    setLoading(true);
-    try {
-      const profileData: any = await authApi.getProfile();
-      setProfile(profileData);
-      setFirstName(profileData.firstName || ''); setLastName(profileData.lastName || '');
-      setEmail(profileData.email || ''); setPhone(profileData.phone || '');
-      setAvatarUrl(profileData.avatarUrl || null);
-      setNotifChannel(profileData.notificationChannel || 'WHATSAPP');
-      setNotifPhone(profileData.notificationPhone || profileData.phone || '');
-      setPreferredLanguage(profileData.preferredLanguage || 'fr');
-      if (profileData.agencyId) {
-        try { const a: any = await agenciesApi.getById(profileData.agencyId); setAgency(a); setAgencyName(a.name || ''); setAgencyDesc(a.description || ''); setAgencyAddress(a.address || ''); setAgencyWebsite(a.website || ''); } catch {}
-      }
-    } catch (err: any) { showToast('error', err.message || 'Erreur de chargement'); }
-    finally { setLoading(false); }
+  function handleToggleNotification(id: string) {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, enabled: !n.enabled } : n))
+    );
   }
 
   async function handleSaveProfile() {
-    if (!profile?.id) return;
-    setSaving(true);
-    try { await authApi.updateProfile({ firstName, lastName, email, phone } as any); showToast('success', 'Profil mis à jour'); }
-    catch (err: any) { showToast('error', err.message || 'Erreur'); }
-    finally { setSaving(false); }
-  }
-
-  async function handleSaveNotifications() {
-    if (!profile?.id) return;
-    setSaving(true);
-    try { await authApi.updateProfile({ notificationChannel: notifChannel, notificationPhone: notifPhone, preferredLanguage } as any); showToast('success', 'Préférences mises à jour'); }
-    catch (err: any) { showToast('error', err.message || 'Erreur'); }
-    finally { setSaving(false); }
+    if (!name.trim()) {
+      toast.warning('Validation', 'Le nom est requis');
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      await authApi.updateProfile({ firstName: name.split(' ')[0], lastName: name.split(' ').slice(1).join(' ') || ' ' });
+      toast.success('Profil', 'Informations mises à jour');
+    } catch (err: any) {
+      toast.error('Profil', err.message || 'Erreur lors de la mise à jour');
+    } finally {
+      setSavingProfile(false);
+    }
   }
 
   async function handleChangePassword() {
-    if (!newPassword || !currentPassword) { showToast('error', 'Remplissez tous les champs'); return; }
-    if (newPassword.length < 6) { showToast('error', 'Minimum 6 caractères'); return; }
-    if (newPassword !== confirmPassword) { showToast('error', 'Les mots de passe ne correspondent pas'); return; }
-    setSaving(true);
-    try { await authApi.changePassword(currentPassword, newPassword); showToast('success', 'Mot de passe modifié'); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); }
-    catch (err: any) { showToast('error', err.message || 'Erreur'); }
-    finally { setSaving(false); }
-  }
-
-  async function handleSaveAgency() {
-    if (!agency?.id) return;
-    setSaving(true);
-    try { await agenciesApi.update(agency.id, { name: agencyName, description: agencyDesc, address: agencyAddress, website: agencyWebsite }); showToast('success', 'Agence mise à jour'); }
-    catch (err: any) { showToast('error', err.message || 'Erreur'); }
-    finally { setSaving(false); }
-  }
-
-  async function handleDeleteAgency() {
-    if (!agency?.id || !confirm('Supprimer définitivement ?')) return;
-    setSaving(true);
-    try { await agenciesApi.remove(agency.id); showToast('success', 'Agence supprimée'); setAgency(null); }
-    catch (err: any) { showToast('error', err.message || 'Erreur'); }
-    finally { setSaving(false); }
-  }
-
-  const tabs = [
-    { id: 'profil', label: 'Mon Profil', icon: <User size={18} /> },
-    { id: 'agence', label: 'Agence', icon: <Building2 size={18} /> },
-    { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> },
-    { id: 'securite', label: 'Sécurité', icon: <Shield size={18} /> },
-  ] as const;
-
-  if (loading) {
-    return <PageSkeleton />;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.warning('Mot de passe', 'Veuillez remplir tous les champs');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.warning('Mot de passe', 'Minimum 6 caractères');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.warning('Mot de passe', 'Les mots de passe ne correspondent pas');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
+      toast.success('Mot de passe', 'Mot de passe modifié avec succès');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      toast.error('Mot de passe', err.message || 'Erreur lors du changement');
+    } finally {
+      setChangingPassword(false);
+    }
   }
 
   return (
-    <div className="space-y-8">
-      {toast && (
-        <div className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right ${
-          toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white'
-        }`}>
-          {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-          <p className="text-sm font-bold">{toast.message}</p>
-        </div>
-      )}
-
-      <div>
+    <div className="space-y-8 max-w-4xl mx-auto pb-12">
+      {/* Page Header */}
+      <div className="animate-in slide-in-from-bottom duration-300">
         <h2 className="text-2xl font-bold text-on_surface">Paramètres</h2>
-        <p className="text-on_surface_variant">Gérez vos préférences.</p>
+        <p className="text-on_surface_variant">Gérez votre profil, vos préférences et votre compte.</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-64 space-y-1">
-          {tabs.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition ${
-                activeTab === tab.id ? 'bg-primary text-on_primary shadow-lg' : 'text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface'
-              }`}>
-              {tab.icon}<span>{tab.label}</span>
-            </button>
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Navigation */}
+        <div className="lg:col-span-1 space-y-3 animate-in slide-in-from-bottom duration-400">
+          <div className="glass-card rounded-2xl overflow-hidden sticky top-24">
+            <div className="p-6 border-b border-charcoal_border">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-on_primary font-bold text-xl shadow-lg shadow-primary/20">
+                  {user?.name?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-on_surface text-sm truncate">{user?.name || 'Utilisateur'}</p>
+                  <p className="text-[10px] text-on_surface_variant uppercase tracking-wider font-bold truncate">{user?.role || '—'}</p>
+                </div>
+              </div>
+            </div>
+            <nav className="p-3 space-y-1">
+              {[
+                { icon: <User size={16} />, label: 'Profil', href: '#profile' },
+                { icon: <Bell size={16} />, label: 'Notifications', href: '#notifications' },
+                { icon: <Palette size={16} />, label: 'Apparence', href: '#appearance' },
+                { icon: <Lock size={16} />, label: 'Sécurité', href: '#security' },
+              ].map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface transition-all"
+                >
+                  <span className="text-primary">{item.icon}</span>
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        <div className="flex-1 glass-card rounded-3xl overflow-hidden">
-          {activeTab === 'profil' && (
-            <div className="p-8">
-              <div className="flex items-center gap-6 mb-8">
-                <div className="relative group">
-                  {avatarUrl ? (
-                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden"><Image fill className="object-cover" src={avatarUrl} alt="Photo" /></div>
-                  ) : (
-                    <div className="w-24 h-24 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-3xl font-bold">{firstName?.[0] || ''}{lastName?.[0] || ''}</div>
-                  )}
-                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif" onChange={handlePhotoUpload} className="hidden" />
-                  <button onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto}
-                    className="absolute -bottom-2 -right-2 p-2 bg-surface_container rounded-xl shadow-lg border border-charcoal_border text-on_surface_variant hover:text-primary transition disabled:opacity-50">
-                    {uploadingPhoto ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
-                  </button>
+        {/* Right Column - Content */}
+        <div className="lg:col-span-2 space-y-8">
+
+          {/* ===== PROFILE SECTION ===== */}
+          <section id="profile" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-400">
+            <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <User size={20} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-[18px] font-bold text-on_surface">Informations personnelles</h3>
+                <p className="text-xs text-on_surface_variant">Mettez à jour vos informations de profil</p>
+              </div>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="space-y-2">
+                <label className="input-label">Nom complet</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Votre nom"
+                  className="input-field"
+                />
+              </div>              <div className="space-y-2">
+                <label className="input-label">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@exemple.com"
+                  className="input-field opacity-60"
+                  readOnly
+                  title="L'email ne peut pas être modifié pour le moment"
+                />
+                <p className="text-[10px] text-on_surface_variant/60 mt-1">L&apos;email est géré par l&apos;administrateur</p>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-surface_container_low rounded-2xl border border-charcoal_border">
+                <Shield size={20} className="text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-on_surface">{ROLE_LABELS[user?.role || ''] || user?.role || 'Rôle non défini'}</p>
+                  <p className="text-[10px] text-on_surface_variant">Rôle attribué par l&apos;administrateur</p>
                 </div>
-                <div><h3 className="text-lg font-bold text-on_surface">Photo de profil</h3><p className="text-sm text-on_surface_variant">JPG, PNG ou GIF. Max 5 Mo.</p></div>
+                <span className="status-badge-info">Actif</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {[
-                  { label: 'Prénom', value: firstName, set: setFirstName },
-                  { label: 'Nom', value: lastName, set: setLastName },
-                  { label: 'Email', value: email, set: setEmail, type: 'email' },
-                  { label: 'Téléphone', value: phone, set: setPhone },
-                ].map((f, i) => (
-                  <div key={i} className="space-y-2">
-                    <label className="input-label">{f.label}</label>
-                    <input type={f.type || 'text'} value={f.value} onChange={(e) => f.set(e.target.value)} className="input-field" />
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-end gap-4">
-                <button onClick={loadData} className="px-6 py-3 rounded-xl text-sm font-bold text-on_surface_variant hover:bg-surface_container_high transition">Annuler</button>
-                <button onClick={handleSaveProfile} disabled={saving}
-                  className="bg-primary text-on_primary px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 transition disabled:opacity-70">
-                  {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                  Enregistrer
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={savingProfile}
+                  className="px-6 py-3 bg-primary text-on_primary font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all flex items-center gap-2 disabled:opacity-70"
+                >
+                  {savingProfile ? (
+                    <><Loader2 size={18} className="animate-spin" /> Sauvegarde...</>
+                  ) : (
+                    <><Save size={18} /> Enregistrer</>
+                  )}
                 </button>
               </div>
             </div>
-          )}
+          </section>
 
-          {activeTab === 'agence' && (
-            <div className="p-8">
-              {!agency ? (
-                <div className="text-center py-8 text-on_surface_variant">Aucune agence associée.</div>
-              ) : (
-                <>
-                  <div className="space-y-6">
-                    <div className="space-y-2"><label className="input-label">Nom</label><input type="text" value={agencyName} onChange={(e) => setAgencyName(e.target.value)} className="input-field" /></div>
-                    <div className="space-y-2"><label className="input-label">Description</label><textarea rows={4} value={agencyDesc} onChange={(e) => setAgencyDesc(e.target.value)} className="input-field" /></div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2"><label className="input-label">Adresse</label><input type="text" value={agencyAddress} onChange={(e) => setAgencyAddress(e.target.value)} className="input-field" /></div>
-                      <div className="space-y-2"><label className="input-label">Site Web</label><input type="text" value={agencyWebsite} onChange={(e) => setAgencyWebsite(e.target.value)} className="input-field" /></div>
+          {/* ===== NOTIFICATIONS SECTION ===== */}
+          <section id="notifications" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+            <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Bell size={20} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-[18px] font-bold text-on_surface">Notifications</h3>
+                <p className="text-xs text-on_surface_variant">Choisissez comment être notifié</p>
+              </div>
+            </div>
+            <div className="divide-y divide-charcoal_border">
+              {notifications.map((notif) => (
+                <div key={notif.id} className="flex items-center justify-between p-5 hover:bg-primary/5 transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      notif.enabled ? 'bg-primary/10 text-primary' : 'bg-surface_container_high text-on_surface_variant'
+                    }`}>
+                      {notif.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-on_surface">{notif.label}</p>
+                      <p className="text-xs text-on_surface_variant mt-0.5">{notif.description}</p>
                     </div>
                   </div>
-                  <div className="flex justify-end mt-8">
-                    <button onClick={handleSaveAgency} disabled={saving}
-                      className="bg-primary text-on_primary px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 transition disabled:opacity-70">
-                      {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                      Enregistrer
-                    </button>
-                  </div>
-                  <div className="mt-12 p-6 bg-error_red/5 rounded-2xl border border-error_red/20">
-                    <h4 className="text-error_red font-bold mb-2">Zone de danger</h4>
-                    <p className="text-xs text-error_red/70 mb-4">Suppression irréversible.</p>
-                    <button onClick={handleDeleteAgency} disabled={saving} className="flex items-center text-sm font-bold text-error_red hover:underline disabled:opacity-50">
-                      <Trash2 size={16} className="mr-2" /> Supprimer l'agence
-                    </button>
-                  </div>
-                </>
-              )}
+                  <button
+                    onClick={() => handleToggleNotification(notif.id)}
+                    className={`relative w-12 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
+                      notif.enabled ? 'bg-primary' : 'bg-surface_container_highest'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                      notif.enabled ? 'left-[22px]' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
+              ))}
             </div>
-          )}
+            <div className="p-5 bg-surface_container_low/50 border-t border-charcoal_border">
+              <p className="text-[10px] text-on_surface_variant flex items-center gap-1">
+                <Volume2 size={12} />
+                Les notifications peuvent être configurées dans les paramètres de votre appareil
+              </p>
+            </div>
+          </section>
 
-          {activeTab === 'notifications' && (
-            <div className="p-8">
-              <div className="mb-8"><h3 className="text-lg font-bold text-on_surface">Préférences</h3><p className="text-sm text-on_surface_variant mt-1">Choisissez votre canal de notification.</p></div>
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <label className="input-label">Canal</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {[
-                      { value: 'WHATSAPP', label: 'WhatsApp', icon: <MessageCircle size={20} /> },
-                      { value: 'SMS', label: 'SMS', icon: <Smartphone size={20} /> },
-                      { value: 'EMAIL', label: 'Email', icon: <Mail size={20} /> },
-                    ].map((ch) => (
-                      <button key={ch.value} type="button" onClick={() => setNotifChannel(ch.value)}
-                        className={`flex items-center gap-3 p-4 rounded-xl border-2 transition ${
-                          notifChannel === ch.value ? 'border-primary bg-primary/10 text-primary' : 'border-charcoal_border bg-surface_container_low text-on_surface_variant hover:border-primary/50'
-                        }`}>
-                        <div className={`p-2 rounded-lg ${notifChannel === ch.value ? 'bg-primary text-on_primary' : 'bg-surface_container_high text-on_surface_variant'}`}>{ch.icon}</div>
-                        <div className="text-left"><p className="text-sm font-bold">{ch.label}</p></div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="input-label">Téléphone notifications</label>
-                  <input type="text" value={notifPhone} onChange={(e) => setNotifPhone(e.target.value)} placeholder="+237XXXXXXXXX" className="input-field" />
-                </div>
-                <div className="space-y-2">
-                  <label className="input-label flex items-center gap-2"><Languages size={14} /> Langue</label>
-                  <select value={preferredLanguage} onChange={(e) => setPreferredLanguage(e.target.value)} className="input-field">
-                    <option value="fr">Français</option><option value="en">English</option>
-                  </select>
-                </div>
+          {/* ===== APPEARANCE SECTION ===== */}
+          <section id="appearance" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+            <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Palette size={20} className="text-primary" />
               </div>
-              <div className="flex justify-end mt-8 pt-6 border-t border-charcoal_border">
-                <button onClick={handleSaveNotifications} disabled={saving}
-                  className="bg-primary text-on_primary px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 transition disabled:opacity-70">
-                  {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                  Enregistrer
-                </button>
+              <div>
+                <h3 className="text-[18px] font-bold text-on_surface">Apparence</h3>
+                <p className="text-xs text-on_surface_variant">Personnalisez l&apos;interface</p>
               </div>
             </div>
-          )}
-
-          {activeTab === 'securite' && (
-            <div className="p-8">
-              <div className="mb-8"><h3 className="text-lg font-bold text-on_surface">Sécurité</h3><p className="text-sm text-on_surface_variant mt-1">Gérez votre mot de passe.</p></div>
-              <div className="space-y-6 max-w-lg">
-                <div className="space-y-2">
-                  <label className="input-label">Mot de passe actuel</label>
-                  <div className="relative">
-                    <input type={showCurrentPassword ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Votre mot de passe actuel" className="input-field pr-12" />
-                    <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface">{showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-                  </div>
+            <div className="p-6 space-y-6">
+              {/* Theme */}
+              <div>
+                <p className="input-label mb-3">Thème</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                      theme === 'light'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
+                    }`}
+                  >
+                    <Sun size={28} className={theme === 'light' ? 'text-primary' : 'text-on_surface_variant'} />
+                    <span className={`text-sm font-bold ${theme === 'light' ? 'text-primary' : 'text-on_surface_variant'}`}>
+                      Clair
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                      theme === 'dark'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
+                    }`}
+                  >
+                    <Moon size={28} className={theme === 'dark' ? 'text-primary' : 'text-on_surface_variant'} />
+                    <span className={`text-sm font-bold ${theme === 'dark' ? 'text-primary' : 'text-on_surface_variant'}`}>
+                      Sombre
+                    </span>
+                  </button>
                 </div>
+              </div>
+
+              {/* Language */}
+              <div>
+                <p className="input-label mb-3">Langue</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setLanguage('fr')}
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
+                      language === 'fr'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
+                    }`}
+                  >
+                    <Globe size={24} className={language === 'fr' ? 'text-primary' : 'text-on_surface_variant'} />
+                    <div className="text-left">
+                      <p className={`text-sm font-bold ${language === 'fr' ? 'text-primary' : 'text-on_surface'}`}>
+                        Français
+                      </p>
+                      <p className="text-[10px] text-on_surface_variant">Langue par défaut</p>
+                    </div>
+                    {language === 'fr' && (
+                      <CheckCircle2 size={18} className="text-primary ml-auto flex-shrink-0" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setLanguage('en')}
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
+                      language === 'en'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
+                    }`}
+                  >
+                    <Languages size={24} className={language === 'en' ? 'text-primary' : 'text-on_surface_variant'} />
+                    <div className="text-left">
+                      <p className={`text-sm font-bold ${language === 'en' ? 'text-primary' : 'text-on_surface'}`}>
+                        English
+                      </p>
+                      <p className="text-[10px] text-on_surface_variant">Secondary language</p>
+                    </div>
+                    {language === 'en' && (
+                      <CheckCircle2 size={18} className="text-primary ml-auto flex-shrink-0" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ===== SECURITY SECTION ===== */}
+          <section id="security" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+            <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <KeyRound size={20} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-[18px] font-bold text-on_surface">Sécurité</h3>
+                <p className="text-xs text-on_surface_variant">Gérez votre mot de passe</p>
+              </div>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="space-y-2">
+                <label className="input-label">Mot de passe actuel</label>
+                <div className="relative">
+                  <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                  <input
+                    type={showCurrent ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="input-field pl-10 pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrent(!showCurrent)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+                  >
+                    {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="input-label">Nouveau mot de passe</label>
                   <div className="relative">
-                    <input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Minimum 6 caractères" className="input-field pr-12" />
-                    <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface">{showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                    <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                    <input
+                      type={showNew ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Minimum 6 caractères"
+                      className="input-field pl-10 pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNew(!showNew)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+                    >
+                      {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
-                  {newPassword && (
-                    <div className="mt-2">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4].map((level) => (
-                          <div key={level} className={`h-1 flex-1 rounded-full ${
-                            newPassword.length >= level * 3 ? newPassword.length >= 12 ? 'bg-success_green' : newPassword.length >= 6 ? 'bg-warning_yellow' : 'bg-error_red' : 'bg-surface_container_highest'
-                          }`} />
-                        ))}
-                      </div>
-                      <p className={`text-xs mt-1 ${newPassword.length >= 12 ? 'text-success_green' : newPassword.length >= 6 ? 'text-warning_yellow' : 'text-error_red'}`}>
-                        {newPassword.length >= 12 ? 'Très sécurisé' : newPassword.length >= 6 ? 'Sécurisé' : 'Trop court'}
-                      </p>
-                    </div>
-                  )}
                 </div>
                 <div className="space-y-2">
-                  <label className="input-label">Confirmer</label>
-                  <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Répétez" className="input-field" />
-                  {confirmPassword && newPassword !== confirmPassword && <p className="text-xs text-error_red mt-1">Ne correspond pas</p>}
-                </div>
-                <div className="pt-4">
-                  <button onClick={handleChangePassword} disabled={saving || !currentPassword || !newPassword || newPassword !== confirmPassword || newPassword.length < 6}
-                    className="bg-primary text-on_primary px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Shield size={18} />}
-                    Changer le mot de passe
-                  </button>
+                  <label className="input-label">Confirmer le mot de passe</label>
+                  <div className="relative">
+                    <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+                    <input
+                      type={showConfirm ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Retaper le mot de passe"
+                      className="input-field pl-10 pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+                    >
+                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="mt-12 p-6 bg-error_red/5 rounded-2xl border border-error_red/20">
-                <h4 className="text-error_red font-bold mb-2">Supprimer le compte</h4>
-                <p className="text-xs text-error_red/70 mb-4">Action irréversible. Contactez le support.</p>
-                <button className="flex items-center text-sm font-bold text-error_red hover:underline"><Trash2 size={16} className="mr-2" /> Supprimer mon compte</button>
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={handleChangePassword}
+                  disabled={changingPassword}
+                  className="px-6 py-3 bg-primary text-on_primary font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all flex items-center gap-2 disabled:opacity-70"
+                >
+                  {changingPassword ? (
+                    <><Loader2 size={18} className="animate-spin" /> Modification...</>
+                  ) : (
+                    <><KeyRound size={18} /> Changer le mot de passe</>
+                  )}
+                </button>
               </div>
             </div>
-          )}
+          </section>
+
+          {/* ===== LOGOUT SECTION ===== */}
+          <div className="animate-in slide-in-from-bottom duration-600">
+            <button
+              onClick={logout}
+              className="w-full glass-card rounded-2xl p-6 flex items-center justify-between group hover:bg-error_red/5 border border-charcoal_border hover:border-error_red/30 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-error_red/10 flex items-center justify-center group-hover:bg-error_red/20 transition-colors">
+                  <LogOut size={20} className="text-error_red" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-error_red">Déconnexion</p>
+                  <p className="text-xs text-on_surface_variant">Vous serez redirigé vers la page de connexion</p>
+                </div>
+              </div>
+              <LogOut size={20} className="text-error_red/50 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

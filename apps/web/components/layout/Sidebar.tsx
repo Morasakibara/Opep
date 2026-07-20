@@ -26,6 +26,7 @@ import {
   Calendar,
   Armchair,
   Smartphone,
+  Settings,
 } from 'lucide-react';
 
 interface NavItem {
@@ -128,6 +129,10 @@ export default function Sidebar() {
       </nav>
 
       <div className="border-t border-charcoal_border pt-4 mt-4 flex flex-col gap-1.5">
+        <Link href="/settings" className="flex items-center gap-3 px-4 py-3 text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface rounded-xl transition-all">
+          <Settings size={20} />
+          <span className="text-[13px] font-bold uppercase tracking-wider">Paramètres</span>
+        </Link>
         <Link href="#" className="flex items-center gap-3 px-4 py-3 text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface rounded-xl transition-all">
           <HelpCircle size={20} />
           <span className="text-[13px] font-bold uppercase tracking-wider">Aide</span>
