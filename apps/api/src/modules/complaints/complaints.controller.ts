@@ -24,6 +24,13 @@ export class ComplaintsController {
     return ComplaintResponseDto.fromEntity(complaint);
   }
 
+  @Get()
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER, UserRole.COMPANY_DIRECTOR, UserRole.CENTRE_MANAGER)
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { items, total } = await this.complaintsService.findAll(paginationDto);
+    return paginate(items.map(ComplaintResponseDto.fromEntity), total, paginationDto);
+  }
+
   @Get('my')
   @Roles(UserRole.CLIENT)
   async getMyComplaints(@GetUser('id') clientId: string, @Query() paginationDto: PaginationDto) {
@@ -32,28 +39,28 @@ export class ComplaintsController {
   }
 
   @Get('centre/:centreId')
-  @Roles(UserRole.CENTRE_MANAGER)
+  @Roles(UserRole.CENTRE_MANAGER, UserRole.ADMIN_PLATFORM)
   async findByCentre(@Param('centreId') centreId: string, @Query() paginationDto: PaginationDto) {
     const { items, total } = await this.complaintsService.findByCentre(centreId, paginationDto);
     return paginate(items.map(ComplaintResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get('company/:companyId')
-  @Roles(UserRole.COMPANY_DIRECTOR)
+  @Roles(UserRole.COMPANY_DIRECTOR, UserRole.ADMIN_PLATFORM)
   async findByCompany(@Param('companyId') companyId: string, @Query() paginationDto: PaginationDto) {
     const { items, total } = await this.complaintsService.findByCompany(companyId, paginationDto);
     return paginate(items.map(ComplaintResponseDto.fromEntity), total, paginationDto);
   }
 
   @Get(':id')
-  @Roles(UserRole.CENTRE_MANAGER, UserRole.COMPANY_DIRECTOR, UserRole.CLIENT)
+  @Roles(UserRole.CENTRE_MANAGER, UserRole.COMPANY_DIRECTOR, UserRole.CLIENT, UserRole.ADMIN_PLATFORM)
   async findOne(@Param('id') id: string) {
     const complaint = await this.complaintsService.findOne(id);
     return ComplaintResponseDto.fromEntity(complaint);
   }
 
   @Patch(':id/status')
-  @Roles(UserRole.CENTRE_MANAGER, UserRole.COMPANY_DIRECTOR)
+  @Roles(UserRole.CENTRE_MANAGER, UserRole.COMPANY_DIRECTOR, UserRole.ADMIN_PLATFORM)
   async updateStatus(
     @Param('id') id: string,
     @Body('status') status: ComplaintStatus,

@@ -305,6 +305,7 @@ export const reviewsApi = {
 
 // ============ Complaints ============
 export const complaintsApi = {
+  getAll: () => fetchApi<any[]>('/complaints'),
   getMy: () => fetchApi<any[]>('/complaints/my'),
   getByCentre: (centreId: string) => fetchApi<any[]>(`/complaints/centre/${centreId}`),
   getByCompany: (companyId: string) => fetchApi<any[]>(`/complaints/company/${companyId}`),

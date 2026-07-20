@@ -3,7 +3,7 @@
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 
-type Role = 'SUPER_ADMIN' | 'AGENCY_ADMIN' | 'CASHIER' | 'CONTROLLER' | 'DRIVER';
+type Role = 'ADMIN_PLATFORM' | 'COMPANY_DIRECTOR' | 'CENTRE_MANAGER' | 'AGENCY_MANAGER' | 'CASHIER' | 'CONTROLLER' | 'DRIVER' | 'CLIENT';
 
 interface CanProps {
   roles: Role[];

@@ -3,11 +3,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Must match UserRole enum from @opep/shared-types
 interface User {
   id: string;
   name: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'AGENCY_ADMIN' | 'CASHIER' | 'CONTROLLER' | 'DRIVER';
+  role: 'ADMIN_PLATFORM' | 'COMPANY_DIRECTOR' | 'CENTRE_MANAGER' | 'AGENCY_MANAGER' | 'CASHIER' | 'CONTROLLER' | 'DRIVER' | 'CLIENT';
 }
 
 interface AuthContextType {

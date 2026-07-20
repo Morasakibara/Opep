@@ -16,6 +16,14 @@ export class MessagesService {
     return Array.isArray(saved) ? saved[0] : saved;
   }
 
+  async findAllRaw(): Promise<Message[]> {
+    return this.messageRepository.find({
+      relations: ['sender', 'receiver'],
+      order: { createdAt: 'DESC' },
+      take: 100,
+    });
+  }
+
   async findConversation(userId1: string, userId2: string): Promise<Message[]> {
     return this.messageRepository.find({
       where: [

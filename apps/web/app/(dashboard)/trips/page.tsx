@@ -62,7 +62,7 @@ export default function TripsPage() {
           <h2 className="text-2xl font-bold text-on_surface">Lignes & Trajets</h2>
           <p className="text-on_surface_variant">Définissez vos itinéraires et planifiez les départs.</p>
         </div>
-        <button className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+        <button onClick={() => setActiveTab('trajets')} className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> {activeTab === 'lignes' ? 'Nouvelle ligne' : 'Planifier un trajet'}
         </button>
       </div>

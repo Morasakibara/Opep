@@ -12,6 +12,17 @@ export class ComplaintsService {
     private readonly complaintRepository: Repository<Complaint>,
   ) {}
 
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<{ items: Complaint[]; total: number }> {
+    return this.complaintRepository.findAndCount({
+      relations: ['client'],
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+      order: { createdAt: 'DESC' },
+    }).then(([items, total]) => ({ items, total }));
+  }
+
   async create(dto: CreateComplaintDto, clientId: string): Promise<Complaint> {
     const complaint = this.complaintRepository.create({
       tripId: dto.tripId,

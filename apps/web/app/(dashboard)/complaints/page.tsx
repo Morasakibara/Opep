@@ -5,6 +5,7 @@ import {
   AlertCircle, Search, MessageSquare, Clock,
   CheckCircle2, ChevronRight, User,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { complaintsApi } from '@/services/api.service';
 
@@ -39,6 +40,9 @@ export default function ComplaintsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'open'>('all');
 
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN_PLATFORM' || user?.role === 'AGENCY_MANAGER' || user?.role === 'COMPANY_DIRECTOR' || user?.role === 'CENTRE_MANAGER';
+
   useEffect(() => {
     loadComplaints();
   }, []);
@@ -47,8 +51,7 @@ export default function ComplaintsPage() {
     setLoading(true);
     setError(null);
     try {
-      // Backend: GET /complaints/my — réclamations de l'utilisateur connecté
-      const data = await complaintsApi.getMy();
+      const data = isAdmin ? await complaintsApi.getAll() : await complaintsApi.getMy();
       setComplaints(Array.isArray(data) ? data as Complaint[] : []);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement des réclamations');

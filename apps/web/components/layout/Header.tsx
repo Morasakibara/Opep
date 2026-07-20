@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React from 'react';
 import { Search, Globe, Bell, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/context/LanguageContext';
 import NotificationCenter from './NotificationCenter';
 import ThemeToggle from './ThemeToggle';
 
@@ -17,12 +18,11 @@ export default function Header({
   placeholder = "Rechercher..." 
 }: HeaderProps) {
   const { logout, user } = useAuth();
+  const { language, setLanguage } = useTranslation();
 
   const toggleLanguage = () => {
-    const locale = 'fr';
-    const newLang = locale === 'fr' ? 'en' : 'fr';
-    document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000; SameSite=Lax`;
-    window.location.reload();
+    const newLang = language === 'fr' ? 'en' : 'fr';
+    setLanguage(newLang);
   };
 
   return (
@@ -48,7 +48,7 @@ export default function Header({
             title="Changer de langue"
           >
             <Globe size={18} className="group-hover:rotate-12 transition-transform duration-500" />
-            <span className="text-[11px] font-bold uppercase">fr</span>
+            <span className="text-[11px] font-bold uppercase">{language}</span>
           </button>
           
           <NotificationCenter />

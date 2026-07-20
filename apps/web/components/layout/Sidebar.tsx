@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -96,6 +96,8 @@ function NavSection({ items }: { items: NavItem[] }) {
 }
 
 export default function Sidebar() {
+  const router = useRouter();
+  
   return (
     <aside className="fixed left-0 top-0 h-screen w-[280px] bg-surface_dim border-r border-charcoal_border hidden md:flex flex-col p-6 z-50">
       <div className="flex items-center gap-3 mb-8 px-2">
@@ -108,7 +110,9 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <button className="mb-6 w-full py-3.5 bg-gradient-to-r from-primary to-primary/80 text-on_primary font-bold rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.97] transition-all duration-200 shadow-xl shadow-primary/10 group click-feedback">
+      <button 
+        onClick={() => router.push('/trips')}
+        className="mb-6 w-full py-3.5 bg-gradient-to-r from-primary to-primary/80 text-on_primary font-bold rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.97] transition-all duration-200 shadow-xl shadow-primary/10 group click-feedback">
         <Plus size={20} className="group-hover:rotate-90 transition-transform duration-500" />
         <span>Nouveau Trajet</span>
       </button>

@@ -157,8 +157,8 @@ export default function BillingsPage() {
                       )}
                     </div>
                   </div>
-                  <Download size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all opacity-0 group-hover:opacity-100 flex-shrink-0" />
-                  <ChevronRight size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all flex-shrink-0" />
+                  <Download size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-pointer" onClick={() => alert(`Téléchargement de la facture ${inv.number}`)} />
+                  <ChevronRight size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all flex-shrink-0 cursor-pointer" onClick={() => alert(`Détails de la facture ${inv.number}`)} />
                 </div>
               ))}
             </div>

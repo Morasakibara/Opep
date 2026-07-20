@@ -76,7 +76,7 @@ export default function OfflineScansPage() {
         </div>
         <div className="flex items-center gap-2 text-xs">
           {pendingSync > 0 && (
-            <button className="px-4 py-2 bg-primary text-on_primary font-bold rounded-xl hover:brightness-110 transition flex items-center gap-2 active:scale-95">
+            <button onClick={loadScans} className="px-4 py-2 bg-primary text-on_primary font-bold rounded-xl hover:brightness-110 transition flex items-center gap-2 active:scale-95">
               <Upload size={14} /> Synchroniser ({pendingSync})
             </button>
           )}
