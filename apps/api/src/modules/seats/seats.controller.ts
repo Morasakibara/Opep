@@ -6,11 +6,13 @@ import { SeatResponseDto } from './dto/seat-response.dto';
 import { LockSeatsDto, UnlockSeatsDto } from './dto/lock-seats.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { OwnershipGuard } from '../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 
 @Controller('seats')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class SeatsController {
   constructor(private readonly seatsService: SeatsService) {}
 

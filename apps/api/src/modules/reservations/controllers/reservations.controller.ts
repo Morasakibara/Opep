@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Param, UseGuards, Query } from '@nestjs/co
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
+import { OwnershipGuard } from '../../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../../common/guards/subscription.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { ReservationsService } from '../services/reservations.service';
@@ -11,7 +13,7 @@ import { GetUser } from '../../../common/decorators/get-user.decorator';
 import { PaginationDto, paginate } from '../../../common/dto/pagination.dto';
 
 @Controller('reservations')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 

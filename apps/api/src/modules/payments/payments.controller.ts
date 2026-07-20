@@ -7,11 +7,13 @@ import { PaymentResponseDto } from './dto/payment-response.dto';
 import { RefundPaymentDto } from './dto/webhook-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { OwnershipGuard } from '../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 
 @Controller('payments')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 

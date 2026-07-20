@@ -6,13 +6,15 @@ import { SyncBatchDto } from './dto/sync-batch.dto';
 import { OfflineScanResponseDto } from './dto/offline-scan-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { OwnershipGuard } from '../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { UserRole } from '@opep/shared-types';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 
 @Controller('offline-scans')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class OfflineScanController {
   constructor(private readonly offlineScanService: OfflineScanService) {}
 

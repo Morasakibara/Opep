@@ -7,12 +7,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { OwnershipGuard } from '../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { UserRole, ComplaintStatus } from '@opep/shared-types';
 import { PaginationDto, paginate } from '../../common/dto/pagination.dto';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 
 @Controller('complaints')
-@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class ComplaintsController {
   constructor(private readonly complaintsService: ComplaintsService) {}
 

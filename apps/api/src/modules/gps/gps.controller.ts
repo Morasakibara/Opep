@@ -9,17 +9,19 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { OwnershipGuard } from '../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@opep/shared-types';
 import { GpsGateway } from './gps.gateway';
 import { UpdateLocationDto } from './dto/update-location.dto';
 
 @Controller('trips')
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class GpsController {
   constructor(private readonly gpsGateway: GpsGateway) {}
 
   @Post(':id/location')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.DRIVER)
   @Throttle({ short: { limit: 30, ttl: 60000 } })
   async updateLocation(

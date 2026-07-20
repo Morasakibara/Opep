@@ -4,10 +4,12 @@ import { TicketsService } from './services/tickets.service';
 import { TicketResponseDto } from './dto/ticket-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { OwnershipGuard } from '../../common/guards/ownership.guard';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 
 @Controller('tickets')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, OwnershipGuard, SubscriptionGuard)
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
