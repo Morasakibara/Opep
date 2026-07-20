@@ -133,6 +133,16 @@ cd apps/client && npm run dev
 - **Validation** Zod + class-validator
 - **Audit** log de toutes les actions
 
+## 🧩 Composants Web
+
+Une documentation complète des composants UI, pages, utilitaires et providers du portail web est disponible :
+
+👉 [**COMPOSANTS_WEB.md**](apps/web/COMPOSANTS_WEB.md)
+
+Celle-ci couvre : Toast, Breadcrumbs, PageTransition, Sidebar/Header, Settings, pages d'erreur (403/401), role.utils, ProtectedRoute, etc.
+
+---
+
 ## 📦 Technologies
 
 | Technologie | Usage |

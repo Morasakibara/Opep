@@ -8,7 +8,9 @@
     "start": "set NEXT_IGNORE_INCORRECT_LOCKFILE=1 && next start",
     "lint": "set NEXT_IGNORE_INCORRECT_LOCKFILE=1 && next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -44,6 +46,13 @@
     "@next/swc-win32-x64-msvc": "14.2.3"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.2.1",
+    "@storybook/addon-a11y": "^10.5.2",
+    "@storybook/addon-docs": "^10.5.2",
+    "@storybook/addon-mcp": "^0.7.0",
+    "@storybook/addon-vitest": "^10.5.2",
+    "@storybook/nextjs-vite": "^10.5.2",
+    "@storybook/react": "^10.5.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -53,12 +62,17 @@
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@vitejs/plugin-react": "^6.0.3",
+    "@vitest/browser-playwright": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10.4.26",
     "eslint-config-next": "14.2.3",
     "jsdom": "^29.1.1",
+    "playwright": "^1.61.1",
     "postcss": "^8.5.15",
+    "storybook": "^10.5.2",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.3.3",
+    "vite": "^8.1.5",
     "vitest": "^4.1.10"
   }
 }
