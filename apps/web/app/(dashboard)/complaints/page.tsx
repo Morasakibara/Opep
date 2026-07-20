@@ -6,6 +6,7 @@ import {
   CheckCircle2, ChevronRight, User,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { isAdminRole } from '@/lib/role.utils';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { complaintsApi } from '@/services/api.service';
 
@@ -41,7 +42,7 @@ export default function ComplaintsPage() {
   const [filter, setFilter] = useState<'all' | 'open'>('all');
 
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN_PLATFORM' || user?.role === 'AGENCY_MANAGER' || user?.role === 'COMPANY_DIRECTOR' || user?.role === 'CENTRE_MANAGER';
+  const isAdmin = isAdminRole(user?.role);
 
   useEffect(() => {
     loadComplaints();

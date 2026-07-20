@@ -5,6 +5,7 @@ import {
   FileText, Search, AlertCircle, ChevronRight, Building2,
   DollarSign, TrendingUp, Clock, CheckCircle2, Download,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { billingsApi } from '@/services/api.service';
 
@@ -31,6 +32,7 @@ export default function BillingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     loadInvoices();
@@ -157,8 +159,8 @@ export default function BillingsPage() {
                       )}
                     </div>
                   </div>
-                  <Download size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-pointer" onClick={() => alert(`Téléchargement de la facture ${inv.number}`)} />
-                  <ChevronRight size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all flex-shrink-0 cursor-pointer" onClick={() => alert(`Détails de la facture ${inv.number}`)} />
+                  <Download size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-pointer" onClick={() => toast.success('Téléchargement', `Facture ${inv.number} téléchargée`)} />
+                  <ChevronRight size={16} className="text-on_surface_variant/30 group-hover:text-primary transition-all flex-shrink-0 cursor-pointer" onClick={() => toast.info(`${inv.number}`, `${inv.companyName} - ${inv.amount?.toLocaleString()} FCFA`)} />
                 </div>
               ))}
             </div>
