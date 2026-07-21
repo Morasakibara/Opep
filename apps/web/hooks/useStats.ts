@@ -8,20 +8,22 @@ export function useDashboardStats() {
       const data = await reportsApi.getDashboard();
       return {
         revenue: data.revenueFormatted || `${((data.totalRevenue || 0) / 1_000_000).toFixed(1)}M FCFA`,
-        agencies: String(data.totalAgencies || '0'),
+        companies: String(data.totalCompanies || '0'),
+        agencies: String(data.totalCompanies || '0'), // backward compat
         users: data.totalUsers > 1000
           ? `${(data.totalUsers / 1000).toFixed(1)}k`
           : String(data.totalUsers),
         health: '99.98%',
         revenueTrend: '+12.5%',
-        agenciesTrend: `+${data.totalAgencies || 0} New`,
+        companiesTrend: `+${data.totalCompanies || 0} New`,
+        agenciesTrend: `+${data.totalCompanies || 0} New`, // backward compat
         usersTrend: '-2.1%',
         // Raw values for charts
         totalReservations: data.totalReservations || 0,
         totalRevenue: data.totalRevenue || 0,
         activeTrips: data.activeTrips || 0,
         totalTickets: data.totalTickets || 0,
-        totalAgencies: data.totalAgencies || 0,
+        totalCompanies: data.totalCompanies || 0,
         totalUsers: data.totalUsers || 0,
       };
     },

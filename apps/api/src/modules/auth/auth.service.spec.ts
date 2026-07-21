@@ -7,7 +7,6 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { PasswordService } from '../../common/password/password.service';
 import { LoginAttemptService } from './services/login-attempt.service';
-import { Agency } from '../agencies/entities/agency.entity';
 import { Company } from '../companies/entities/company.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 
@@ -62,10 +61,6 @@ describe('AuthService', () => {
     get: jest.fn((key: string, def?: any) => def ?? 'test-secret'),
   };
 
-  const mockAgencyRepository = {
-    findOne: jest.fn().mockResolvedValue(null),
-  };
-
   const mockCompanyRepository = {
     findOne: jest.fn().mockResolvedValue(null),
   };
@@ -98,7 +93,6 @@ describe('AuthService', () => {
         { provide: PasswordService, useValue: mockPasswordService },
         // AuthService injects Repository<Agency> via @InjectRepository; mocked
         // here so resolveAgencyPlan() returns null (treated as BASIC plan).
-        { provide: getRepositoryToken(Agency), useValue: mockAgencyRepository },
         { provide: getRepositoryToken(Company), useValue: mockCompanyRepository },
         { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepository },
       ],

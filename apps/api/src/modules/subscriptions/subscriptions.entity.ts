@@ -2,6 +2,16 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Company } from '../companies/entities/company.entity';
 
+/**
+ * Subscription plan enum — moved from legacy agencies module.
+ * Values are referenced by JWT `plan` claims for rate limiting.
+ */
+export enum SubscriptionPlan {
+  BASIC = 'BASIC',
+  PREMIUM = 'PREMIUM',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
 @Entity('subscriptions')
 export class Subscription extends BaseEntity {
 

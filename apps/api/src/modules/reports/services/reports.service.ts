@@ -6,8 +6,8 @@ import { Payment, PaymentStatus } from '../../payments/entities/payment.entity';
 import { Trip, TripStatus } from '../../trips/entities/trip.entity';
 import { Ticket, TicketStatus } from '../../tickets/entities/ticket.entity';
 import { User } from '../../users/entities/user.entity';
-import { Agency } from '../../agencies/entities/agency.entity';
-
+import { Company } from '../../companies/entities/company.entity';
+import { Centre } from '../../centres/entities/centre.entity';
 @Injectable()
 export class ReportsService {
   constructor(
@@ -21,12 +21,33 @@ export class ReportsService {
     private readonly ticketRepo: Repository<Ticket>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    @InjectRepository(Agency)
-    private readonly agencyRepo: Repository<Agency>,
+    @InjectRepository(Company)
+    private readonly companyRepo: Repository<Company>,
+    @InjectRepository(Centre)
+    private readonly centreRepo: Repository<Centre>,
   ) {}
 
-  async getDashboardStats(agencyId?: string) {
-    const whereAgency: any = agencyId ? { agencyId } : {};
+  async getDashboardStats(scope?: { agencyId?: string; companyId?: string; centreId?: string }) {
+    // Construit le filtre selon le scope utilisateur
+    // Priorité : centreId > companyId (via centres) > agencyId (legacy)
+    const whereClause: any = {};
+    if (scope?.centreId) {
+      whereClause.centreId = scope.centreId;
+    } else if (scope?.companyId) {
+      // Pour companyId, filtre par tous les centres de la compagnie
+      const centres = await this.centreRepo.find({
+        where: { companyId: scope.companyId, isActive: true },
+        select: ['id'],
+      });
+      if (centres.length > 0) {
+        whereClause.centreId = centres.map(c => c.id);
+      } else {
+        // Pas de centre actif → aucun résultat (évite SQL IN vide)
+        whereClause.centreId = '00000000-0000-0000-0000-000000000000';
+      }
+    } else if (scope?.agencyId) {
+      whereClause.agencyId = scope.agencyId;
+    }
 
     const [
       totalReservations,
@@ -34,9 +55,9 @@ export class ReportsService {
       activeTrips,
       totalTickets,
       totalUsers,
-      totalAgencies,
+      totalCompanies,
     ] = await Promise.all([
-      this.reservationRepo.count({ where: { ...whereAgency } }),
+      this.reservationRepo.count({ where: { ...whereClause } }),
       this.paymentRepo
         .createQueryBuilder('payment')
         .select('COALESCE(SUM(payment.amount), 0)', 'total')
@@ -46,7 +67,7 @@ export class ReportsService {
       this.tripRepo.count({ where: { status: TripStatus.IN_PROGRESS } }),
       this.ticketRepo.count(),
       this.userRepo.count(),
-      this.agencyRepo.count(),
+      this.companyRepo.count(),
     ]);
 
     return {
@@ -55,7 +76,7 @@ export class ReportsService {
       activeTrips,
       totalTickets,
       totalUsers,
-      totalAgencies,
+      totalCompanies,
       revenueFormatted: `${(totalRevenue / 1_000_000).toFixed(1)}M FCFA`,
     };
   }

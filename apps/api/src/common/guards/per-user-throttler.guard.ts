@@ -12,11 +12,11 @@ import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import type { Counter, Histogram } from 'prom-client';
 import * as jwt from 'jsonwebtoken';
 
-import { SubscriptionPlan } from '../../modules/agencies/entities/agency.entity';
+import { SubscriptionPlan } from '../../modules/subscriptions/subscriptions.entity';
 import {
   DEFAULT_QUOTA_MULTIPLIER,
   QUOTA_MULTIPLIERS,
-} from '../../modules/agencies/constants/quota-multipliers';
+} from '../../modules/subscriptions/constants/quota-multipliers';
 
 /**
  * Combined throttler guard for the OPEP API.

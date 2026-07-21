@@ -11,10 +11,19 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('dashboard')
-  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER, UserRole.COMPANY_DIRECTOR, UserRole.CENTRE_MANAGER)
   async getDashboardStats(@Req() req: any) {
-    const agencyId = req.user?.role !== UserRole.ADMIN_PLATFORM ? req.user?.agencyId : undefined;
-    return this.reportsService.getDashboardStats(agencyId);
+    const user = req.user;
+    // Détermine le scope des stats selon le rôle
+    let scope: { agencyId?: string; companyId?: string; centreId?: string } | undefined;
+    if (user?.role !== UserRole.ADMIN_PLATFORM) {
+      scope = {
+        agencyId: user?.agencyId,
+        companyId: user?.companyId,
+        centreId: user?.centreId,
+      };
+    }
+    return this.reportsService.getDashboardStats(scope);
   }
 
   @Get('revenue')

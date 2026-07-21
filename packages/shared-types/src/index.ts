@@ -62,12 +62,6 @@ export enum TripStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export enum SubscriptionPlan {
-  FREE_TRIAL = 'FREE_TRIAL',
-  BASIC = 'BASIC',
-  PREMIUM = 'PREMIUM',
-}
-
 export enum SubscriptionStatus {
   TRIALING = 'TRIALING',
   ACTIVE = 'ACTIVE',
@@ -144,22 +138,6 @@ export const CentreSchema = z.object({
 
 export type Centre = z.infer<typeof CentreSchema>;
 
-export const AgencySchema = z.object({
-  id: uuid,
-  name: z.string().min(1),
-  address: z.string().min(1),
-  city: z.string().min(1),
-  phone: z.string().min(1),
-  email: z.string().email(),
-  logoUrl: z.string().url().optional(),
-  isActive: z.boolean(),
-  subscriptionPlan: z.nativeEnum(SubscriptionPlan),
-  subscriptionExpiresAt: z.date().nullable().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export type Agency = z.infer<typeof AgencySchema>;
 
 export const RouteSchema = z.object({
   id: uuid,
@@ -336,7 +314,7 @@ export type { Role } from './role.utils';
 export const Schemas = {
   Company: CompanySchema,
   Centre: CentreSchema,
-  Agency: AgencySchema,
+
   Route: RouteSchema,
   Bus: BusSchema,
   Trip: TripSchema,

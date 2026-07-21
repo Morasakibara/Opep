@@ -29,6 +29,10 @@ export class CreateUserDto {
   @IsOptional()
   agencyId?: string;
 
+  @IsUUID()
+  @IsOptional()
+  centreId?: string;
+
   @IsEnum(Language)
   @IsOptional()
   preferredLanguage?: Language;

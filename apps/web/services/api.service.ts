@@ -3,7 +3,7 @@
  * Canonical typed service layer covering all NestJS backend endpoints.
  */
 import type {
-  Trip, Route, Bus, User, Agency, Company, Centre,
+  Trip, Route, Bus, User, Company, Centre,
   Reservation, Ticket, Payment, TripSearchCriteria, TripStatus,
 } from '@opep/shared-types';
 
@@ -141,16 +141,6 @@ export const usersApi = {
   update: (id: string, data: any) => fetchApi<User>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   activate: (id: string) => fetchApi<User>(`/users/${id}/activate`, { method: 'PATCH' }),
   remove: (id: string) => fetchApi<{ message: string }>(`/users/${id}`, { method: 'DELETE' }),
-};
-
-// ============ Agencies ============
-export const agenciesApi = {
-  getAll: () => fetchApi<Agency[]>('/agencies'),
-  getById: (id: string) => fetchApi<Agency>(`/agencies/${id}`),
-  getStats: (id: string) => fetchApi<any>(`/agencies/${id}/stats`),
-  create: (data: any) => fetchApi<Agency>('/agencies', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: any) => fetchApi<Agency>(`/agencies/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  remove: (id: string) => fetchApi<{ message: string }>(`/agencies/${id}`, { method: 'DELETE' }),
 };
 
 // ============ Reservations ============

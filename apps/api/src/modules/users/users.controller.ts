@@ -33,23 +33,25 @@ export class UsersController {
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER)
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findById(id);
     return UserResponseDto.fromEntity(user);
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER, UserRole.CENTRE_MANAGER)
   @Throttle({ short: { limit: 20, ttl: 60000 } })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const user = await this.usersService.update(id, updateUserDto);
     return UserResponseDto.fromEntity(user);
   }
 
-  @Post('agency-staff')
+  @Post('staff')
   @Roles(UserRole.ADMIN_PLATFORM, UserRole.AGENCY_MANAGER)
   @Throttle({ short: { limit: 10, ttl: 60000 } })
-  async createAgencyStaff(@Body() createUserDto: CreateUserDto) {
-    const user = await this.usersService.createAgencyStaff(createUserDto);
+  async createStaff(@Body() createUserDto: CreateUserDto) {
+    const user = await this.usersService.createStaff(createUserDto);
     return UserResponseDto.fromEntity(user);
   }
 

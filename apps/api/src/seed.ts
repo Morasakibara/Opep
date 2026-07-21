@@ -8,7 +8,7 @@ dotenv.config({ path: join(__dirname, '../../.env') });
 import { UserRole } from '@opep/shared-types';
 import { Algorithm, hash as argon2Hash } from '@node-rs/argon2';
 import { User } from './modules/users/entities/user.entity';
-import { Agency, SubscriptionPlan as AgencySubscriptionPlan } from './modules/agencies/entities/agency.entity';
+import { SubscriptionPlan } from './modules/subscriptions/subscriptions.entity';
 import { Company } from './modules/companies/entities/company.entity';
 import { Centre } from './modules/centres/entities/centre.entity';
 import { Subscription } from './modules/subscriptions/subscriptions.entity';
@@ -27,7 +27,6 @@ async function seed() {
   console.log('[SEED] Database connected');
 
   const userRepo = dataSource.getRepository(User);
-  const agencyRepo = dataSource.getRepository(Agency);
   const companyRepo = dataSource.getRepository(Company);
   const centreRepo = dataSource.getRepository(Centre);
   const subscriptionRepo = dataSource.getRepository(Subscription);
@@ -52,14 +51,19 @@ async function seed() {
   // ========================================================================
   // AGENCIES (legacy — kept for backward compatibility)
   // ========================================================================
-  const agencyData = [
-    { name: 'Finexs Voyages', address: 'Akwa', city: 'Douala', phone: '+237 670 000 001', email: 'contact@finexs.cm', subscriptionPlan: AgencySubscriptionPlan.PREMIUM },
-    { name: 'General Express', address: 'Mvan', city: 'Yaoundé', phone: '+237 670 000 002', email: 'info@generalexpress.cm', subscriptionPlan: AgencySubscriptionPlan.BASIC },
-    { name: 'Touristique Voyages', address: 'Centre', city: 'Garoua', phone: '+237 670 000 003', email: 'contact@touristique.cm', subscriptionPlan: AgencySubscriptionPlan.BASIC },
-    { name: 'Buca Voyages', address: 'Mvan', city: 'Yaoundé', phone: '+237 670 000 004', email: 'buca@voyages.cm', subscriptionPlan: AgencySubscriptionPlan.PREMIUM },
-    { name: 'Global Voyages', address: 'Bonaberi', city: 'Douala', phone: '+237 670 000 005', email: 'global@voyages.cm', subscriptionPlan: AgencySubscriptionPlan.BASIC },
-  ];
-  const agencies = await agencyRepo.save(agencyRepo.create(agencyData));
+  // Using raw SQL because the Agency entity module was deleted
+  const agencyInsert = await dataSource.query(`
+    INSERT INTO agencies (name, address, city, phone, email, "subscriptionPlan", "createdAt", "updatedAt")
+    VALUES
+      ('Finexs Voyages', 'Akwa', 'Douala', '+237 670 000 001', 'contact@finexs.cm', 'PREMIUM', NOW(), NOW()),
+      ('General Express', 'Mvan', 'Yaoundé', '+237 670 000 002', 'info@generalexpress.cm', 'BASIC', NOW(), NOW()),
+      ('Touristique Voyages', 'Centre', 'Garoua', '+237 670 000 003', 'contact@touristique.cm', 'BASIC', NOW(), NOW()),
+      ('Buca Voyages', 'Mvan', 'Yaoundé', '+237 670 000 004', 'buca@voyages.cm', 'PREMIUM', NOW(), NOW()),
+      ('Global Voyages', 'Bonaberi', 'Douala', '+237 670 000 005', 'global@voyages.cm', 'BASIC', NOW(), NOW())
+    RETURNING id
+  `);
+  // agencyInsert is [{ id: '...' }, { id: '...' }, ...] with RETURNING
+  const agencies: { id: string }[] = agencyInsert;
   console.log(`[SEED] ${agencies.length} agencies created`);
 
   // ========================================================================

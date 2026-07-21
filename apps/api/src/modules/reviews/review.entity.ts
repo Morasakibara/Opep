@@ -2,7 +2,6 @@ import { Entity, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../users/entities/user.entity';
 import { Trip } from '../trips/entities/trip.entity';
-import { Agency } from '../agencies/entities/agency.entity';
 import { Centre } from '../centres/entities/centre.entity';
 
 @Entity('reviews')
@@ -24,10 +23,6 @@ export class Review extends BaseEntity {
 
   @Column({ type: 'uuid' })
   agencyId: string;
-
-  @ManyToOne(() => Agency)
-  @JoinColumn({ name: 'agencyId' })
-  agency: Agency;
 
   @Column({ type: 'uuid', nullable: true })
   centreId: string;

@@ -79,9 +79,9 @@ export default function StatsGrid() {
       />
       <StatsCard 
         title="Compagnies"
-        value={data?.agencies || '0'}
+        value={data?.companies || data?.agencies || '0'}
         subValue="Actives"
-        trend={data?.agenciesTrend || '3'}
+        trend={data?.companiesTrend || data?.agenciesTrend || '3'}
         trendUp={true}
         icon={<Building2 size={24} />}
         color="tertiary"

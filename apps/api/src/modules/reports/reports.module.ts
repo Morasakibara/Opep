@@ -7,11 +7,12 @@ import { Payment } from '../payments/entities/payment.entity';
 import { Trip } from '../trips/entities/trip.entity';
 import { Ticket } from '../tickets/entities/ticket.entity';
 import { User } from '../users/entities/user.entity';
-import { Agency } from '../agencies/entities/agency.entity';
+import { Company } from '../companies/entities/company.entity';
+import { Centre } from '../centres/entities/centre.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Reservation, Payment, Trip, Ticket, User, Agency]),
+    TypeOrmModule.forFeature([Reservation, Payment, Trip, Ticket, User, Company, Centre]),
   ],
   controllers: [ReportsController],
   providers: [ReportsService],

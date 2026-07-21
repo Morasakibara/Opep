@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { PasswordService } from '../../common/password/password.service';
 import { LoginAttemptService } from './services/login-attempt.service';
-import { Agency } from '../agencies/entities/agency.entity';
+import { Company } from '../companies/entities/company.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 
 /**
@@ -108,7 +108,7 @@ describe('AuthService — password-hash migration flow (PasswordService mocked)'
         { provide: ConfigService, useValue: { get: (_k: string, d?: any) => d ?? 'test-secret' } },
         { provide: LoginAttemptService, useValue: mockLoginAttemptService },
         { provide: PasswordService, useValue: mockPasswordService },
-        { provide: getRepositoryToken(Agency), useValue: { findOne: jest.fn().mockResolvedValue(null) } },
+        { provide: getRepositoryToken(Company), useValue: { findOne: jest.fn().mockResolvedValue(null) } },
         { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepository },
       ],
     }).compile();

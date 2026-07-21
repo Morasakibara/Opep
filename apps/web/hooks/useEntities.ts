@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { routesApi, busesApi, agenciesApi, companiesApi, centresApi, driversApi, incidentsApi, subscriptionsApi, reservationsApi } from '@/services/api.service';
+import { routesApi, busesApi, companiesApi, centresApi, driversApi, incidentsApi, subscriptionsApi, reservationsApi } from '@/services/api.service';
 
 // ============ Routes ============
 export function useRoutes() {
@@ -25,13 +25,7 @@ export function useCreateBus() {
   return useMutation({ mutationFn: busesApi.create, onSuccess: () => qc.invalidateQueries({ queryKey: ['buses'] }) });
 }
 
-// ============ Agencies ============
-export function useAgencies() {
-  return useQuery({ queryKey: ['agencies'], queryFn: agenciesApi.getAll });
-}
-export function useAgencyById(id: string) {
-  return useQuery({ queryKey: ['agencies', id], queryFn: () => agenciesApi.getById(id), enabled: !!id });
-}
+
 
 // ============ Drivers ============
 export function useDrivers() {

@@ -84,12 +84,12 @@ export class UsersService {
     return this.findById(id);
   }
 
-  async createAgencyStaff(createUserDto: CreateUserDto): Promise<User> {
-    if (!createUserDto.agencyId) {
-      throw new BadRequestException('Un employé d\'agence doit avoir un agencyId');
+  async createStaff(createUserDto: CreateUserDto): Promise<User> {
+    if (!createUserDto.agencyId && !createUserDto.centreId) {
+      throw new BadRequestException("Un employé doit être rattaché à une agence ou un centre");
     }
     if (!createUserDto.email) {
-      throw new BadRequestException('Un employé d\'agence doit avoir un email');
+      throw new BadRequestException("Un employé doit avoir un email");
     }
     return this.create(createUserDto);
   }

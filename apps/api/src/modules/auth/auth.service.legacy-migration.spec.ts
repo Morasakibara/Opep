@@ -9,7 +9,6 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/services/users.service';
 import { PasswordService } from '../../common/password/password.service';
 import { LoginAttemptService } from './services/login-attempt.service';
-import { Agency } from '../agencies/entities/agency.entity';
 import { Company } from '../companies/entities/company.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
 
@@ -152,7 +151,6 @@ describe('AuthService — legacy migration (REAL PasswordService end-to-end)', (
         // REAL PasswordService, not a mock — this is the whole point of
         // the spec.
         PasswordService,
-        { provide: getRepositoryToken(Agency), useValue: { findOne: jest.fn().mockResolvedValue(null) } },
         { provide: getRepositoryToken(Company), useValue: { findOne: jest.fn().mockResolvedValue(null) } },
         { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepository },
       ],

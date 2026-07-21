@@ -74,6 +74,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     // Navigation
     'nav.dashboard': 'Tableau de bord',
     'nav.agencies': 'Agences',
+    'nav.companies': 'Compagnies',
     'nav.trips': 'Voyages',
     'nav.routes': 'Lignes',
     'nav.buses': 'Bus',
@@ -92,7 +93,6 @@ export const translations: Record<Locale, Record<string, string>> = {
     'nav.notifications': 'Notifications',
     'nav.profile': 'Profil',
     'nav.admin': 'Administration',
-    'nav.companies': 'Compagnies',
     'nav.centers': 'Centres',
     'nav.drivers': 'Chauffeurs',
     'nav.terms': "Conditions d'utilisation",
@@ -114,6 +114,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     'dashboard.active_trips': 'Voyages en cours',
     'dashboard.total_tickets': 'Total tickets',
     'dashboard.total_agencies': 'Total agences',
+    'dashboard.total_companies': 'Total compagnies',
+    'dashboard.total_centres': 'Total centres',
     'dashboard.revenue_today': "Revenu aujourd'hui",
     'dashboard.revenue_month': 'Revenu du mois',
     'dashboard.revenue_year': "Revenu de l'année",
@@ -393,6 +395,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     'review.complaint_separate': 'Pour signaler un problème, utilisez la section litige',
     'review.overall_rating': 'Note globale',
     'review.agency_ranking': 'Classement des agences',
+    'review.company_ranking': 'Classement des compagnies',
+    'review.centre_ranking': 'Classement des centres',
     'review.no_reviews': 'Aucun avis pour le moment',
 
     // Complaints
@@ -489,6 +493,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     // Navigation
     'nav.dashboard': 'Dashboard',
     'nav.agencies': 'Agencies',
+    'nav.companies': 'Companies',
     'nav.trips': 'Trips',
     'nav.routes': 'Routes',
     'nav.buses': 'Buses',
@@ -507,7 +512,6 @@ export const translations: Record<Locale, Record<string, string>> = {
     'nav.notifications': 'Notifications',
     'nav.profile': 'Profile',
     'nav.admin': 'Administration',
-    'nav.companies': 'Companies',
     'nav.centers': 'Centers',
     'nav.drivers': 'Drivers',
     'nav.terms': 'Terms of Service',
@@ -529,6 +533,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     'dashboard.active_trips': 'Active Trips',
     'dashboard.total_tickets': 'Total Tickets',
     'dashboard.total_agencies': 'Total Agencies',
+    'dashboard.total_companies': 'Total Companies',
+    'dashboard.total_centres': 'Total Centers',
     'dashboard.revenue_today': "Today's Revenue",
     'dashboard.revenue_month': 'Monthly Revenue',
     'dashboard.revenue_year': 'Yearly Revenue',
@@ -808,6 +814,8 @@ export const translations: Record<Locale, Record<string, string>> = {
     'review.complaint_separate': 'To report an issue, use the complaint section',
     'review.overall_rating': 'Overall Rating',
     'review.agency_ranking': 'Agency Ranking',
+    'review.company_ranking': 'Company Ranking',
+    'review.centre_ranking': 'Centre Ranking',
     'review.no_reviews': 'No reviews yet',
 
     // Complaints

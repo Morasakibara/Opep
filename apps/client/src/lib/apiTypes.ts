@@ -1,6 +1,6 @@
 import {
   Trip, Ticket, User, Reservation, Payment,
-  Route, Bus, Agency, Company, Centre
+  Route, Bus, Company, Centre
 } from '@opep/shared-types';
 
 // API response types include joined/nested data beyond the base entities.
@@ -22,4 +22,4 @@ export interface ApiUser extends User {
 }
 
 // Re-export shared types that don't need enrichment
-export type { Reservation, Payment, Route, Bus, Agency, Company, Centre };
+export type { Reservation, Payment, Route, Bus, Company, Centre };

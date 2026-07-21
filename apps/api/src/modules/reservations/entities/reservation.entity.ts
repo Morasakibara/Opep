@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { Trip } from '../../trips/entities/trip.entity';
 import { User } from '../../users/entities/user.entity';
-import { Agency } from '../../agencies/entities/agency.entity';
+
 
 export enum ReservationType {
   INDIVIDUAL = 'INDIVIDUAL',
@@ -40,10 +40,6 @@ export class Reservation extends BaseEntity {
 
   @Column({ type: 'uuid' })
   agencyId: string;
-
-  @ManyToOne(() => Agency)
-  @JoinColumn({ name: 'agencyId' })
-  agency: Agency;
 
   @Column({ type: 'uuid', nullable: true })
   centreId: string;
