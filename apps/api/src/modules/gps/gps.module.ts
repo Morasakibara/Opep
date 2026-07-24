@@ -6,11 +6,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { GpsGateway } from './gps.gateway';
 import { GpsController } from './gps.controller';
 import { GpsPing } from './entities/gps-ping.entity';
+import { Subscription } from '../subscriptions/subscriptions.entity';
 import { GpsProcessor } from './gps.processor';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([GpsPing]),
+    TypeOrmModule.forFeature([GpsPing, Subscription]),
     BullModule.registerQueue({
       name: 'gps-queue',
     }),

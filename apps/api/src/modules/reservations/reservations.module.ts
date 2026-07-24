@@ -4,6 +4,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { Reservation } from './entities/reservation.entity';
 import { Passenger } from './entities/passenger.entity';
 import { Trip } from '../trips/entities/trip.entity';
+import { Subscription } from '../subscriptions/subscriptions.entity';
 import { ReservationsService } from './services/reservations.service';
 import { ReservationsController } from './controllers/reservations.controller';
 import { ReservationsProcessor } from './services/reservations.processor';
@@ -11,7 +12,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Reservation, Passenger, Trip]),
+    TypeOrmModule.forFeature([Reservation, Passenger, Trip, Subscription]),
     BullModule.registerQueue({
       name: 'reservations-queue',
     }),

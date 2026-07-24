@@ -7,6 +7,7 @@ import { PaymentsMockProcessor } from './test/payments-mock.processor';
 import { PaymentsController } from './payments.controller';
 import { PaymentsWebhookController } from './payments-webhook.controller';
 import { Reservation } from '../reservations/entities/reservation.entity';
+import { Subscription } from '../subscriptions/subscriptions.entity';
 import { ConfigModule } from '@nestjs/config';
 import { TicketsModule } from '../tickets/tickets.module';
 import { AuditModule } from '../audit/audit.module';
@@ -14,7 +15,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment, Reservation]),
+    TypeOrmModule.forFeature([Payment, Reservation, Subscription]),
     BullModule.registerQueue({
       name: 'payments-queue',
     }),

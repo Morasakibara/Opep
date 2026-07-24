@@ -27,6 +27,7 @@ import {
   Armchair,
   Smartphone,
   Settings,
+  Activity,
 } from 'lucide-react';
 
 interface NavItem {
@@ -59,6 +60,7 @@ const OPERATIONS_NAV: NavItem[] = [
   { icon: <MessageCircle size={20} />, label: 'Réclamations', href: '/complaints' },
   { icon: <Star size={20} />, label: 'Avis clients', href: '/reviews' },
   { icon: <Crown size={20} />, label: 'Abonnements', href: '/subscriptions' },
+  { icon: <Activity size={20} />, label: 'Monitoring', href: '/monitoring' },
 ];
 
 function NavSection({ items }: { items: NavItem[] }) {

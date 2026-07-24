@@ -40,6 +40,7 @@ import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { BillingsModule } from './modules/billings/billings.module';
 import { SeatsModule } from './modules/seats/seats.module';
 import { OfflineScanModule } from './modules/offline-scan/offline-scan.module';
+import { MonitoringModule } from './modules/monitoring/monitoring.module';
 
 @Module({
   imports: [
@@ -124,6 +125,7 @@ import { OfflineScanModule } from './modules/offline-scan/offline-scan.module';
     BillingsModule,
     SeatsModule,
     OfflineScanModule,
+    MonitoringModule,
     SchedulesModule,
     ReportsModule,
   ],

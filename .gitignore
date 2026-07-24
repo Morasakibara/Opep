@@ -46,3 +46,7 @@ cahier_de_charge (2).md
 skills-lock.json
 *storybook.log
 storybook-static
+
+# Build cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo

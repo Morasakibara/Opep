@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Incident } from './incidents.entity';
+import { Subscription } from '../subscriptions/subscriptions.entity';
 import { IncidentsService } from './incidents.service';
 import { IncidentsController } from './incidents.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Incident])],
+  imports: [TypeOrmModule.forFeature([Incident, Subscription])],
   providers: [IncidentsService],
   controllers: [IncidentsController],
   exports: [IncidentsService],

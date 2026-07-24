@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ErrorStoreService } from './common/filters/error-store.service';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 
@@ -53,6 +56,11 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  // Global exception filter — logs all 5xx with stack traces
+  const httpAdapterHost = app.get(HttpAdapterHost);
+  const errorStore = app.get(ErrorStoreService);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost, errorStore));
 
   await app.listen(process.env.PORT || 3000);
   console.log(`Application démarrée sur http://localhost:${process.env.PORT || 3000}`);
