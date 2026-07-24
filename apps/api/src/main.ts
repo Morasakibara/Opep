@@ -5,6 +5,8 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ErrorStoreService } from './common/filters/error-store.service';
+import { ApiErrorDbService } from './modules/monitoring/services/api-error-db.service';
+import { ErrorGateway } from './modules/monitoring/error.gateway';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 
@@ -57,10 +59,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Global exception filter — logs all 5xx with stack traces
+  // Global exception filter — logs all errors, persists 5xx to DB, emits via WebSocket
   const httpAdapterHost = app.get(HttpAdapterHost);
   const errorStore = app.get(ErrorStoreService);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost, errorStore));
+  const apiErrorDb = app.get(ApiErrorDbService);
+  const errorGateway = app.get(ErrorGateway);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost, errorStore, apiErrorDb, errorGateway));
 
   await app.listen(process.env.PORT || 3000);
   console.log(`Application démarrée sur http://localhost:${process.env.PORT || 3000}`);

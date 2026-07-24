@@ -9,6 +9,8 @@ import {
 import { HttpAdapterHost } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { ErrorStoreService } from './error-store.service';
+import { ApiErrorDbService } from '../../modules/monitoring/services/api-error-db.service';
+import { ErrorGateway } from '../../modules/monitoring/error.gateway';
 
 /**
  * Global exception filter that catches ALL unhandled exceptions
@@ -26,6 +28,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly errorStore?: ErrorStoreService,
+    private readonly apiErrorDb?: ApiErrorDbService,
+    private readonly errorGateway?: ErrorGateway,
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
@@ -61,18 +65,36 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.warn(`[${request.method}] ${request.url} → ${httpStatus}: ${message}`);
     }
 
-    // Store in error store for monitoring dashboard (only 4xx and 5xx)
+    // Store in error store + DB for monitoring dashboard (only 4xx and 5xx)
+    const errorPayload = {
+      timestamp: new Date().toISOString(),
+      method: request.method,
+      url: request.url,
+      statusCode: httpStatus,
+      message,
+      stack: exception instanceof Error ? exception.stack : undefined,
+      ipAddress: request.ip,
+      userAgent: request.headers['user-agent'],
+    };
+
     try {
-      this.errorStore?.push({
-        timestamp: new Date().toISOString(),
-        method: request.method,
-        url: request.url,
-        statusCode: httpStatus,
-        message,
-        stack: exception instanceof Error ? exception.stack : undefined,
-      });
+      this.errorStore?.push(errorPayload);
     } catch {
       // Silently fail — the error store should never crash the app
+    }
+
+    // Persist 5xx errors to database
+    if (httpStatus >= 500) {
+      this.apiErrorDb?.create(errorPayload).catch(() => {});
+    }
+
+    // Emit 5xx errors via WebSocket for real-time notifications
+    if (httpStatus >= 500) {
+      try {
+        this.errorGateway?.emitError(errorPayload);
+      } catch {
+        // Silently fail
+      }
     }
 
     // Send safe response to client

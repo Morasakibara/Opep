@@ -1,22 +1,30 @@
 import { Controller, Get, Delete, Query } from '@nestjs/common';
 import { ErrorStoreService } from '../../common/filters/error-store.service';
+import { ApiErrorDbService } from './services/api-error-db.service';
 
 @Controller('monitoring')
 export class MonitoringController {
-  constructor(private readonly errorStore: ErrorStoreService) {}
+  constructor(
+    private readonly errorStore: ErrorStoreService,
+    private readonly apiErrorDb: ApiErrorDbService,
+  ) {}
 
   @Get('errors')
-  getRecentErrors(@Query('limit') limit?: string) {
-    return this.errorStore.getRecent(limit ? parseInt(limit, 10) : 20);
+  async getRecentErrors(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+    return this.apiErrorDb.findRecent(
+      limit ? parseInt(limit, 10) : 20,
+      cursor || undefined,
+    );
   }
 
   @Get('errors/stats')
-  getErrorStats() {
-    return this.errorStore.getStats();
+  async getErrorStats() {
+    return this.apiErrorDb.getStats();
   }
 
   @Delete('errors')
-  clearErrors() {
+  async clearErrors() {
+    await this.apiErrorDb.clear();
     this.errorStore.clear();
     return { cleared: true };
   }

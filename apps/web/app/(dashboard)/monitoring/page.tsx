@@ -10,16 +10,27 @@ import {
   AlertCircle,
   Info,
   Activity,
+  Wifi,
+  WifiOff,
+
+  ChevronDown,
 } from 'lucide-react';
+import { useErrorNotifications, ErrorEvent } from '@/hooks/useErrorNotifications';
 
 interface StoredError {
   id: string;
-  timestamp: string;
+  createdAt: string;
   method: string;
   url: string;
   statusCode: number;
   message: string;
   stack?: string;
+}
+
+interface ErrorResponse {
+  data: StoredError[];
+  nextCursor?: string;
+  total: number;
 }
 
 interface ErrorStats {
@@ -69,26 +80,67 @@ export default function MonitoringPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedError, setSelectedError] = useState<StoredError | null>(null);
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [newErrorCount, setNewErrorCount] = useState(0);
+
+  // WebSocket real-time notifications
+  const { connected: wsConnected } = useErrorNotifications({
+    enabled: true,
+    onError: () => {
+      setNewErrorCount((n) => n + 1);
+    },
+  });
+
+  const authHeaders = useCallback(() => {
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = authHeaders();
 
       const [errorsRes, statsRes] = await Promise.all([
-        fetch('/api/v1/monitoring/errors?limit=50', { headers }),
+        fetch('/api/v1/monitoring/errors?limit=20', { headers }),
         fetch('/api/v1/monitoring/errors/stats', { headers }),
       ]);
 
-      if (errorsRes.ok) setErrors(await errorsRes.json());
+      if (errorsRes.ok) {
+        const data: ErrorResponse = await errorsRes.json();
+        setErrors(data.data);
+        setCursor(data.nextCursor);
+        setHasMore(!!data.nextCursor);
+        setNewErrorCount(0);
+      }
       if (statsRes.ok) setStats(await statsRes.json());
     } catch {
       // Silently fail — monitoring should never crash the page
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [authHeaders]);
+
+  // Load more (paginated)
+  const loadMore = useCallback(async () => {
+    if (!cursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const headers = authHeaders();
+      const res = await fetch(`/api/v1/monitoring/errors?limit=20&cursor=${cursor}`, { headers });
+      if (res.ok) {
+        const data: ErrorResponse = await res.json();
+        setErrors((prev) => [...prev, ...data.data]);
+        setCursor(data.nextCursor);
+        setHasMore(!!data.nextCursor);
+      }
+    } catch {} finally {
+      setLoadingMore(false);
+    }
+  }, [cursor, loadingMore, authHeaders]);
 
   useEffect(() => {
     fetchData();
@@ -102,15 +154,15 @@ export default function MonitoringPage() {
   }, [autoRefresh, fetchData]);
 
   async function handleClear() {
-    const token = localStorage.getItem('token');
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
+    const headers = authHeaders();
     try {
       const res = await fetch('/api/v1/monitoring/errors', { method: 'DELETE', headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setErrors([]);
       setStats(null);
+      setCursor(undefined);
+      setHasMore(false);
+      setNewErrorCount(0);
     } catch (err) {
       console.warn('[Monitoring] Clear failed:', err);
     }
@@ -121,49 +173,63 @@ export default function MonitoringPage() {
     if (code === 429) return <AlertCircle size={16} className="text-error_red" />;
     if (code >= 400) return <AlertTriangle size={16} className="text-warning_yellow" />;
     return <Info size={16} className="text-primary" />;
-  }
-
-  return (
+  }    return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-bottom duration-300">
         <div>
-          <h2 className="text-2xl font-bold text-on_surface flex items-center gap-3">
-            <Activity size={24} className="text-primary" />
-            Monitoring des Erreurs
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-on_surface flex items-center gap-3">
+              <Activity size={24} className="text-primary" />
+              Monitoring des Erreurs
+            </h2>
+            {newErrorCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-error_red/20 text-error_red text-[11px] font-bold border border-error_red/30 animate-pulse-soft">
+                +{newErrorCount}
+              </span>
+            )}
+          </div>
           <p className="text-on_surface_variant text-sm mt-1">
             Visualisez les erreurs récentes de l&apos;API en temps réel
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* WebSocket status */}
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border ${
+            wsConnected ? 'text-success_green border-success_green/20 bg-success_green/5' : 'text-error_red border-error_red/20 bg-error_red/5'
+          }`}>
+            {wsConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+            <span>{wsConnected ? 'Live' : 'Offline'}</span>
+          </div>
+          
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider border transition-all ${
+            className={`px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all ${
               autoRefresh
                 ? 'bg-primary/10 text-primary border-primary/20'
                 : 'bg-surface_container_high text-on_surface_variant border-charcoal_border'
             }`}
           >
-            {autoRefresh ? 'Auto ON' : 'Auto OFF'}
+            {autoRefresh ? 'Auto' : 'Manuel'}
           </button>
           <button
             onClick={fetchData}
             disabled={isLoading}
-            className="px-4 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-[12px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-2 disabled:opacity-50"
+            className="px-3 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5 disabled:opacity-50"
           >
-            <RefreshCcw size={14} className={isLoading ? 'animate-spin' : ''} />
-            Actualiser
+            <RefreshCcw size={12} className={isLoading ? 'animate-spin' : ''} />
+            Rafraîchir
           </button>
           <button
             onClick={handleClear}
-            className="px-4 py-2 rounded-xl bg-error_red/10 text-error_red border border-error_red/20 text-[12px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-2"
+            className="px-3 py-2 rounded-lg bg-error_red/10 text-error_red border border-error_red/20 text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5"
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
             Effacer
           </button>
         </div>
       </div>
+
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
@@ -222,7 +288,7 @@ export default function MonitoringPage() {
                     </div>
                     <p className="text-sm text-on_surface font-medium truncate">{err.message}</p>
                     <p className="text-[11px] text-on_surface_variant mt-1">
-                      {new Date(err.timestamp).toLocaleString('fr-FR')}
+                      {new Date(err.createdAt || err.timestamp).toLocaleString('fr-FR')}
                     </p>
                     {selectedError?.id === err.id && err.stack && (
                       <pre className="mt-3 p-4 bg-surface_container_highest rounded-xl text-[11px] text-on_surface_variant font-mono overflow-x-auto max-h-48 custom-scrollbar whitespace-pre-wrap">
@@ -236,6 +302,23 @@ export default function MonitoringPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination - Load More */}
+        {hasMore && (
+          <div className="p-4 text-center border-t border-charcoal_border">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="px-6 py-2.5 rounded-xl bg-surface_container_high text-on_surface_variant hover:text-on_surface border border-charcoal_border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center gap-2 mx-auto disabled:opacity-50"
+            >
+              {loadingMore ? (
+                <><RefreshCcw size={14} className="animate-spin" /> Chargement...</>
+              ) : (
+                <><ChevronDown size={14} /> Voir plus ({stats ? stats.total - errors.length : 0} restantes)</>
+              )}
+            </button>
           </div>
         )}
       </div>
