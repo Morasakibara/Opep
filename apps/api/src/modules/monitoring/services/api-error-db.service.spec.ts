@@ -34,10 +34,12 @@ describe('ApiErrorDbService', () => {
       addOrderBy: jest.fn().mockReturnThis(),
       take: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
       groupBy: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([mockError]),
+      getCount: jest.fn().mockResolvedValue(1),
       getRawMany: jest.fn().mockResolvedValue([]),
       ...overrides,
     };
@@ -138,8 +140,7 @@ describe('ApiErrorDbService', () => {
     });
 
     it('handles cursor-based pagination', async () => {
-      const qb = mockQueryBuilder();
-      repository.count!.mockResolvedValue(2);
+      const qb = mockQueryBuilder({ getCount: jest.fn().mockResolvedValue(2) });
       repository.createQueryBuilder!.mockReturnValue(qb);
 
       const result = await service.findRecent(20, '2024-01-01T00:00:00.000Z');
