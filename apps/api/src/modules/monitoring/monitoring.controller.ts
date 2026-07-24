@@ -10,16 +10,39 @@ export class MonitoringController {
   ) {}
 
   @Get('errors')
-  async getRecentErrors(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+  async getRecentErrors(
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+    @Query('minStatus') minStatus?: string,
+    @Query('maxStatus') maxStatus?: string,
+    @Query('search') search?: string,
+  ) {
+    const filters = {
+      ...(minStatus !== undefined ? { minStatus: parseInt(minStatus, 10) } : {}),
+      ...(maxStatus !== undefined ? { maxStatus: parseInt(maxStatus, 10) } : {}),
+      ...(search ? { search } : {}),
+    };
     return this.apiErrorDb.findRecent(
       limit ? parseInt(limit, 10) : 20,
       cursor || undefined,
+      Object.keys(filters).length > 0 ? filters : undefined,
     );
   }
 
   @Get('errors/stats')
-  async getErrorStats() {
-    return this.apiErrorDb.getStats();
+  async getErrorStats(
+    @Query('minStatus') minStatus?: string,
+    @Query('maxStatus') maxStatus?: string,
+    @Query('search') search?: string,
+  ) {
+    const filters = {
+      ...(minStatus !== undefined ? { minStatus: parseInt(minStatus, 10) } : {}),
+      ...(maxStatus !== undefined ? { maxStatus: parseInt(maxStatus, 10) } : {}),
+      ...(search ? { search } : {}),
+    };
+    return this.apiErrorDb.getStats(
+      Object.keys(filters).length > 0 ? filters : undefined,
+    );
   }
 
   @Delete('errors')

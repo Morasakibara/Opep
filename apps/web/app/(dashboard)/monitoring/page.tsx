@@ -14,6 +14,8 @@ import {
   WifiOff,
 
   ChevronDown,
+  Search,
+  Filter,
 } from 'lucide-react';
 import { useErrorNotifications, ErrorEvent } from '@/hooks/useErrorNotifications';
 
@@ -83,7 +85,18 @@ export default function MonitoringPage() {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Filters
+  const [filterMode, setFilterMode] = useState<'all' | '5xx' | '4xx'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   const [newErrorCount, setNewErrorCount] = useState(0);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // WebSocket real-time notifications
   const { connected: wsConnected } = useErrorNotifications({
@@ -100,13 +113,30 @@ export default function MonitoringPage() {
     return headers;
   }, []);
 
+  // Build query string from filters
+  const buildQuery = useCallback((extra: string = '') => {
+    const params = new URLSearchParams();
+    if (filterMode === '5xx') { params.set('minStatus', '500'); params.set('maxStatus', '599'); }
+    if (filterMode === '4xx') { params.set('minStatus', '400'); params.set('maxStatus', '499'); }
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    const base = `/api/v1/monitoring/errors?limit=20${params.toString() ? '&' + params.toString() : ''}`;
+    return base + extra;
+  }, [filterMode, debouncedSearch]);
+
   const fetchData = useCallback(async () => {
     try {
       const headers = authHeaders();
 
+      const errorsUrl = buildQuery();
+      const statsUrl = `/api/v1/monitoring/errors/stats?${new URLSearchParams(
+        filterMode === '5xx' ? { minStatus: '500', maxStatus: '599' }
+        : filterMode === '4xx' ? { minStatus: '400', maxStatus: '499' }
+        : {}
+      ).toString()}${debouncedSearch ? '&search=' + encodeURIComponent(debouncedSearch) : ''}`;
+
       const [errorsRes, statsRes] = await Promise.all([
-        fetch('/api/v1/monitoring/errors?limit=20', { headers }),
-        fetch('/api/v1/monitoring/errors/stats', { headers }),
+        fetch(errorsUrl, { headers }),
+        fetch(statsUrl, { headers }),
       ]);
 
       if (errorsRes.ok) {
@@ -122,7 +152,7 @@ export default function MonitoringPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [authHeaders]);
+  }, [authHeaders, buildQuery, filterMode, debouncedSearch]);
 
   // Load more (paginated)
   const loadMore = useCallback(async () => {
@@ -130,7 +160,7 @@ export default function MonitoringPage() {
     setLoadingMore(true);
     try {
       const headers = authHeaders();
-      const res = await fetch(`/api/v1/monitoring/errors?limit=20&cursor=${cursor}`, { headers });
+      const res = await fetch(`${buildQuery()}&cursor=${cursor}`, { headers });
       if (res.ok) {
         const data: ErrorResponse = await res.json();
         setErrors((prev) => [...prev, ...data.data]);
@@ -140,7 +170,7 @@ export default function MonitoringPage() {
     } catch {} finally {
       setLoadingMore(false);
     }
-  }, [cursor, loadingMore, authHeaders]);
+  }, [cursor, loadingMore, authHeaders, buildQuery]);
 
   useEffect(() => {
     fetchData();
@@ -230,6 +260,47 @@ export default function MonitoringPage() {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 animate-in slide-in-from-bottom duration-350">
+        <div className="flex items-center gap-2">
+          <Filter size={14} className="text-on_surface_variant" />
+          {(['all', '5xx', '4xx'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-3.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all ${
+                filterMode === mode
+                  ? mode === '5xx'
+                    ? 'bg-error_red/10 text-error_red border-error_red/20'
+                    : mode === '4xx'
+                    ? 'bg-warning_yellow/10 text-warning_yellow border-warning_yellow/20'
+                    : 'bg-primary/10 text-primary border-primary/20'
+                  : 'bg-surface_container_high text-on_surface_variant border-charcoal_border hover:text-on_surface'
+              }`}
+            >
+              {mode === 'all' ? 'Tout' : mode.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div className="relative flex-1 sm:max-w-xs w-full">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher par URL ou message..."
+            className="w-full bg-surface_container_high border border-charcoal_border rounded-lg pl-9 pr-4 py-2 text-[12px] text-on_surface placeholder:text-on_surface_variant/50 focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">

@@ -40,9 +40,26 @@ export class ApiErrorDbService {
   async findRecent(
     limit: number = 20,
     cursor?: string,
+    filters?: {
+      minStatus?: number;
+      maxStatus?: number;
+      search?: string;
+    },
   ): Promise<{ data: ApiError[]; nextCursor?: string; total: number }> {
-    const total = await this.apiErrorRepository.count();
+    // Build count query (without cursor/take/pagination) for accurate total
+    const countQuery = this.apiErrorRepository.createQueryBuilder('e');
+    if (filters?.minStatus !== undefined) {
+      countQuery.andWhere('e.statusCode >= :minStatus', { minStatus: filters.minStatus });
+    }
+    if (filters?.maxStatus !== undefined) {
+      countQuery.andWhere('e.statusCode <= :maxStatus', { maxStatus: filters.maxStatus });
+    }
+    if (filters?.search) {
+      countQuery.andWhere('(e.url ILIKE :search OR e.message ILIKE :search)', { search: `%${filters.search}%` });
+    }
+    const total = await countQuery.getCount();
 
+    // Build data query with cursor and limit
     let query = this.apiErrorRepository
       .createQueryBuilder('e')
       .orderBy('e.createdAt', 'DESC')
@@ -50,8 +67,21 @@ export class ApiErrorDbService {
       .take(limit + 1);
 
     if (cursor) {
-      // cursor-based pagination using ISO timestamp
       query = query.where('e.createdAt < :cursor', { cursor });
+    }
+
+    // Apply filters to data query
+    if (filters?.minStatus !== undefined) {
+      const cond = cursor ? 'andWhere' : 'where';
+      query = query[cond]('e.statusCode >= :minStatus', { minStatus: filters.minStatus });
+    }
+    if (filters?.maxStatus !== undefined) {
+      const cond = cursor || filters?.minStatus !== undefined ? 'andWhere' : 'where';
+      query = query[cond]('e.statusCode <= :maxStatus', { maxStatus: filters.maxStatus });
+    }
+    if (filters?.search) {
+      const cond = cursor || filters?.minStatus !== undefined || filters?.maxStatus !== undefined ? 'andWhere' : 'where';
+      query = query[cond]('(e.url ILIKE :search OR e.message ILIKE :search)', { search: `%${filters.search}%` });
     }
 
     const results = await query.getMany();
@@ -63,14 +93,29 @@ export class ApiErrorDbService {
     return { data, nextCursor, total };
   }
 
-  async getStats(): Promise<{ total: number; byStatus: Record<string, number> }> {
-    const stats = await this.apiErrorRepository
+  async getStats(filters?: {
+    minStatus?: number;
+    maxStatus?: number;
+    search?: string;
+  }): Promise<{ total: number; byStatus: Record<string, number> }> {
+    let qb = this.apiErrorRepository
       .createQueryBuilder('e')
       .select('e.statusCode', 'statusCode')
       .addSelect('COUNT(*)', 'count')
       .groupBy('e.statusCode')
-      .orderBy('COUNT(*)', 'DESC')
-      .getRawMany();
+      .orderBy('COUNT(*)', 'DESC');
+
+    if (filters?.minStatus !== undefined) {
+      qb = qb.andWhere('e.statusCode >= :minStatus', { minStatus: filters.minStatus });
+    }
+    if (filters?.maxStatus !== undefined) {
+      qb = qb.andWhere('e.statusCode <= :maxStatus', { maxStatus: filters.maxStatus });
+    }
+    if (filters?.search) {
+      qb = qb.andWhere('(e.url ILIKE :search OR e.message ILIKE :search)', { search: `%${filters.search}%` });
+    }
+
+    const stats = await qb.getRawMany();
 
     const byStatus: Record<string, number> = {};
     for (const row of stats) {
