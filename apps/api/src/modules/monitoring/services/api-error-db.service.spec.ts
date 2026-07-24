@@ -48,7 +48,6 @@ describe('ApiErrorDbService', () => {
   beforeEach(async () => {
     repository = {
       save: jest.fn(),
-      count: jest.fn(),
       createQueryBuilder: jest.fn(),
       clear: jest.fn(),
     } as any;
@@ -128,7 +127,6 @@ describe('ApiErrorDbService', () => {
   describe('findRecent()', () => {
     it('returns paginated errors without cursor', async () => {
       const qb = mockQueryBuilder();
-      repository.count!.mockResolvedValue(1);
       repository.createQueryBuilder!.mockReturnValue(qb);
 
       const result = await service.findRecent(20);
@@ -158,8 +156,7 @@ describe('ApiErrorDbService', () => {
         createdAt: new Date(2024, 0, 1, 0, 0, i),
       }));
 
-      const qb = mockQueryBuilder({ getMany: jest.fn().mockResolvedValue(errors) });
-      repository.count!.mockResolvedValue(30);
+      const qb = mockQueryBuilder({ getMany: jest.fn().mockResolvedValue(errors), getCount: jest.fn().mockResolvedValue(30) });
       repository.createQueryBuilder!.mockReturnValue(qb);
 
       const result = await service.findRecent(20);
