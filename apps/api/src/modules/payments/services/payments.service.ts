@@ -54,7 +54,7 @@ export class PaymentsService {
     }
 
     // 2. Simulate Payment Process
-    let transactionId = `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    const transactionId = `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
     let status = PaymentStatus.SUCCESS;
     let failureReason = null;
 
@@ -365,7 +365,7 @@ export class PaymentsService {
     }
 
     // 3. Process payment for deposit amount
-    let transactionId = `DEPT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    const transactionId = `DEPT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
     let status = PaymentStatus.SUCCESS;
     let failureReason = null;
 

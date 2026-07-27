@@ -4,6 +4,7 @@ import { exec } from 'child_process';
 import { join } from 'path';
 import { promisify } from 'util';
 
+
 const execAsync = promisify(exec);
 
 /**
@@ -28,10 +29,13 @@ export class SeedController {
       throw new NotFoundException('Seed endpoint is disabled in production');
     }
 
-    const seedScript = join(__dirname, '../../src/seed.ts');
-    const cwd = join(__dirname, '../../');
+    // From dist/modules/seed/ → need to go up to apps/api/
+    // __dirname in compiled code: dist/modules/seed/
+    // join(__dirname, '../../../') = apps/api/
+    const cwd = join(__dirname, '../../../');
+    const seedScript = 'src/seed.ts'; // relative to cwd
 
-    this.logger.log('Starting seed...');
+    this.logger.log('Starting seed from: ' + join(cwd, seedScript));
 
     try {
       const { stdout, stderr } = await execAsync(
@@ -43,6 +47,8 @@ export class SeedController {
         },
       );
 
+      // Also seed monitoring errors in the in-memory store
+      // (the seed.ts script already seeds them to DB)
       const allOutput = (stdout || '') + (stderr || '');
       const lines = allOutput.trim().split('\n').filter(Boolean);
       const lastLines = lines.slice(-15).join('\n');
