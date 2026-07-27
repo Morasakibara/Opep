@@ -15,6 +15,7 @@ export default function ThemeToggle() {
 
   return (
     <button
+      id="theme-toggle"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       className="p-2.5 rounded-full bg-surface_container_high text-on_surface_variant hover:text-primary transition-all active:scale-90"
       title="Toggle Theme"

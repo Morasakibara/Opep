@@ -110,6 +110,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
                 <button
+                  id="toggle-password"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface transition-colors"
@@ -126,6 +127,7 @@ export default function LoginPage() {
             </div>
 
             <button
+              id="login-submit"
               type="submit"
               disabled={loading}
               className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"

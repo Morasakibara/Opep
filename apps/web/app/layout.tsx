@@ -9,6 +9,10 @@ export const metadata = {
   keywords: ["OPEP", "transport", "Cameroun", "bus", "billetterie", "agence", "voyage", "interurbain"],
   authors: [{ name: "OPEP Cameroun" }],
   creator: "OPEP Cameroun",
+  icons: {
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: [{ url: "/favicon.png", type: "image/png" }],
+  },
   openGraph: {
     title: "OPEP Agence - Plateforme de Transport Interurbain",
     description: "Gestion digitale des agences de transport au Cameroun — réservation, billetterie, suivi GPS et validation de tickets.",
