@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { validate } from 'class-validator';
 import { CreateIncidentDto, IncidentType } from './create-incident.dto';
 

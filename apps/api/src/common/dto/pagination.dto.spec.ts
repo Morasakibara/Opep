@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { validate } from 'class-validator';
 import { PaginationDto, paginate } from './pagination.dto';
 
