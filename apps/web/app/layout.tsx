@@ -10,8 +10,13 @@ export const metadata = {
   authors: [{ name: "OPEP Cameroun" }],
   creator: "OPEP Cameroun",
   icons: {
-    icon: [{ url: "/favicon.png", type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
     apple: [{ url: "/favicon.png", type: "image/png" }],
+    shortcut: { url: "/favicon.ico", type: "image/x-icon" },
   },
   openGraph: {
     title: "OPEP Agence - Plateforme de Transport Interurbain",

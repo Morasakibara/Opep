@@ -27,7 +27,8 @@ export const dataSourceOptions: DataSourceOptions = {
   url: dbUrl,
   entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
   migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
-  synchronize: false,
+  synchronize: process.env.NODE_ENV === 'development',
+  // Auto-create tables in dev for DX; always false in production
   logging: process.env.NODE_ENV === 'development',
   // On s'assure que si l'URL est mal parsée, on a au moins les infos de base
   // Bien que l'URL soit la méthode recommandée par TypeORM

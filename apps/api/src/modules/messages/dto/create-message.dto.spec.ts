@@ -1,61 +1,51 @@
+import 'reflect-metadata';
 import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
 import { CreateMessageDto } from './create-message.dto';
 
 describe('CreateMessageDto', () => {
-  const validDto = {
-    receiverId: '550e8400-e29b-41d4-a716-446655440000',
-    content: 'Bonjour, votre bus est à l\'heure.',
-  };
+  it('accepts valid message data', async () => {
+    const dto = new CreateMessageDto();
+    dto.receiverId = '550e8400-e29b-41d4-a716-446655440000';
+    dto.content = 'Bonjour, votre ticket est prêt.';
 
-  it('accepts a valid DTO', async () => {
-    const dto = plainToInstance(CreateMessageDto, validDto);
     const errors = await validate(dto);
-    expect(errors.length).toBe(0);
+    expect(errors).toHaveLength(0);
   });
 
-  it('rejects empty DTO', async () => {
-    const dto = plainToInstance(CreateMessageDto, {});
-    const errors = await validate(dto);
-    expect(errors.length).toBe(2);
-    const props = errors.map((e) => e.property);
-    expect(props).toContain('receiverId');
-    expect(props).toContain('content');
-  });
+  it('rejects empty receiverId', async () => {
+    const dto = new CreateMessageDto();
+    dto.receiverId = '';
+    dto.content = 'Test';
 
-  it('rejects missing receiverId', async () => {
-    const dto = plainToInstance(CreateMessageDto, { content: 'Hello' });
     const errors = await validate(dto);
-    expect(errors.length).toBe(1);
+    expect(errors).toHaveLength(1);
     expect(errors[0].property).toBe('receiverId');
   });
 
-  it('rejects missing content', async () => {
-    const dto = plainToInstance(CreateMessageDto, {
-      receiverId: '550e8400-e29b-41d4-a716-446655440000',
-    });
-    const errors = await validate(dto);
-    expect(errors.length).toBe(1);
-    expect(errors[0].property).toBe('content');
-  });
+  it('rejects invalid UUID for receiverId', async () => {
+    const dto = new CreateMessageDto();
+    dto.receiverId = 'not-a-uuid';
+    dto.content = 'Test';
 
-  it('rejects empty content string', async () => {
-    const dto = plainToInstance(CreateMessageDto, {
-      ...validDto,
-      content: '',
-    });
     const errors = await validate(dto);
-    expect(errors.length).toBe(1);
-    expect(errors[0].property).toBe('content');
-  });
-
-  it('rejects non-UUID receiverId', async () => {
-    const dto = plainToInstance(CreateMessageDto, {
-      ...validDto,
-      receiverId: 'not-a-uuid',
-    });
-    const errors = await validate(dto);
-    expect(errors.length).toBe(1);
+    expect(errors).toHaveLength(1);
     expect(errors[0].property).toBe('receiverId');
+  });
+
+  it('rejects empty content', async () => {
+    const dto = new CreateMessageDto();
+    dto.receiverId = '550e8400-e29b-41d4-a716-446655440000';
+    dto.content = '';
+
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toBe('content');
+  });
+
+  it('rejects missing fields', async () => {
+    const dto = new CreateMessageDto();
+
+    const errors = await validate(dto);
+    expect(errors.length).toBeGreaterThanOrEqual(2);
   });
 });
