@@ -2,6 +2,9 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
+// Force NestJS build to compile migration files to dist/migrations/
+import '../migrations/1740000000000-CreateApiErrorsTable';
+
 [
   join(process.cwd(), '.env.local'),
   join(process.cwd(), '.env'),

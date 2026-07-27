@@ -9,7 +9,7 @@ OPEP est conçu comme un **Monorepo** utilisant `npm workspaces`.
 - `apps/api` : Backend NestJS.
 - `apps/web` : Portail Agence Next.js (App Router).
 - `apps/client` : Client Web Passager React (Vite).
-- `apps/mobile` : Application Mobile Expo (React Native).
+- `apps/mobile` : Application Mobile Flutter.
 - `packages/shared-types` : Types et schémas Zod partagés.
 - `packages/qr-utils` : Logique de signature et validation des tickets QR.
 

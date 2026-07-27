@@ -50,7 +50,7 @@ export function useResolveIncident() {
 
 // ============ Companies ============
 export function useCompanies() {
-  return useQuery({ queryKey: ['companies'], queryFn: companiesApi.getAll });
+  return useQuery({ queryKey: ['companies'], queryFn: companiesApi.getAll, retry: 1 });
 }
 export function useCompanyById(id: string) {
   return useQuery({ queryKey: ['companies', id], queryFn: () => companiesApi.getById(id), enabled: !!id });
@@ -65,7 +65,7 @@ export function useCompanyStats(id: string) {
 
 // ============ Centres ============
 export function useCentres() {
-  return useQuery({ queryKey: ['centres'], queryFn: centresApi.getAll });
+  return useQuery({ queryKey: ['centres'], queryFn: centresApi.getAll, retry: 1 });
 }
 export function useCentreById(id: string) {
   return useQuery({ queryKey: ['centres', id], queryFn: () => centresApi.getById(id), enabled: !!id });
@@ -75,7 +75,7 @@ export function useCreateCentre() {
   return useMutation({ mutationFn: centresApi.create, onSuccess: () => qc.invalidateQueries({ queryKey: ['centres'] }) });
 }
 export function useCentreRanking() {
-  return useQuery({ queryKey: ['centres', 'ranking'], queryFn: centresApi.getRanking });
+  return useQuery({ queryKey: ['centres', 'ranking'], queryFn: centresApi.getRanking, retry: 1 });
 }
 
 // ============ Subscriptions ============

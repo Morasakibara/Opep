@@ -46,6 +46,9 @@ cahier_de_charge (2).md
 skills-lock.json
 *storybook.log
 storybook-static
+DOCUMENTATION_TECHNIQUE.md
+OPEP_TEAM_MEMORY.md
+TEAM_DIRECTIVES.md
 
 # Build cache
 tsconfig.tsbuildinfo

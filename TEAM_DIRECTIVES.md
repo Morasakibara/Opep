@@ -21,7 +21,7 @@ Vous êtes des moteurs d'exécution logique et autonome. Votre but est de traite
 ## STACK TECHNIQUE
 - **Backend :** NestJS + TypeORM + PostgreSQL + Redis.
 - **Web :** Next.js 14 (App Router).
-- **Mobile :** React Native (Expo).
+- **Mobile :** Flutter.
 - **Shared :** Zod schemas + RSA QR utils.
 
 ## MÉMOIRE D'ÉQUIPE

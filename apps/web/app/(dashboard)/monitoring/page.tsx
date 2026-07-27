@@ -359,7 +359,7 @@ export default function MonitoringPage() {
                     </div>
                     <p className="text-sm text-on_surface font-medium truncate">{err.message}</p>
                     <p className="text-[11px] text-on_surface_variant mt-1">
-                      {new Date(err.createdAt || err.timestamp).toLocaleString('fr-FR')}
+                      {new Date(err.createdAt).toLocaleString('fr-FR')}
                     </p>
                     {selectedError?.id === err.id && err.stack && (
                       <pre className="mt-3 p-4 bg-surface_container_highest rounded-xl text-[11px] text-on_surface_variant font-mono overflow-x-auto max-h-48 custom-scrollbar whitespace-pre-wrap">

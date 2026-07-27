@@ -49,7 +49,7 @@ Utilisez les commandes suivantes pour lancer les différents modules :
 | :--- | :--- | :--- |
 | **Backend (API)** | `npm run dev:api` | `http://localhost:3000` |
 | **Frontend (Web)** | `npm run dev:web` | `http://localhost:3001` |
-| **Mobile (React Native)** | `npm run dev:mobile` | Expo Dashboard |
+| **Mobile (Flutter)** | `cd apps/mobile && flutter run` | Émulateur / Appareil |
 
 ## 7. Configuration MCP (IA)
 Pour que votre assistant IA puisse interagir avec ce projet, utilisez la configuration définie dans `MCP_CONFIG.md`.

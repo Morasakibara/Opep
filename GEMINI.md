@@ -3,7 +3,7 @@
 ## Stack Technique
 - **Backend:** NestJS (TypeScript)
 - **Web:** Next.js 14 (App Router)
-- **Mobile:** React Native (en remplacement de Flutter)
+- **Mobile:** Flutter
 - **Database:** PostgreSQL (TypeORM)
 - **Cache:** Redis (BullMQ)
 

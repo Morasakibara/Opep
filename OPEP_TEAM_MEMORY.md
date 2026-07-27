@@ -77,7 +77,7 @@
   - Validation RSA
   - PDF
 
-### 📱 APPLICATION MOBILE REACT NATIVE
+### 📱 APPLICATION MOBILE FLUTTER
 - [x] **Carte 39 — Initialisation Mobile**
   - Navigation
   - Theme
