@@ -41,6 +41,7 @@ import { BillingsModule } from './modules/billings/billings.module';
 import { SeatsModule } from './modules/seats/seats.module';
 import { OfflineScanModule } from './modules/offline-scan/offline-scan.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
+import { SeedModule } from './modules/seed/seed.module';
 
 @Module({
   imports: [
@@ -126,6 +127,7 @@ import { MonitoringModule } from './modules/monitoring/monitoring.module';
     SeatsModule,
     OfflineScanModule,
     MonitoringModule,
+    SeedModule,
     SchedulesModule,
     ReportsModule,
   ],
