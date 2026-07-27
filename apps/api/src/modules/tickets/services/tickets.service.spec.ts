@@ -10,7 +10,9 @@ import { Passenger } from '../../reservations/entities/passenger.entity';
 import { AuditService } from '../../audit/services/audit.service';
 
 jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
   existsSync: jest.fn().mockReturnValue(false),
+  readFileSync: jest.fn().mockReturnValue(''),
 }));
 
 describe('TicketsService', () => {

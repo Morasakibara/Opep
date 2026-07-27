@@ -103,8 +103,9 @@ export class AfricasTalkingService {
 
   private async loadSdk(): Promise<any> {
     // Africa's Talking Node.js SDK
-    const AT = require('africastalking');
-    return AT({
+    const AT = await import('africastalking');
+    const defaultExport = AT.default || AT;
+    return defaultExport({
       apiKey: this.apiKey,
       username: this.username,
     });

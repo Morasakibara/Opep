@@ -163,7 +163,7 @@ export class NotificationService {
           }
           break;
 
-        case NotificationChannel.PUSH:
+        case NotificationChannel.PUSH: {
           // Send via Firebase Cloud Messaging using user's registered device token
           const user = await this.userRepository.findOne({
             where: { id: notification.userId },
@@ -186,6 +186,7 @@ export class NotificationService {
             this.logger.log(`Push (pas de FCM token) — ${notification.userId}: ${notification.message}`);
           }
           break;
+        }
 
         case NotificationChannel.EMAIL:
           // Production: Nodemailer / SendGrid. Mock for now.

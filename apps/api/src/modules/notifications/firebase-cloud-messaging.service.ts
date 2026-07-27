@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
  *   FCM_CREDENTIALS   – path to Firebase service account JSON, or inline JSON
  */
 @Injectable()
-export class FirebaseCloudMessagingService {
+export class FirebaseCloudMessagingService implements OnModuleInit {
   private readonly logger = new Logger(FirebaseCloudMessagingService.name);
   private active: boolean;
   private firebaseApp: any = null;
@@ -22,39 +22,46 @@ export class FirebaseCloudMessagingService {
   constructor(private readonly configService: ConfigService) {
     this.active = configService.get<string>('FCM_ACTIVE') === 'true';
 
-    if (this.active) {
-      try {
-        // Dynamic require - Firebase Admin SDK may not be installed in dev
-        const admin = require('firebase-admin');
-
-        // Check if already initialised (e.g. by another module)
-        if (admin.apps.length === 0) {
-          const credentialsPath = configService.get<string>('FCM_CREDENTIALS');
-
-          if (credentialsPath) {
-            // Load from file path
-            const serviceAccount = require(credentialsPath);
-            admin.initializeApp({
-              credential: admin.credential.cert(serviceAccount),
-            });
-          } else {
-            // Try loading from GOOGLE_APPLICATION_CREDENTIALS env var
-            admin.initializeApp();
-          }
-          this.logger.log('[FCM] Firebase Admin SDK initialised');
-        } else {
-          this.logger.log('[FCM] Firebase Admin SDK already initialised');
-        }
-
-        this.firebaseApp = admin;
-      } catch (err: any) {
-        this.logger.warn(
-          `[FCM] Firebase Admin SDK could not be loaded: ${err.message}. Push notifications will fall back to mock mode.`,
-        );
-        this.active = false;
-      }
-    } else {
+    if (!this.active) {
       this.logger.log('[FCM] Running in mock mode — push notifications will be logged');
+    }
+  }
+
+  async onModuleInit(): Promise<void> {
+    if (!this.active) return;
+
+    try {
+      // Dynamic import - Firebase Admin SDK may not be installed in dev
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const adminModule: any = await import('firebase-admin');
+      const admin = adminModule.default || adminModule;
+
+
+      // Check if already initialised (e.g. by another module)
+      if (admin.apps.length === 0) {
+        const credentialsPath = this.configService.get<string>('FCM_CREDENTIALS');
+
+        if (credentialsPath) {
+          // Load from file path
+          const serviceAccount = await import(credentialsPath);
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount.default || serviceAccount),
+          });
+        } else {
+          // Try loading from GOOGLE_APPLICATION_CREDENTIALS env var
+          admin.initializeApp();
+        }
+        this.logger.log('[FCM] Firebase Admin SDK initialised');
+      } else {
+        this.logger.log('[FCM] Firebase Admin SDK already initialised');
+      }
+
+      this.firebaseApp = admin;
+    } catch (err: any) {
+      this.logger.warn(
+        `[FCM] Firebase Admin SDK could not be loaded: ${err.message}. Push notifications will fall back to mock mode.`,
+      );
+      this.active = false;
     }
   }
 

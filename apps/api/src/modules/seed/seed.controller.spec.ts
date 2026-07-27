@@ -37,7 +37,7 @@ describe('SeedController', () => {
       // util.promisify(exec) calls exec(cmd, opts, callback).
       // The mock must call the callback for promisify to resolve.
       // Do NOT return a Promise — promisify expects callback-based functions.
-      mockExec.mockImplementation((_cmd: string, _opts: any, cb: Function) => {
+      mockExec.mockImplementation((_cmd: string, _opts: any, cb: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
         cb(null, { stdout: '[SEED] ✅ Completed', stderr: '' });
       });
 
@@ -56,7 +56,7 @@ describe('SeedController', () => {
     });
 
     it('returns seeded: false when exec throws', async () => {
-      mockExec.mockImplementation((_cmd: string, _opts: any, cb: Function) => {
+      mockExec.mockImplementation((_cmd: string, _opts: any, cb: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
         cb(new Error('Script crashed'));
       });
 
