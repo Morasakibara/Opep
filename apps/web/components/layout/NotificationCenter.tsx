@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bell, X, Info, AlertTriangle, CheckCircle2, MoreVertical } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -47,7 +48,7 @@ export default function NotificationCenter() {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-          <div className="absolute right-0 mt-4 w-[380px] bg-surface_container_lowest border border-charcoal_border rounded-[24px] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+          <AnimatedMount animation="zoom-in" durationMs={200} className="absolute right-0 mt-4 w-[380px] bg-surface_container_lowest border border-charcoal_border rounded-[24px] shadow-2xl z-50 overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center bg-surface_container/30 backdrop-blur-md">
               <div>
                 <h3 className="text-[18px] font-bold text-on_surface">Notifications</h3>
@@ -94,7 +95,7 @@ export default function NotificationCenter() {
             <button className="w-full py-4 bg-surface_container/30 text-[12px] font-bold text-primary uppercase tracking-widest hover:bg-primary/10 transition-all">
               Voir tout
             </button>
-          </div>
+          </AnimatedMount>
         </>
       )}
     </div>

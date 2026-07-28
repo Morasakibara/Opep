@@ -6,6 +6,7 @@ import { validateTicketOffline } from '@/lib/offlineValidation';
 import { CheckCircle2, AlertCircle, XCircle, History, RefreshCw, Loader2, VideoOff, Wifi, WifiOff, ScanLine, Camera, X } from 'lucide-react';
 import { configApi, ticketsApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function ScannerPage() {
   const [validating, setValidating] = useState(false);
@@ -82,7 +83,7 @@ export default function ScannerPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Scanner de Tickets</h2>
           <p className="text-on_surface_variant">Validez les tickets QR des passagers.</p>
@@ -103,7 +104,7 @@ export default function ScannerPage() {
             {onlineMode ? 'Online' : 'Offline'}
           </button>
         </div>
-      </div>
+      </AnimatedMount>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
@@ -173,9 +174,7 @@ export default function ScannerPage() {
 
         <div className="space-y-6">
           {lastResult.status !== 'none' && (
-            <div className={`glass-card p-8 rounded-3xl border-2 animate-in zoom-in duration-300 ${
-              lastResult.status === 'valid' ? 'border-success_green' : lastResult.status === 'invalid' ? 'border-error_red' : 'border-warning_yellow'
-            }`}>
+            <AnimatedMount animation="zoom-in" durationMs={300} className={`glass-card p-8 rounded-3xl border-2 ${ lastResult.status === 'valid' ? 'border-success_green' : lastResult.status === 'invalid' ? 'border-error_red' : 'border-warning_yellow' }`}>
               <div className="flex items-center gap-4 mb-6">
                 {lastResult.status === 'valid' ? (
                   <div className="bg-success_green/10 text-success_green p-3 rounded-full"><CheckCircle2 size={32} /></div>
@@ -211,7 +210,7 @@ export default function ScannerPage() {
               <button onClick={handleNextScan} className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold hover:brightness-110 active:scale-[0.97] transition-all shadow-xl flex items-center justify-center gap-2">
                 <ScanLine size={20} /> Scanner suivant
               </button>
-            </div>
+            </AnimatedMount>
           )}
 
           <div className="glass-card p-6 rounded-3xl">

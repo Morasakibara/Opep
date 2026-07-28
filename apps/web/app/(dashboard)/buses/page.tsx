@@ -5,6 +5,7 @@ import { Bus as BusIcon, Plus, Search, Settings, AlertCircle, CheckCircle2 } fro
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { busesApi } from '@/services/api.service';
 import { AddBusModal, SeatConfigModal, BusHistoryModal } from '@/components/buses';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function BusesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -49,15 +50,13 @@ export default function BusesPage() {
   return (
     <div className="space-y-8">
       {toast && (
-        <div className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right ${
-          toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white'
-        }`}>
+        <AnimatedMount animation="fade" className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${ toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white' }`}>
           {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
           <p className="text-sm font-bold">{toast.message}</p>
-        </div>
+        </AnimatedMount>
       )}
 
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Gestion des Bus</h2>
           <p className="text-on_surface_variant">Gérez la flotte de véhicules de votre agence.</p>
@@ -66,7 +65,7 @@ export default function BusesPage() {
           className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> Ajouter un bus
         </button>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -91,7 +90,7 @@ export default function BusesPage() {
         </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom duration-500">
+      <AnimatedMount animation="slide-up" durationMs={500} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBuses.map((bus) => (
           <div key={bus.id} className="glass-card-hover rounded-2xl overflow-hidden group">
             <div className="p-6">
@@ -129,7 +128,7 @@ export default function BusesPage() {
             </div>
           </div>
         ))}
-      </div>
+      </AnimatedMount>
 
       <AddBusModal
         isOpen={showAddModal}

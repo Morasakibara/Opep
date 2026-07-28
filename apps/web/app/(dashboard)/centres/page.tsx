@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Badge } from '@/components/ui/Badge';
 import { SkeletonCard } from '@/components/ui';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface CentreView {
   id: string; name: string; city: string; address: string; phone: string; email: string;
@@ -69,15 +70,13 @@ export default function CentresPage() {
   return (
     <div className="space-y-8">
       {toast && (
-        <div className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right ${
-          toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white'
-        }`}>
+        <AnimatedMount animation="fade" className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${ toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white' }`}>
           {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
           <p className="text-sm font-bold">{toast.message}</p>
-        </div>
+        </AnimatedMount>
       )}
 
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Centres</h2>
           <p className="text-on_surface_variant">Gérez les centres d'exploitation et leur classement.</p>
@@ -86,7 +85,7 @@ export default function CentresPage() {
           className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> Nouveau centre
         </button>
-      </div>
+      </AnimatedMount>
 
       <div className="flex gap-1 bg-surface_container_low p-1 rounded-xl w-fit">
         {(['centres', 'classement'] as const).map(tab => (
@@ -114,7 +113,7 @@ export default function CentresPage() {
               onChange={(e) => setSearchQuery(e.target.value)} className="input-field pl-10" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom duration-500">
+          <AnimatedMount animation="slide-up" durationMs={500} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCentres.length === 0 ? (
               <div className="col-span-full">
                 <EmptyState icon={<Store size={32} />} title="Aucun centre" message="Aucun centre trouvé. Créez-en un nouveau." 
@@ -153,12 +152,12 @@ export default function CentresPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </AnimatedMount>
         </>
       )}
 
       {!isLoading && !error && activeTab === 'classement' && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-6 border-b border-charcoal_border">
             <div className="flex items-center gap-3">
               <Trophy size={24} className="text-tertiary" />
@@ -204,13 +203,13 @@ export default function CentresPage() {
               </table>
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
 
       {/* Detail Modal */}
       {showDetailModal && (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setShowDetailModal(null)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in" onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-secondary/10 text-secondary rounded-xl"><Store size={24} /></div>
@@ -242,13 +241,13 @@ export default function CentresPage() {
             <div className="p-6 bg-surface_container_low border-t border-charcoal_border">
               <button onClick={() => setShowDetailModal(null)} className="w-full bg-primary text-on_primary py-3 rounded-2xl font-bold hover:brightness-110 active:scale-[0.97] transition-all">Fermer</button>
             </div>
-          </div>
+          </AnimatedMount>
         </div>
       )}
 
       {showAddModal && (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setShowAddModal(false)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in" onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">Nouveau centre</h3>
               <button onClick={() => { setShowAddModal(false); resetForm(); }} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all"><X size={24} /></button>
@@ -285,7 +284,7 @@ export default function CentresPage() {
                 Créer le centre
               </button>
             </div>
-          </div>
+          </AnimatedMount>
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { LockKeyhole, Home, ArrowLeft, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function ForbiddenPage() {
   return (
@@ -14,7 +15,7 @@ export default function ForbiddenPage() {
         <div className="absolute -bottom-40 -left-40 w-[50%] h-[50%] bg-warning_yellow/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="w-full max-w-lg text-center relative z-10 animate-in fade-in slide-in-from-bottom duration-700">
+      <AnimatedMount animation="slide-up" durationMs={700} className="w-full max-w-lg text-center relative z-10">
         {/* Icon */}
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-error_red/10 border border-error_red/20 mb-8 shadow-xl shadow-error_red/10">
           <LockKeyhole size={52} className="text-error_red" />
@@ -60,7 +61,7 @@ export default function ForbiddenPage() {
             </div>
           </div>
         </div>
-      </div>
+      </AnimatedMount>
     </div>
   );
 }

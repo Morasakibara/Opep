@@ -142,6 +142,19 @@ body {
   font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* LCP optimization: content-visibility for below-fold sections */
+.dashboard-layout > main > *:nth-child(n+3),
+section + .glass-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 600px;
+}
+
+/* Prevent CLS on dashboard grid areas */
+.dashboard-grid-section {
+  contain: layout style;
 }
 
 ::selection {

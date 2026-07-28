@@ -7,6 +7,7 @@ import { Building2, Search, MapPin, Phone, Globe, ChevronRight,
 import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { companiesApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Company {
   id: string;
@@ -119,7 +120,7 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Compagnies</h2>
           <p className="text-on_surface_variant">Gérez les compagnies partenaires.</p>
@@ -128,9 +129,9 @@ export default function CompaniesPage() {
           className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> Ajouter
         </button>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-3 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-3 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <Building2 size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{companies.length}</p>
@@ -146,7 +147,7 @@ export default function CompaniesPage() {
           <p className="text-2xl font-bold text-on_surface">{companies.filter(c => c.isActive).length}</p>
           <p className="text-xs text-on_surface_variant font-medium">Actives</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -159,7 +160,7 @@ export default function CompaniesPage() {
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-5 border-b border-charcoal_border flex items-center gap-3">
             <div className="relative flex-1 max-w-md">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -205,14 +206,13 @@ export default function CompaniesPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
 
       {showModal && (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
           onClick={() => setShowModal(false)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in"
-            onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">
                 {editingCompany ? 'Modifier' : 'Ajouter'} une compagnie
@@ -256,7 +256,7 @@ export default function CompaniesPage() {
                 {editingCompany ? 'Enregistrer' : 'Créer la compagnie'}
               </button>
             </div>
-          </div>
+          </AnimatedMount>
         </div>
       )}
     </div>

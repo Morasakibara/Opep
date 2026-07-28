@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { subscriptionsApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Package {
   id: string;
@@ -44,15 +45,15 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Abonnements</h2>
           <p className="text-on_surface_variant">Choisissez le forfait adapté à votre agence.</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {/* Info card */}
-      <div className="glass-card rounded-3xl p-6 animate-in slide-in-from-bottom duration-400 flex items-start gap-4">
+      <AnimatedMount animation="slide-up" durationMs={400} className="glass-card rounded-3xl p-6  flex items-start gap-4">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
           <Crown size={20} className="text-primary" />
         </div>
@@ -66,7 +67,7 @@ export default function SubscriptionsPage() {
             Les forfaits ci-dessous sont disponibles à la souscription.
           </p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -76,7 +77,7 @@ export default function SubscriptionsPage() {
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-6 border-b border-charcoal_border">
             <h3 className="font-bold text-on_surface">Forfaits disponibles</h3>
           </div>
@@ -104,7 +105,7 @@ export default function SubscriptionsPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { driversApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Driver {
   id: string;
@@ -75,15 +76,15 @@ export default function DriversPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Conducteurs</h2>
           <p className="text-on_surface_variant">Gérez les chauffeurs et suivez leurs performances.</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <div
             key={i}
@@ -99,7 +100,7 @@ export default function DriversPage() {
             <p className="text-xs text-on_surface_variant font-medium mt-1">{stat.label}</p>
           </div>
         ))}
-      </div>
+      </AnimatedMount>
 
       {/* Error state */}
       {error && (
@@ -122,7 +123,7 @@ export default function DriversPage() {
 
       {/* Search */}
       {!loading && !error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-6 border-b border-charcoal_border">
             <div className="relative max-w-md">
               <Search
@@ -234,7 +235,7 @@ export default function DriversPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );

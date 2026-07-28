@@ -199,10 +199,10 @@ export default function EmployeesPage() {
       </AnimatedMount>
 
       {error && (
-        <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30 animate-in fade-in">
+        <AnimatedMount animation="fade" className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
           <div className="flex items-center gap-3"><AlertCircle className="text-error_red" size={24} /><p className="font-bold text-on_surface">{error}</p></div>
           <button onClick={loadEmployees} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
-        </div>
+        </AnimatedMount>
       )}
 
       {!error && (

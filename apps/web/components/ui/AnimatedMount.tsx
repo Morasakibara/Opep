@@ -67,6 +67,9 @@ export function AnimatedMount({
   const style: React.CSSProperties = {
     animationDelay: `${delay}ms`,
     animationFillMode: 'backwards',
+    willChange: 'transform, opacity',
+    transform: 'translateZ(0)',
+    backfaceVisibility: 'hidden',
   };
 
   if (durationMs !== undefined) {

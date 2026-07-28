@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Bus as BusIcon, X, Wrench } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface BusHistoryModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export default function BusHistoryModal({ isOpen, busId, busModel, onClose }: Bu
 
   return (
     <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={onClose}>
-      <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in" onClick={(e) => e.stopPropagation()}>
+      <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
           <h3 className="text-xl font-bold text-on_surface">Historique - {busId}</h3>
           <button onClick={onClose} className="text-on_surface_variant hover:text-primary"><X size={24} /></button>
@@ -51,7 +52,7 @@ export default function BusHistoryModal({ isOpen, busId, busModel, onClose }: Bu
         <div className="p-6 bg-surface_container_low border-t border-charcoal_border">
           <button onClick={onClose} className="w-full bg-primary text-on_primary py-3 rounded-2xl font-bold hover:brightness-110 transition">Fermer</button>
         </div>
-      </div>
+      </AnimatedMount>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface SkeletonProps {
   className?: string;
@@ -104,7 +105,7 @@ export function SkeletonStatsGrid({ className = '' }: SkeletonProps) {
 /** Skeleton for the full dashboard page */
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="space-y-2">
         <SkeletonBlock className="w-48 h-7 rounded-lg" />
         <SkeletonBlock className="w-72 h-4 rounded-lg" />
@@ -117,14 +118,14 @@ export function DashboardSkeleton() {
           <SkeletonBlock className="w-full h-64 rounded-xl" />
         </div>
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the buses page (grid of bus cards) */
 export function BusesSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <SkeletonBlock className="w-56 h-7 rounded-lg" />
@@ -141,14 +142,14 @@ export function BusesSkeleton() {
           <SkeletonCard key={i} />
         ))}
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the trips page (tabs + routes grid) */
 export function TripsSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <SkeletonBlock className="w-56 h-7 rounded-lg" />
@@ -180,14 +181,14 @@ export function TripsSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the reservations page (search + table) */
 export function ReservationsSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <SkeletonBlock className="w-56 h-7 rounded-lg" />
@@ -211,14 +212,14 @@ export function ReservationsSkeleton() {
           <SkeletonBlock className="w-40 h-4 rounded-lg" />
         </div>
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the employees page (stats + search + table) */
 export function EmployeesSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <SkeletonBlock className="w-48 h-7 rounded-lg" />
@@ -249,14 +250,14 @@ export function EmployeesSkeleton() {
           </table>
         </div>
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the reports page (KPI grid + charts) */
 export function ReportsSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <SkeletonBlock className="w-64 h-7 rounded-lg" />
@@ -283,14 +284,14 @@ export function ReportsSkeleton() {
           ))}
         </div>
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the settings page (sidebar + form) */
 export function SettingsSkeleton() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="space-y-8 duration-300">
       <div className="space-y-2">
         <SkeletonBlock className="w-48 h-7 rounded-lg" />
         <SkeletonBlock className="w-64 h-4 rounded-lg" />
@@ -322,14 +323,14 @@ export function SettingsSkeleton() {
           </div>
         </div>
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 
 /** Skeleton for the scanner page (camera + result panel) */
 export function ScannerSkeleton() {
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <AnimatedMount animation="fade" className="max-w-5xl mx-auto space-y-8 duration-300">
       <div className="flex justify-between items-end">
         <div className="space-y-2">
           <SkeletonBlock className="w-56 h-7 rounded-lg" />
@@ -380,7 +381,7 @@ export function ScannerSkeleton() {
           </div>
         </div>
       </div>
-    </div>
+    </AnimatedMount>
   );
 }
 

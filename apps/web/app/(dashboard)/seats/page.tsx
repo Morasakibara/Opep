@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { seatsApi, tripsApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Seat {
   id: string;
@@ -73,14 +74,14 @@ export default function SeatsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Sièges</h2>
           <p className="text-on_surface_variant">Visualisation et gestion de l'occupation des sièges.</p>
         </div>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <Grid size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{MOCK_SEATS.length}</p>
@@ -101,7 +102,7 @@ export default function SeatsPage() {
           <p className="text-2xl font-bold text-on_surface">{lockedCount}</p>
           <p className="text-xs text-on_surface_variant font-medium">Verrouillés</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -113,7 +114,7 @@ export default function SeatsPage() {
       {!error && (
         <>
           {/* Trip selector */}
-          <div className="glass-card rounded-3xl p-5 animate-in slide-in-from-bottom duration-500">
+          <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl p-5">
             <div className="flex flex-wrap items-center gap-4">
               <div className="relative flex-1 max-w-md">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -126,10 +127,10 @@ export default function SeatsPage() {
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-warning_yellow/30 border border-warning_yellow/50" /> Verrouillé</span>
               </div>
             </div>
-          </div>
+          </AnimatedMount>
 
           {/* Seat grid */}
-          <div className="glass-card rounded-3xl p-6 animate-in slide-in-from-bottom duration-600">
+          <AnimatedMount animation="slide-up" durationMs={600} className="glass-card rounded-3xl p-6">
             <div className="flex items-center gap-3 mb-6">
               <Bus size={18} className="text-primary" />
               <p className="font-bold text-on_surface">Disposition des sièges</p>
@@ -159,7 +160,7 @@ export default function SeatsPage() {
               <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-success_green" /> 24 libres</span>
               <span className="flex items-center gap-1.5"><Lock size={14} className="text-warning_yellow" /> 4 verrouillés</span>
             </div>
-          </div>
+          </AnimatedMount>
         </>
       )}
     </div>

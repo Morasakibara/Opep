@@ -7,6 +7,7 @@ import { Map, Plus, Search, MoreVertical, MapPin, Bus, ArrowRight, Filter, Alert
 import { useToast } from '@/components/ui/Toast';
 import { tripsApi, routesApi, busesApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function TripsPage() {
   const [activeTab, setActiveTab] = useState<'trajets' | 'lignes'>('trajets');
@@ -121,7 +122,7 @@ export default function TripsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Lignes & Trajets</h2>
           <p className="text-on_surface_variant">Définissez vos itinéraires et planifiez les départs.</p>
@@ -129,7 +130,7 @@ export default function TripsPage() {
         <button onClick={() => openCreateModal(activeTab === 'lignes' ? 'route' : 'trip')} className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> {activeTab === 'lignes' ? 'Nouvelle ligne' : 'Planifier un trajet'}
         </button>
-      </div>
+      </AnimatedMount>
 
       <div className="flex gap-1 bg-surface_container_low p-1 rounded-xl w-fit">
         {(['trajets', 'lignes'] as const).map(tab => (
@@ -161,7 +162,7 @@ export default function TripsPage() {
       </div>
 
       {activeTab === 'lignes' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRoutes.map((route) => (
             <div key={route.id} className="glass-card-hover rounded-2xl overflow-hidden group">
               <div className="p-6">
@@ -193,9 +194,9 @@ export default function TripsPage() {
               </div>
             </div>
           ))}
-        </div>
+        </AnimatedMount>
       ) : (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="table-header">
@@ -250,14 +251,13 @@ export default function TripsPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </AnimatedMount>
       )}
       {/* Create Trip/Route Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
           onClick={() => setShowModal(false)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in"
-            onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">
                 {modalType === 'trip' ? 'Planifier un trajet' : 'Nouvelle ligne'}
@@ -339,7 +339,7 @@ export default function TripsPage() {
                 </>
               )}
             </div>
-          </div>
+          </AnimatedMount>
         </div>
       )}
     </div>

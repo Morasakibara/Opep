@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, User } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface SeatConfigModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export default function SeatConfigModal({ isOpen, busId, seatCapacity, onClose }
 
   return (
     <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={onClose}>
-      <div className="glass-card rounded-3xl w-full max-w-4xl overflow-hidden animate-in zoom-in h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-4xl overflow-hidden h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
           <div>
             <h3 className="text-xl font-bold text-on_surface">Configuration des sièges - {busId}</h3>
@@ -68,7 +69,7 @@ export default function SeatConfigModal({ isOpen, busId, seatCapacity, onClose }
             Sauvegarder
           </button>
         </div>
-      </div>
+      </AnimatedMount>
     </div>
   );
 }

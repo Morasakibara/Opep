@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { routesApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface AppRoute {
   id: string;
@@ -106,15 +107,13 @@ export default function RoutesPage() {
   return (
     <div className="space-y-8">
       {toast && (
-        <div className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right ${
-          toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white'
-        }`}>
+        <AnimatedMount animation="fade" className={`fixed top-8 right-8 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${ toast.type === 'success' ? 'bg-success_green text-white' : 'bg-error_red text-white' }`}>
           {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
           <p className="text-sm font-bold">{toast.message}</p>
-        </div>
+        </AnimatedMount>
       )}
 
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Routes</h2>
           <p className="text-on_surface_variant">Gérez les lignes et trajets.</p>
@@ -123,9 +122,9 @@ export default function RoutesPage() {
           className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-[0.97] transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> Ajouter
         </button>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-3 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-3 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <Route size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{routes.length}</p>
@@ -141,7 +140,7 @@ export default function RoutesPage() {
           <p className="text-2xl font-bold text-on_surface">{routes.filter(r => r.isActive).length}</p>
           <p className="text-xs text-on_surface_variant font-medium">Actives</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -154,7 +153,7 @@ export default function RoutesPage() {
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-5 border-b border-charcoal_border flex items-center gap-3">
             <div className="relative flex-1 max-w-md">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -201,14 +200,13 @@ export default function RoutesPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
 
       {showModal && (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
           onClick={() => setShowModal(false)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in"
-            onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">
                 {editingRoute ? 'Modifier' : 'Ajouter'} une route
@@ -242,7 +240,7 @@ export default function RoutesPage() {
                 {editingRoute ? 'Enregistrer' : 'Créer la route'}
               </button>
             </div>
-          </div>
+          </AnimatedMount>
         </div>
       )}
     </div>

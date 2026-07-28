@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { notificationsApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Notification {
   id: string;
@@ -58,15 +59,15 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Notifications</h2>
           <p className="text-on_surface_variant">Centre de notifications et alertes système.</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {/* Stats + Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="glass-card rounded-xl px-4 py-2.5 flex items-center gap-2">
             <Bell size={16} className="text-primary" />
@@ -99,7 +100,7 @@ export default function NotificationsPage() {
             Non lues
           </button>
         </div>
-      </div>
+      </AnimatedMount>
 
       {/* Error */}
       {error && (
@@ -114,7 +115,7 @@ export default function NotificationsPage() {
 
       {/* List */}
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           {filtered.length === 0 ? (
             <div className="p-16 text-center">
               <Bell size={48} className="mx-auto text-on_surface_variant/30 mb-4" />
@@ -150,7 +151,7 @@ export default function NotificationsPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );

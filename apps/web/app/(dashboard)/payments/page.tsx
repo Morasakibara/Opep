@@ -9,6 +9,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { paymentsApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Payment {
   id: string;
@@ -93,7 +94,7 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Paiements</h2>
           <p className="text-on_surface_variant">Suivez et gérez les transactions financières.</p>
@@ -103,10 +104,10 @@ export default function PaymentsPage() {
         >
           <RefreshCw size={16} /> Actualiser
         </button>
-      </div>
+      </AnimatedMount>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5 hover-lift cursor-default">
           <DollarSign size={20} className="text-success_green mb-2" />
           <p className="text-2xl font-bold text-on_surface">{totalRevenue.toLocaleString()} FCFA</p>
@@ -127,17 +128,17 @@ export default function PaymentsPage() {
           <p className="text-2xl font-bold text-on_surface">{successCount}</p>
           <p className="text-xs text-on_surface_variant font-medium">Transactions réussies</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
-        <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30 animate-in fade-in">
+        <AnimatedMount animation="fade" className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
           <div className="flex items-center gap-3"><AlertCircle className="text-error_red" size={24} /><p className="font-bold text-on_surface">{error}</p></div>
           <button onClick={loadPayments} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
-        </div>
+        </AnimatedMount>
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           {/* Search + Filters */}
           <div className="p-5 border-b border-charcoal_border flex flex-wrap items-center gap-3">
             <div className="relative flex-1 max-w-md">
@@ -219,7 +220,7 @@ export default function PaymentsPage() {
               </table>
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );

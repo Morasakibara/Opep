@@ -8,6 +8,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { billingsApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Invoice {
   id: string;
@@ -71,14 +72,14 @@ export default function BillingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Facturation</h2>
           <p className="text-on_surface_variant">Gestion des factures et abonnements compagnies.</p>
         </div>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <FileText size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{invoices.length}</p>
@@ -99,7 +100,7 @@ export default function BillingsPage() {
           <p className="text-2xl font-bold text-on_surface">{new Set(invoices.map((i) => i.companyName)).size}</p>
           <p className="text-xs text-on_surface_variant font-medium">Compagnies</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -109,7 +110,7 @@ export default function BillingsPage() {
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-5 border-b border-charcoal_border flex flex-wrap items-center gap-3">
             <div className="relative flex-1 max-w-md">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -201,7 +202,7 @@ export default function BillingsPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );

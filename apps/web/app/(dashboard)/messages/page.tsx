@@ -8,6 +8,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { messagesApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface Message {
   id: string;
@@ -59,7 +60,7 @@ export default function MessagesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Messages</h2>
           <p className="text-on_surface_variant">Boîte de réception et communications internes.</p>
@@ -67,10 +68,10 @@ export default function MessagesPage() {
         <button className="px-5 py-3 bg-primary text-on_primary font-bold rounded-2xl text-sm hover:brightness-110 transition-all active:scale-[0.97] flex items-center gap-2">
           <Send size={16} /> Nouveau message
         </button>
-      </div>
+      </AnimatedMount>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-3 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <MessageSquare size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{messages.length}</p>
@@ -86,7 +87,7 @@ export default function MessagesPage() {
           <p className="text-2xl font-bold text-on_surface">{messages.filter((m) => m.isUrgent).length}</p>
           <p className="text-xs text-on_surface_variant font-medium">Urgents</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -99,7 +100,7 @@ export default function MessagesPage() {
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-5 border-b border-charcoal_border">
             <div className="relative max-w-md">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -144,7 +145,7 @@ export default function MessagesPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );

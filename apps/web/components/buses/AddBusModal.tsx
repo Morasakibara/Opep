@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { busesApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface AddBusModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export default function AddBusModal({ isOpen, onClose, onSuccess }: AddBusModalP
 
   return (
     <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={onClose}>
-      <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in" onClick={(e) => e.stopPropagation()}>
+      <AnimatedMount animation="zoom-in" className="glass-card rounded-3xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
           <h3 className="text-xl font-bold text-on_surface">Ajouter un nouveau bus</h3>
           <button onClick={() => { onClose(); reset(); }} className="text-on_surface_variant hover:text-primary"><X size={24} /></button>
@@ -63,7 +64,7 @@ export default function AddBusModal({ isOpen, onClose, onSuccess }: AddBusModalP
             {saving ? <><Loader2 size={20} className="animate-spin" /> Création...</> : "Confirmer l'ajout"}
           </button>
         </div>
-      </div>
+      </AnimatedMount>
     </div>
   );
 }

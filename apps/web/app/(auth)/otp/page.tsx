@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authApi } from '@/services/api.service';
 import { Smartphone, Loader2, RefreshCw, ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function OTPPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -78,7 +79,7 @@ export default function OTPPage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-on_primary font-bold text-3xl shadow-2xl shadow-primary/30 animate-pulse-soft">
               <Smartphone size={32} />
@@ -86,9 +87,9 @@ export default function OTPPage() {
           </div>
           <h1 className="text-3xl font-bold text-on_surface">Vérification</h1>
           <p className="text-on_surface_variant mt-2">Entrez le code reçu par SMS</p>
-        </div>
+        </AnimatedMount>
 
-        <div className="glass-card rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-bottom duration-700">
+        <AnimatedMount animation="slide-up" durationMs={700} className="glass-card rounded-3xl p-8 md:p-10">
           <form onSubmit={handleVerify} className="space-y-8">
             {error && (
               <div className="bg-warning_yellow/10 border border-warning_yellow/20 text-warning_yellow p-3 rounded-xl text-xs font-bold flex items-center gap-2">
@@ -128,7 +129,7 @@ export default function OTPPage() {
               <ArrowLeft size={16} /> Retour à la connexion
             </Link>
           </div>
-        </div>
+        </AnimatedMount>
 
         <p className="text-center text-xs text-on_surface_variant mt-8">
           &copy; 2026 OPEP Cameroun. Projet Souverain.

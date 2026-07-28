@@ -8,6 +8,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 import { offlineScanApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 interface OfflineScan {
   id: string;
@@ -73,7 +74,7 @@ export default function OfflineScansPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Scans hors ligne</h2>
           <p className="text-on_surface_variant">Synchronisation des tickets scannés hors connexion.</p>
@@ -85,9 +86,9 @@ export default function OfflineScansPage() {
             </button>
           )}
         </div>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <Smartphone size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{scans.length}</p>
@@ -108,7 +109,7 @@ export default function OfflineScansPage() {
           <p className="text-2xl font-bold text-on_surface">{scans.filter((s) => s.status === 'INVALID').length}</p>
           <p className="text-xs text-on_surface_variant font-medium">Invalides</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
@@ -118,7 +119,7 @@ export default function OfflineScansPage() {
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="glass-card rounded-3xl overflow-hidden">
           <div className="p-5 border-b border-charcoal_border">
             <div className="relative max-w-md">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -166,7 +167,7 @@ export default function OfflineScansPage() {
               ))}
             </div>
           )}
-        </div>
+        </AnimatedMount>
       )}
     </div>
   );
