@@ -91,7 +91,7 @@ export default function CentresPage() {
       <div className="flex gap-1 bg-surface_container_low p-1 rounded-xl w-fit">
         {(['centres', 'classement'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition ${
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all active:scale-[0.97] ${
               activeTab === tab ? 'bg-surface_container text-primary shadow-sm' : 'text-on_surface_variant hover:text-on_surface'
             }`}>
             {tab === 'centres' ? <><Store size={16} className="inline mr-2" />Centres</> : <><Trophy size={16} className="inline mr-2" />Classement</>}
@@ -121,7 +121,7 @@ export default function CentresPage() {
                   action={{ label: 'Nouveau centre', onClick: () => setShowAddModal(true) }} />
               </div>
             ) : filteredCentres.map((centre: any) => (
-              <div key={centre.id} className="glass-card-hover rounded-2xl overflow-hidden cursor-pointer"
+              <div key={centre.id} className="glass-card-hover rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-all"
                 onClick={() => setShowDetailModal(centre)}>
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
@@ -240,7 +240,7 @@ export default function CentresPage() {
               </div>
             </div>
             <div className="p-6 bg-surface_container_low border-t border-charcoal_border">
-              <button onClick={() => setShowDetailModal(null)} className="w-full bg-primary text-on_primary py-3 rounded-2xl font-bold hover:brightness-110 transition">Fermer</button>
+              <button onClick={() => setShowDetailModal(null)} className="w-full bg-primary text-on_primary py-3 rounded-2xl font-bold hover:brightness-110 active:scale-[0.97] transition-all">Fermer</button>
             </div>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function CentresPage() {
           <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">Nouveau centre</h3>
-              <button onClick={() => { setShowAddModal(false); resetForm(); }} className="text-on_surface_variant hover:text-primary"><X size={24} /></button>
+              <button onClick={() => { setShowAddModal(false); resetForm(); }} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all"><X size={24} /></button>
             </div>
             <div className="p-8 space-y-6">
               <div className="space-y-2">
@@ -280,7 +280,7 @@ export default function CentresPage() {
                 <div className="space-y-2"><label className="input-label">Email</label><input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="contact@opep.cm" className="input-field" /></div>
               </div>
               <button onClick={handleCreate} disabled={createCentre.isPending}
-                className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 transition disabled:opacity-70 flex items-center justify-center gap-2">
+                className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.97] transition-all disabled:opacity-70 flex items-center justify-center gap-2">
                 {createCentre.isPending && <Loader2 size={20} className="animate-spin" />}
                 Créer le centre
               </button>

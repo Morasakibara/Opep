@@ -31,7 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              'w-full bg-surface_container_low border rounded-lg p-3 text-[14px] text-on_surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on_surface_variant/40',
+              'w-full bg-surface_container_low border rounded-lg p-3 text-[14px] text-on_surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-on_surface_variant/40',
               error ? 'border-error_red' : 'border-charcoal_border',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',

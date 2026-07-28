@@ -165,26 +165,8 @@ body {
   background: var(--color-outline);
 }
 
-/* ========== GLASS CARD UTILITY ========== */
-@layer components {
-  .glass-card {
-    background: var(--color-surface-container);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--color-charcoal-border);
-  }
-
-  .glass-card-hover {
-    background: var(--color-surface-container);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--color-charcoal-border);
-    transition: all 0.3s ease;
-  }
-  .glass-card-hover:hover {
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 10%, transparent);
-  }
-}
+/* ========== GLASS CARD ========== */
+/* Glass-card-hover moved below glass-card for logical grouping */
 
 /* ========== ANIMATIONS ========== */
 @keyframes scan {
@@ -228,7 +210,7 @@ body {
 
 /* ========== INPUT STYLES ========== */
 .input-field {
-  @apply w-full px-4 py-3 bg-surface_container_low border border-charcoal_border rounded-xl text-[14px] text-on_surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-on_surface_variant;
+  @apply w-full px-4 py-3 bg-surface_container_low border border-charcoal_border rounded-xl text-[14px] text-on_surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-on_surface_variant;
 }
 
 .input-label {
@@ -236,30 +218,108 @@ body {
 }
 
 /* ========== LAYOUT FIXES ========== */
-/* ========== LAYOUT FIXES ========== */
 /* Prevent z-index stacking issues on dashboard */
 .dashboard-layout {
-  isolation: isolate;
+  position: relative;
 }
-/* Fix glass-card backdrop bleed with hardware acceleration */
+
+/* Ensure main content stays below sidebar (sidebar has inline z-50) */
+.dashboard-layout > main {
+  position: relative;
+  z-index: 10;
+}
+
+/* ========== CUSTOM EASING & MICRO-INTERACTIONS ========== */
+@layer utilities {
+  /* Custom easing curves - Emil Kowalski inspired */
+  .ease-out-strong {
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .ease-in-out-strong {
+    transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  }
+}
+
 @layer components {
+  /* ---- Glass cards with @starting-style entry ---- */
   .glass-card {
     background: var(--color-surface-container);
     backdrop-filter: blur(8px);
     border: 1px solid var(--color-charcoal-border);
-    transform: translateZ(0);
+    position: relative;
+    z-index: 1;
+    will-change: transform, opacity;
+    transform: translateZ(0); /* HW comp for backdrop-filter (Chromium) */
+    opacity: 1;
+    filter: blur(0);
+    transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   }
-}
+  @starting-style {
+    .glass-card {
+      opacity: 0;
+      filter: blur(2px);
+      transform: translateZ(0) scale(0.97) translateY(8px);
+    }
+  }
 
-/* ========== MICRO-INTERACTIONS ========== */
-@layer components {
-  /* Hover lift effect for cards */
+  .glass-card-hover {
+    background: var(--color-surface-container);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-charcoal-border);
+    opacity: 1;
+    filter: blur(0);
+    transition: border-color 0.3s ease,
+                transform 0.3s ease,
+                box-shadow 0.3s ease,
+                opacity 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+                filter 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .glass-card-hover:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 10%, transparent);
+    }
+  }
+  @starting-style {
+    .glass-card-hover {
+      opacity: 0;
+      filter: blur(2px);
+    }
+  }
+
+  /* ---- Hover lift effect for cards ---- */
   .hover-lift {
-    @apply transition-all duration-300;
+    @apply transition-[transform,box-shadow] duration-300;
   }
   .hover-lift:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 40px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  }
+
+    /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .glass-card,
+    .glass-card-hover {
+      transition-duration: 0s !important;
+    }
+    .glass-card-hover:hover {
+      transform: none !important;
+    }
+    .stagger-1, .stagger-2, .stagger-3, .stagger-4,
+    .stagger-5, .stagger-6, .stagger-7, .stagger-8 {
+      animation-delay: 0ms !important;
+    }
+    /* AnimatedMount gère déjà le reduced-motion via son hook JS */
+    .hover\:translate-x-0\.5:hover,
+    .hover\:translate-x-1:hover {
+      transform: none !important;
+    }
+    .hover-glow:hover {
+      box-shadow: none !important;
+    }
   }
 
   /* Click ripple effect for buttons */
@@ -300,13 +360,13 @@ body {
 
   /* Staggered fade-in for lists */
   .stagger-1 { animation-delay: 0ms; }
-  .stagger-2 { animation-delay: 75ms; }
-  .stagger-3 { animation-delay: 150ms; }
-  .stagger-4 { animation-delay: 225ms; }
-  .stagger-5 { animation-delay: 300ms; }
-  .stagger-6 { animation-delay: 375ms; }
-  .stagger-7 { animation-delay: 450ms; }
-  .stagger-8 { animation-delay: 525ms; }
+  .stagger-2 { animation-delay: 50ms; }
+  .stagger-3 { animation-delay: 100ms; }
+  .stagger-4 { animation-delay: 150ms; }
+  .stagger-5 { animation-delay: 200ms; }
+  .stagger-6 { animation-delay: 250ms; }
+  .stagger-7 { animation-delay: 300ms; }
+  .stagger-8 { animation-delay: 350ms; }
 
   /* Status dot pulse */
   .status-dot {
@@ -348,7 +408,7 @@ body {
 
   /* Glow effect on hover for cards */
   .hover-glow {
-    @apply transition-all duration-300;
+    @apply transition-[box-shadow,border-color] duration-300;
   }
   .hover-glow:hover {
     box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 15%, transparent),
@@ -368,7 +428,7 @@ body {
 
   /* Float animation for cards */
   .float-card {
-    @apply transition-all duration-500;
+    @apply transition-[transform,box-shadow] duration-500;
   }
   .float-card:hover {
     transform: translateY(-6px) scale(1.01);
@@ -395,16 +455,16 @@ body {
 
   /* Data row hover effect */
   .data-row {
-    @apply transition-all duration-200;
+    @apply transition-[background-color,transform] duration-200;
   }
   .data-row:hover {
     background: color-mix(in srgb, var(--color-primary) 5%, transparent);
     transform: scale(1.002);
   }
 
-  /* Button press effect */
+  /* Button press effect - responsive press feedback */
   .btn-press {
-    @apply active:scale-[0.95] transition-all duration-75;
+    @apply active:scale-[0.95] transition-transform duration-100 ease-out;
   }
 
   /* Slide reveal animation */

@@ -73,13 +73,13 @@ function NavSection({ items }: { items: NavItem[] }) {
           <Link 
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-[250ms] ease-out group active:scale-[0.98] ${
               isActive 
                 ? 'bg-primary/10 text-primary shadow-sm border border-primary/10' 
-                : 'text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface'
+                : 'text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface hover:translate-x-0.5'
             }`}
           >
-            <span className={`${isActive ? 'text-primary scale-110' : 'group-hover:text-primary group-hover:scale-110'} transition-all duration-200`}>
+            <span className={`${isActive ? 'text-primary scale-110' : 'group-hover:text-primary group-hover:scale-110'} transition-all duration-[250ms] ease-out`}>
               {item.icon}
             </span>
             <span className={`text-[13px] font-bold uppercase tracking-wider ${isActive ? 'text-primary' : ''}`}>
@@ -111,12 +111,10 @@ export default function Sidebar() {
           <h1 className="font-bold text-primary text-[20px] leading-tight tracking-tight">OPEP Admin</h1>
           <p className="text-on_surface_variant text-[10px] uppercase tracking-widest font-bold">Portail Souverain</p>
         </div>
-      </div>
-
-      <button 
+      </div>        <button 
         onClick={() => router.push('/trips')}
-        className="mb-6 w-full py-3.5 bg-gradient-to-r from-primary to-primary/80 text-on_primary font-bold rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.97] transition-all duration-200 shadow-xl shadow-primary/10 group click-feedback">
-        <Plus size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+        className="mb-6 w-full py-3.5 bg-gradient-to-r from-primary to-primary/80 text-on_primary font-bold rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.97] transition-all duration-[250ms] ease-out shadow-xl shadow-primary/10 group click-feedback">
+        <Plus size={20} className="group-hover:rotate-90 group-hover:scale-110 transition-all duration-500 ease-out" />
         <span>Nouveau Trajet</span>
       </button>
 
@@ -131,11 +129,11 @@ export default function Sidebar() {
       </nav>
 
       <div className="border-t border-charcoal_border pt-4 mt-4 flex flex-col gap-1.5">
-        <Link href="/settings" className="flex items-center gap-3 px-4 py-3 text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface rounded-xl transition-all">
+        <Link href="/settings" className="flex items-center gap-3 px-4 py-3 text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface rounded-xl transition-all duration-[250ms] ease-out hover:translate-x-0.5">
           <Settings size={20} />
           <span className="text-[13px] font-bold uppercase tracking-wider">Paramètres</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-4 py-3 text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface rounded-xl transition-all">
+        <Link href="#" className="flex items-center gap-3 px-4 py-3 text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface rounded-xl transition-all duration-[250ms] ease-out hover:translate-x-0.5">
           <HelpCircle size={20} />
           <span className="text-[13px] font-bold uppercase tracking-wider">Aide</span>
         </Link>

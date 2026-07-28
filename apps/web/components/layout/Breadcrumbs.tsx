@@ -4,6 +4,7 @@ import React, { Fragment } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 /**
  * Map of URL paths to human-readable labels in French.
@@ -58,7 +59,8 @@ export default function Breadcrumbs() {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] mb-5 animate-in fade-in duration-300">
+    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[12px] mb-5">
+      <AnimatedMount animation="fade" durationMs={300} className="contents">
       {/* Home link */}
       <Link
         href="/dashboard"
@@ -86,6 +88,7 @@ export default function Breadcrumbs() {
           )}
         </Fragment>
       ))}
+      </AnimatedMount>
     </nav>
   );
 }

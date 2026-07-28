@@ -80,7 +80,7 @@ export default function NotificationsPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.97] ${
               filter === 'all'
                 ? 'bg-primary text-on_primary'
                 : 'glass-card text-on_surface_variant hover:text-on_surface'
@@ -90,7 +90,7 @@ export default function NotificationsPage() {
           </button>
           <button
             onClick={() => setFilter('unread')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.97] ${
               filter === 'unread'
                 ? 'bg-primary text-on_primary'
                 : 'glass-card text-on_surface_variant hover:text-on_surface'
@@ -108,7 +108,7 @@ export default function NotificationsPage() {
             <AlertTriangle className="text-error_red" size={24} />
             <p className="font-bold text-on_surface">{error}</p>
           </div>
-          <button onClick={loadNotifications} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadNotifications} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -127,7 +127,7 @@ export default function NotificationsPage() {
               {filtered.map((notif, i) => (
                 <div
                   key={notif.id}
-                  className={`p-5 flex gap-4 items-start hover:bg-primary/5 transition-all group ${
+                  className={`p-5 flex gap-4 items-start hover:bg-primary/5 hover:translate-x-0.5 transition-all group ${
                     !notif.isRead ? 'bg-primary/3' : ''
                   }`}
                   style={{ animationDelay: `${i * 50}ms` }}

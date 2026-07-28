@@ -71,7 +71,7 @@ export default function SubscriptionsPage() {
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
           <div className="flex items-center gap-3"><AlertCircle className="text-error_red" size={24} /><p className="font-bold text-on_surface">{error}</p></div>
-          <button onClick={loadPackages} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadPackages} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -97,7 +97,7 @@ export default function SubscriptionsPage() {
                     {pkg.price?.toLocaleString()} <span className="text-sm font-medium text-on_surface_variant">FCFA/{pkg.period === 'YEARLY' ? 'an' : 'mois'}</span>
                   </p>
                   <p className="text-xs text-on_surface_variant mb-6">{pkg.description}</p>
-                  <button className="w-full py-3 rounded-xl bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-on_primary transition-all active:scale-95">
+                  <button className="w-full py-3 rounded-xl bg-primary/10 text-primary font-bold text-sm hover:bg-primary hover:text-on_primary transition-all active:scale-[0.97]">
                     Souscrire
                   </button>
                 </div>

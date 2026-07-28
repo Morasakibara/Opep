@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -80,9 +81,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {/* Toast Container - fixed position bottom-right */}
       <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
         {toasts.map((toast) => (
-          <div
+          <AnimatedMount
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-2xl border shadow-2xl backdrop-blur-md min-w-[320px] max-w-[420px] animate-in slide-in-from-right fade-in duration-300 ${COLORS[toast.type]}`}
+            animation="slide-up"
+            durationMs={300}
+            className={`pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-2xl border shadow-2xl backdrop-blur-md min-w-[320px] max-w-[420px] ${COLORS[toast.type]}`}
           >
             <div className="flex-shrink-0 mt-0.5">{ICONS[toast.type]}</div>
             <div className="flex-1 min-w-0">
@@ -97,7 +100,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               <X size={16} />
             </button>
-          </div>
+          </AnimatedMount>
         ))}
       </div>
     </ToastContext.Provider>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/services/api.service';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import { Bus, Loader2, ArrowRight, Eye, EyeOff, User, Phone, Mail, Lock } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -55,7 +56,7 @@ export default function RegisterPage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-on_primary font-bold text-3xl shadow-2xl shadow-primary/30 -rotate-6 transition-transform hover:rotate-0 duration-500">
               O
@@ -63,9 +64,10 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-3xl font-bold text-on_surface">Créer un compte</h1>
           <p className="text-on_surface_variant mt-2">Rejoignez la plateforme OPEP</p>
-        </div>
+        </AnimatedMount>
 
-        <div className="glass-card rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-bottom duration-700">
+        <AnimatedMount animation="slide-up" durationMs={700}>
+        <div className="glass-card rounded-3xl p-8 md:p-10">
           <form onSubmit={handleRegister} className="space-y-5">
             {error && (
               <div className="bg-error_red/10 border border-error_red/20 text-error_red p-3 rounded-xl text-xs font-bold flex items-center gap-2">
@@ -122,6 +124,7 @@ export default function RegisterPage() {
             </p>
           </div>
         </div>
+        </AnimatedMount>
 
         <p className="text-center text-xs text-on_surface_variant mt-8">
           &copy; 2026 OPEP Cameroun. Projet Souverain.

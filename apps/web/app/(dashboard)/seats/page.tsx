@@ -106,7 +106,7 @@ export default function SeatsPage() {
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
           <div className="flex items-center gap-3"><AlertCircle className="text-error_red" size={24} /><p className="font-bold text-on_surface">{error}</p></div>
-          <button className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadSeats} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -142,7 +142,7 @@ export default function SeatsPage() {
                 return (
                   <div
                     key={seat.id}
-                    className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-110 active:scale-95 ${
+                    className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-[0.97] ${
                       seatStatusConfig[status]?.color || ''
                     } ${i % 4 === 0 ? 'ml-0' : ''} ${[3, 7, 11, 15, 19, 23, 27, 31, 35, 39].includes(i) ? 'mr-8' : ''}`}
                     title={seat.number}

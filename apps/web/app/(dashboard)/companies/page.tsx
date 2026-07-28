@@ -154,7 +154,7 @@ export default function CompaniesPage() {
             <AlertCircle className="text-error_red" size={24} />
             <p className="font-bold text-on_surface">{error}</p>
           </div>
-          <button onClick={loadCompanies} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadCompanies} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -176,7 +176,7 @@ export default function CompaniesPage() {
           ) : (
             <div className="divide-y divide-charcoal_border">
               {filtered.map((company, i) => (
-                <div key={company.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group"
+                <div key={company.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 hover:translate-x-1 transition-all group cursor-pointer"
                   style={{ animationDelay: `${i * 50}ms` }}>
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Building2 size={22} className="text-primary" />
@@ -193,10 +193,10 @@ export default function CompaniesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => openEditModal(company)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition">
+                    <button onClick={() => openEditModal(company)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-all active:scale-[0.92]">
                       <Edit2 size={16} />
                     </button>
-                    <button onClick={() => handleDelete(company.id, company.name)} className="p-2 hover:bg-error_red/10 text-error_red rounded-lg transition">
+                    <button onClick={() => handleDelete(company.id, company.name)} className="p-2 hover:bg-error_red/10 text-error_red rounded-lg transition-all active:scale-[0.92]">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -217,7 +217,7 @@ export default function CompaniesPage() {
               <h3 className="text-xl font-bold text-on_surface">
                 {editingCompany ? 'Modifier' : 'Ajouter'} une compagnie
               </h3>
-              <button onClick={() => { setShowModal(false); }} className="text-on_surface_variant hover:text-primary">
+              <button onClick={() => { setShowModal(false); }} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all">
                 <X size={24} />
               </button>
             </div>

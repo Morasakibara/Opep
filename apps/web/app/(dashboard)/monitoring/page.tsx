@@ -17,6 +17,7 @@ import {
   Search,
   Filter,
 } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import { useErrorNotifications, ErrorEvent } from '@/hooks/useErrorNotifications';
 
 interface StoredError {
@@ -206,7 +207,7 @@ export default function MonitoringPage() {
   }    return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-on_surface flex items-center gap-3">
@@ -233,8 +234,7 @@ export default function MonitoringPage() {
           </div>
           
           <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all ${
+            onClick={() => setAutoRefresh(!autoRefresh)}              className={`px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all active:scale-[0.97] ${
               autoRefresh
                 ? 'bg-primary/10 text-primary border-primary/20'
                 : 'bg-surface_container_high text-on_surface_variant border-charcoal_border'
@@ -245,23 +245,23 @@ export default function MonitoringPage() {
           <button
             onClick={fetchData}
             disabled={isLoading}
-            className="px-3 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5 disabled:opacity-50"
+            className="px-3 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-[0.97]"
           >
             <RefreshCcw size={12} className={isLoading ? 'animate-spin' : ''} />
             Rafraîchir
           </button>
           <button
             onClick={handleClear}
-            className="px-3 py-2 rounded-lg bg-error_red/10 text-error_red border border-error_red/20 text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5"
+            className="px-3 py-2 rounded-lg bg-error_red/10 text-error_red border border-error_red/20 text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5 active:scale-[0.97]"
           >
             <Trash2 size={12} />
             Effacer
           </button>
         </div>
-      </div>
+      </AnimatedMount>
 
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 animate-in slide-in-from-bottom duration-350">
+      <AnimatedMount animation="slide-up" durationMs={350} className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-on_surface_variant" />
           {(['all', '5xx', '4xx'] as const).map((mode) => (
@@ -300,10 +300,10 @@ export default function MonitoringPage() {
             </button>
           )}
         </div>
-      </div>
+      </AnimatedMount>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5">
           <p className="text-[11px] font-bold uppercase tracking-widest text-on_surface_variant mb-1">Total</p>
           <p className="text-3xl font-bold text-on_surface">{stats?.total || 0}</p>
@@ -320,10 +320,11 @@ export default function MonitoringPage() {
             </p>
           </div>
         ))}
-      </div>
+      </AnimatedMount>
 
       {/* Error List */}
-      <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+      <AnimatedMount animation="slide-up" durationMs={500}>
+      <div className="glass-card rounded-3xl overflow-hidden">
         <div className="p-5 border-b border-charcoal_border">
           <h3 className="text-[15px] font-bold text-on_surface">Erreurs récentes</h3>
         </div>
@@ -345,7 +346,7 @@ export default function MonitoringPage() {
               <div
                 key={err.id}
                 onClick={() => setSelectedError(selectedError?.id === err.id ? null : err)}
-                className={`p-4 hover:bg-surface_container_low transition-colors cursor-pointer ${
+                className={`p-4 hover:bg-surface_container_low hover:translate-x-0.5 transition-[background-color,transform] duration-200 cursor-pointer ${
                   selectedError?.id === err.id ? 'bg-surface_container_low' : ''
                 }`}
               >
@@ -382,7 +383,7 @@ export default function MonitoringPage() {
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="px-6 py-2.5 rounded-xl bg-surface_container_high text-on_surface_variant hover:text-on_surface border border-charcoal_border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center gap-2 mx-auto disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-surface_container_high text-on_surface_variant hover:text-on_surface border border-charcoal_border text-[12px] font-bold uppercase tracking-wider transition-all flex items-center gap-2 mx-auto disabled:opacity-50 active:scale-[0.97]"
             >
               {loadingMore ? (
                 <><RefreshCcw size={14} className="animate-spin" /> Chargement...</>
@@ -393,6 +394,7 @@ export default function MonitoringPage() {
           </div>
         )}
       </div>
+      </AnimatedMount>
     </div>
   );
 }

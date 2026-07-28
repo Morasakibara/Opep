@@ -6,6 +6,7 @@ import {
   Search, ChevronRight, Radio, Activity,
 } from 'lucide-react';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import { busesApi } from '@/services/api.service';
 
 interface TrackingItem {
@@ -86,14 +87,14 @@ export default function TrackingPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Suivi GPS</h2>
           <p className="text-on_surface_variant">Géolocalisation en temps réel de la flotte.</p>
         </div>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" delay={75} durationMs={400} className="grid grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <div key={i} className="glass-card rounded-2xl p-5">
             <stat.icon size={20} className={`${stat.color} mb-2`} />
@@ -101,10 +102,11 @@ export default function TrackingPage() {
             <p className="text-xs text-on_surface_variant font-medium">{stat.label}</p>
           </div>
         ))}
-      </div>
+      </AnimatedMount>
 
       {/* Map placeholder */}
-      <div className="glass-card rounded-3xl p-6 animate-in slide-in-from-bottom duration-500">
+      <AnimatedMount animation="slide-up" delay={150} durationMs={500}>
+      <div className="glass-card rounded-3xl p-6">
         <div className="bg-surface_dim rounded-2xl h-[300px] flex items-center justify-center border-2 border-dashed border-charcoal_border">
           <div className="text-center">
             <MapPin size={48} className="mx-auto text-primary/30 mb-3" />
@@ -115,9 +117,11 @@ export default function TrackingPage() {
           </div>
         </div>
       </div>
+      </AnimatedMount>
 
       {/* Live tracking list */}
-      <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-600">
+      <AnimatedMount animation="slide-up" delay={225} durationMs={600}>
+      <div className="glass-card rounded-3xl overflow-hidden">
         <div className="p-5 border-b border-charcoal_border">
           <div className="relative max-w-md">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
@@ -134,7 +138,7 @@ export default function TrackingPage() {
             </div>
           ) : (
             filtered.map((item, i) => (
-              <div key={item.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group cursor-pointer"
+              <div key={item.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 hover:translate-x-0.5 transition-all group cursor-pointer"
                 style={{ animationDelay: `${i * 75}ms` }}>
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Bus size={18} className="text-primary" />
@@ -163,6 +167,7 @@ export default function TrackingPage() {
           )}
         </div>
       </div>
+      </AnimatedMount>
     </div>
   );
 }

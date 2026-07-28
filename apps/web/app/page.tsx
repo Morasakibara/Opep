@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, Zap, Globe, ArrowRight, Bus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function HomePage() {
   return (
@@ -40,17 +41,23 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[12px] font-bold uppercase tracking-[0.2em] mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <Zap size={14} /> La Révolution du Transport Interurbain
-          </div>
-          <h1 className="text-5xl md:text-8xl font-bold tracking-tighter mb-8 leading-[0.9] animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            Souveraineté. <br /> <span className="text-primary">Sécurité.</span> Mobilité.
-          </h1>
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-on_surface_variant mb-12 animate-in fade-in slide-in-from-bottom-12 duration-1000">
-            OPEP est la plateforme nationale de gestion de transport interurbain au Cameroun. 
-            Digitalisez vos agences avec une infrastructure robuste et souveraine.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000">
+          <AnimatedMount animation="slide-up" durationMs={700} className="flex justify-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[12px] font-bold uppercase tracking-[0.2em] mb-8">
+              <Zap size={14} /> La Révolution du Transport Interurbain
+            </div>
+          </AnimatedMount>
+          <AnimatedMount animation="slide-up" delay={75} durationMs={1000}>
+            <h1 className="text-5xl md:text-8xl font-bold tracking-tighter mb-8 leading-[0.9]">
+              Souveraineté. <br /> <span className="text-primary">Sécurité.</span> Mobilité.
+            </h1>
+          </AnimatedMount>
+          <AnimatedMount animation="slide-up" delay={150} durationMs={1000}>
+            <p className="max-w-2xl mx-auto text-lg md:text-xl text-on_surface_variant mb-12">
+              OPEP est la plateforme nationale de gestion de transport interurbain au Cameroun. 
+              Digitalisez vos agences avec une infrastructure robuste et souveraine.
+            </p>
+          </AnimatedMount>
+          <AnimatedMount animation="slide-up" delay={225} durationMs={1000} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/register">
               <Button className="rounded-full px-10 py-5 text-lg" rightIcon={<ArrowRight size={20} />}>
                 Rejoindre le Réseau
@@ -61,7 +68,7 @@ export default function HomePage() {
                 Se Connecter
               </Button>
             </Link>
-          </div>
+          </AnimatedMount>
         </div>
 
         {/* Hero Visual */}

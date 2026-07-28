@@ -42,11 +42,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }, []);
 
     const variants = {
-      primary: 'bg-primary text-on_primary shadow-lg shadow-primary/20 hover:brightness-110 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
-      secondary: 'bg-secondary text-on_secondary shadow-lg shadow-secondary/20 hover:brightness-110 hover:shadow-xl hover:shadow-secondary/30 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
-      outline: 'bg-transparent border border-charcoal_border text-on_surface hover:bg-surface_container_high hover:border-primary/50 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
-      ghost: 'bg-transparent text-on_surface_variant hover:text-on_surface hover:bg-surface_container_high active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
-      danger: 'bg-error_red/10 text-error_red border border-error_red/20 hover:bg-error_red hover:text-white hover:shadow-lg hover:shadow-error_red/20 active:scale-[0.97] transition-all duration-200 relative overflow-hidden',
+      primary: 'bg-primary text-on_primary shadow-lg shadow-primary/20 hover:brightness-110 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.97] transition-[transform,box-shadow,filter] duration-200 relative overflow-hidden',
+      secondary: 'bg-secondary text-on_secondary shadow-lg shadow-secondary/20 hover:brightness-110 hover:shadow-xl hover:shadow-secondary/30 active:scale-[0.97] transition-[transform,box-shadow,filter] duration-200 relative overflow-hidden',
+      outline: 'bg-transparent border border-charcoal_border text-on_surface hover:bg-surface_container_high hover:border-primary/50 active:scale-[0.97] transition-[transform,background-color,border-color] duration-200 relative overflow-hidden',
+      ghost: 'bg-transparent text-on_surface_variant hover:text-on_surface hover:bg-surface_container_high active:scale-[0.97] transition-[transform,background-color,color] duration-200 relative overflow-hidden',
+      danger: 'bg-error_red/10 text-error_red border border-error_red/20 hover:bg-error_red hover:text-white hover:shadow-lg hover:shadow-error_red/20 active:scale-[0.97] transition-[transform,background-color,color,border-color,box-shadow] duration-200 relative overflow-hidden',
     };
 
     const sizes = {
@@ -63,7 +63,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onMouseMove={!noRipple ? handleMouseMove : undefined}
         onMouseLeave={!noRipple ? handleMouseLeave : undefined}
         className={cn(
-          'flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+          'flex items-center justify-center gap-2 transition-[transform,box-shadow,filter] duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
           variants[variant],
           sizes[size],
           noRipple ? '' : 'btn-ripple',

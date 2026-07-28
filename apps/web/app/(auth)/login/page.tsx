@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api.service';
 import { Bus, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 
 export default function LoginPage() {
@@ -56,7 +57,7 @@ export default function LoginPage() {
         </div>
 
         {/* Logo */}
-        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500} className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-on_primary font-bold text-3xl shadow-2xl shadow-primary/30 rotate-6 transition-transform hover:rotate-0 duration-500">
               <Bus size={32} />
@@ -64,10 +65,11 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-bold text-on_surface">OPEP Agence</h1>
           <p className="text-on_surface_variant mt-2">Plateforme de gestion de transport</p>
-        </div>
+        </AnimatedMount>
 
         {/* Login Card */}
-        <div className="glass-card rounded-3xl p-8 md:p-10 animate-in fade-in slide-in-from-bottom duration-700">
+        <AnimatedMount animation="slide-up" durationMs={700}>
+        <div className="glass-card rounded-3xl p-8 md:p-10">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-on_surface">Connexion</h2>
             <p className="text-on_surface_variant text-sm mt-1">Accédez à votre espace d'administration</p>
@@ -159,6 +161,7 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
+        </AnimatedMount>
 
         {/* Footer */}
         <p className="text-center text-xs text-on_surface_variant mt-8">

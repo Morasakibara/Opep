@@ -20,6 +20,10 @@ import { Trip, TripStatus } from './modules/trips/entities/trip.entity';
 import { Reservation, ReservationStatus, ReservationType } from './modules/reservations/entities/reservation.entity';
 import { dataSourceOptions } from './config/typeorm.config';
 import { InvoiceStatus } from '@opep/shared-types';
+import { Driver } from './modules/drivers/drivers.entity';
+import { Incident } from './modules/incidents/incidents.entity';
+import { Message } from './modules/messages/messages.entity';
+import { Schedule } from './modules/schedules/entities/schedule.entity';
 
 async function seed() {
   const dataSource = new DataSource(dataSourceOptions);
@@ -36,10 +40,14 @@ async function seed() {
   const routeRepo = dataSource.getRepository(Route);
   const tripRepo = dataSource.getRepository(Trip);
   const reservationRepo = dataSource.getRepository(Reservation);
+  const driverRepo = dataSource.getRepository(Driver);
+  const incidentRepo = dataSource.getRepository(Incident);
+  const messageRepo = dataSource.getRepository(Message);
+  const scheduleRepo = dataSource.getRepository(Schedule);
 
   // Clear existing data (respect FK order: children first, parents last)
   console.log('[SEED] Cleaning database...');
-  await dataSource.query('TRUNCATE invoices, complaints, subscriptions, centres, companies, reservations, trips, buses, routes, agencies, users CASCADE');
+  await dataSource.query('TRUNCATE drivers, incidents, messages, schedules, invoices, complaints, subscriptions, centres, companies, reservations, trips, buses, routes, agencies, users CASCADE');
 
   const passwordHash = await argon2Hash('123456', {
     algorithm: Algorithm.Argon2id,
@@ -223,6 +231,80 @@ async function seed() {
   console.log(`[SEED] ${resData.length} reservations created for revenue simulation`);
 
   // ========================================================================
+  // DRIVERS (linked to existing DRIVER users)
+  // ========================================================================
+  const driverUsers = users.filter(u => u.role === UserRole.DRIVER);
+  const driverData = [];
+  for (const du of driverUsers) {
+    driverData.push({
+      licenseNumber: `PERMIS-${du.firstName.toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      status: 'ACTIVE',
+      rating: 4.0 + Math.random(),
+      totalTrips: Math.floor(Math.random() * 100) + 10,
+      performanceScore: Math.floor(60 + Math.random() * 40),
+      user: du,
+    });
+  }
+  const drivers = await driverRepo.save(driverRepo.create(driverData));
+  console.log(`[SEED] ${drivers.length} drivers created`);
+
+  // ========================================================================
+  // INCIDENTS
+  // ========================================================================
+  const incidentTypes = ['ACCIDENT', 'DELAY', 'MECHANICAL_BREAKDOWN', 'OTHER'];
+  const incidentDescriptions = [
+    'Panne moteur à 30km de Douala, bus immobilisé 2h',
+    'Retard de 45min dû aux embouteillages sur le corridor Yaoundé-Douala',
+    'Climatisation en panne pendant tout le trajet, passagers mécontents',
+    'Accrochage léger avec un véhicule particulier au péage',
+    'Pneu crevé sur l\'autoroute, changement effectué en 20min',
+  ];
+  const incidentData = [];
+  const savedTripsForIncidents = savedTrips.filter(t => t.status === TripStatus.COMPLETED).slice(0, 3);
+  for (let i = 0; i < savedTripsForIncidents.length; i++) {
+    incidentData.push({
+      type: incidentTypes[i % incidentTypes.length],
+      description: incidentDescriptions[i % incidentDescriptions.length],
+      status: i === 0 ? 'PENDING' : i === 1 ? 'INVESTIGATING' : 'RESOLVED',
+      refundTriggered: i === 2,
+      refundAmount: i === 2 ? 2500 : null,
+      reportedBy: adminUser,
+      trip: savedTripsForIncidents[i],
+    });
+  }
+  const incidents = await incidentRepo.save(incidentRepo.create(incidentData));
+  console.log(`[SEED] ${incidents.length} incidents created`);
+
+  // ========================================================================
+  // MESSAGES
+  // ========================================================================
+  const messageData = [
+    { content: 'Bonjour, le bus pour Yaoundé de 8h est-il bien à l\'heure ?', sender: client1, receiver: centreManager1 },
+    { content: 'Oui, le départ est prévu à 8h précise. Merci de vous présenter 15min avant.', sender: centreManager1, receiver: client1 },
+    { content: 'Pouvez-vous confirmer que le voyage de demain à Douala est maintenu ?', sender: client2, receiver: centreManager1 },
+    { content: 'Voyage confirmé. Le bus LT-001-AA avec chauffeur Paul est programmé.', sender: centreManager1, receiver: client2 },
+  ];
+  const messages = await messageRepo.save(messageRepo.create(messageData));
+  console.log(`[SEED] ${messages.length} messages created`);
+
+  // ========================================================================
+  // SCHEDULES
+  // ========================================================================
+  const scheduleData = [
+    { routeId: routes[0].id, departureTime: '06:00', company: 'Finexs Voyages', isActive: true },
+    { routeId: routes[0].id, departureTime: '08:00', company: 'Finexs Voyages', isActive: true },
+    { routeId: routes[0].id, departureTime: '10:00', company: 'Finexs Voyages', isActive: true },
+    { routeId: routes[0].id, departureTime: '14:00', company: 'Finexs Voyages', isActive: true },
+    { routeId: routes[0].id, departureTime: '17:00', company: 'General Express', isActive: true },
+    { routeId: routes[1].id, departureTime: '06:30', company: 'Buca Voyages', isActive: true },
+    { routeId: routes[1].id, departureTime: '09:00', company: 'Buca Voyages', isActive: true },
+    { routeId: routes[1].id, departureTime: '12:00', company: 'Star Company', isActive: true },
+    { routeId: routes[1].id, departureTime: '15:30', company: 'Star Company', isActive: true },
+  ];
+  const schedules = await scheduleRepo.save(scheduleRepo.create(scheduleData));
+  console.log(`[SEED] ${schedules.length} schedules created`);
+
+  // ========================================================================
   // FINAL SUMMARY
   // ========================================================================
   console.log('\n═══════════════════════════════════════');
@@ -239,6 +321,10 @@ async function seed() {
   console.log(`  Routes:      ${routes.length}`);
   console.log(`  Trips:       ${savedTrips.length}`);
   console.log(`  Reservations: ${resData.length}`);
+  console.log(`  Drivers:     ${drivers.length}`);
+  console.log(`  Incidents:   ${incidents.length}`);
+  console.log(`  Messages:    ${messages.length}`);
+  console.log(`  Schedules:   ${schedules.length}`);
   console.log('═══════════════════════════════════════\n');
 
   // Login credentials

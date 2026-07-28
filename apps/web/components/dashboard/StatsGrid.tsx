@@ -30,7 +30,7 @@ export function StatsCard({ title, value, subValue, trend, trendUp, icon, color 
   };
 
   return (
-    <div className="glass-card-hover p-6 rounded-xl relative overflow-hidden group">
+    <div className="glass-card-hover p-6 rounded-xl relative overflow-hidden group active:scale-[0.98] transition-all">
       <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 blur-3xl transition-all ${accentMap[color]}`}></div>
       
       <div className="flex items-center justify-between mb-4 relative z-10">

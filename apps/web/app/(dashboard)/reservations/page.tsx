@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Download, Eye, MoreVertical, AlertCircle, ArrowRight, X, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { reservationsApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function ReservationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,16 +65,16 @@ export default function ReservationsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Réservations</h2>
           <p className="text-on_surface_variant">Consultez et gérez les réservations de vos clients.</p>
         </div>
         <button onClick={handleExportCSV}
-          className="bg-surface_container_high border border-charcoal_border text-on_surface px-4 py-2 rounded-xl text-sm font-bold hover:bg-surface_container_highest transition flex items-center gap-2">
+          className="bg-surface_container_high border border-charcoal_border text-on_surface px-4 py-2 rounded-xl text-sm font-bold hover:bg-surface_container_highest active:scale-[0.97] transition-all flex items-center gap-2">
           <Download size={18} /> Exporter CSV
         </button>
-      </div>
+      </AnimatedMount>
 
       <div className="glass-card p-4 rounded-2xl flex gap-4 items-center">
         <div className="relative flex-1">
@@ -89,14 +90,15 @@ export default function ReservationsPage() {
             <AlertCircle className="text-error_red" size={24} />
             <div><p className="font-bold text-on_surface">Erreur</p><p className="text-sm text-on_surface_variant">{error}</p></div>
           </div>
-          <button onClick={loadReservations} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl">Réessayer</button>
+          <button onClick={loadReservations} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
       {loading && <PageSkeleton />}
 
       {!loading && !error && (
-        <div className="glass-card rounded-2xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500}>
+        <div className="glass-card rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="table-header">
@@ -131,8 +133,8 @@ export default function ReservationsPage() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => setDetailsModal(res)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition"><Eye size={18} /></button>
-                          <button className="p-2 hover:bg-surface_container_high text-on_surface_variant rounded-lg transition"><MoreVertical size={18} /></button>
+                          <button onClick={() => setDetailsModal(res)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-all active:scale-[0.92]"><Eye size={18} /></button>
+                          <button className="p-2 hover:bg-surface_container_high text-on_surface_variant rounded-lg transition-all active:scale-[0.92]"><MoreVertical size={18} /></button>
                         </div>
                       </td>
                     </tr>
@@ -145,14 +147,16 @@ export default function ReservationsPage() {
             <p className="text-xs text-on_surface_variant">{filtered.length} / {reservations.length} réservation{reservations.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
+        </AnimatedMount>
       )}
 
       {detailsModal && (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setDetailsModal(null)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in" onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" onClick={(e) => e.stopPropagation()}>
+          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">Détails réservation</h3>
-              <button onClick={() => setDetailsModal(null)} className="text-on_surface_variant hover:text-primary"><X size={24} /></button>
+              <button onClick={() => setDetailsModal(null)} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all"><X size={24} /></button>
             </div>
             <div className="p-8 space-y-4">
               <div className="flex justify-between"><span className="text-sm text-on_surface_variant">Code</span><span className="text-sm font-bold text-primary">{detailsModal.reservationCode}</span></div>
@@ -168,9 +172,10 @@ export default function ReservationsPage() {
               </div>
             </div>
             <div className="p-6 bg-surface_container_low border-t border-charcoal_border">
-              <button onClick={() => setDetailsModal(null)} className="w-full bg-primary text-on_primary py-3 rounded-2xl font-bold hover:brightness-110 transition">Fermer</button>
+              <button onClick={() => setDetailsModal(null)} className="w-full bg-primary text-on_primary py-3 rounded-2xl font-bold hover:brightness-110 active:scale-[0.97] transition-all">Fermer</button>
             </div>
           </div>
+          </AnimatedMount>
         </div>
       )}
     </div>

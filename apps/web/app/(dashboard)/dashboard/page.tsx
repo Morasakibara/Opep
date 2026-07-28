@@ -11,6 +11,7 @@ import TransactionsTable from '@/components/dashboard/TransactionsTable';
 import AgenciesList from '@/components/dashboard/AgenciesList';
 import RegionalActivity from '@/components/dashboard/RegionalActivity';
 import { StaggeredItem } from '@/components/layout/PageTransition';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
 
 export default function DashboardPage() {
@@ -79,15 +80,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div className="animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300}>
         <h2 className="text-2xl font-bold text-on_surface">Tableau de bord</h2>
         <p className="text-on_surface_variant">Aperçu des performances de votre plateforme.</p>
-      </div>
+      </AnimatedMount>
 
       {/* Stats Grid */}
-      <div className="animate-in slide-in-from-bottom duration-500">
+      <AnimatedMount animation="slide-up" durationMs={500}>
         <StatsGrid />
-      </div>
+      </AnimatedMount>
 
       {/* Charts & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -106,7 +107,7 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl overflow-hidden">
           <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
             <h3 className="text-[18px] font-bold text-on_surface">Réservations récentes</h3>
-            <Link href="/reservations" className="text-primary text-[14px] font-bold hover:underline flex items-center gap-1">
+            <Link href="/reservations" className="text-primary text-[14px] font-bold hover:underline flex items-center gap-1 active:scale-[0.92] transition-all">
               Voir tout
             </Link>
           </div>
@@ -130,7 +131,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   recentBookings.map((booking, i) => (
-                    <tr key={i} className="hover:bg-surface_container_high/50 transition-colors">
+                    <tr key={i} className="hover:bg-surface_container_high/50 transition-colors cursor-pointer">
                       <td className="px-6 py-4 text-sm font-bold text-primary">{booking.id}</td>
                       <td className="px-6 py-4">
                         <p className="text-sm font-bold text-on_surface">{booking.user}</p>
@@ -168,7 +169,7 @@ export default function DashboardPage() {
               <p className="text-[14px] text-on_surface_variant mb-6">Validez les passagers à l'embarquement rapidement.</p>
               <Link 
                 href="/scanner" 
-                className="inline-flex items-center bg-primary text-on_primary px-6 py-3 rounded-xl font-bold hover:brightness-110 transition-all active:scale-95 shadow-lg"
+                className="inline-flex items-center bg-primary text-on_primary px-6 py-3 rounded-xl font-bold hover:brightness-110 transition-all active:scale-[0.97] shadow-lg"
               >
                 <QrCode size={20} className="mr-2" />
                 Ouvrir le scanner
@@ -187,7 +188,7 @@ export default function DashboardPage() {
                 <p className="text-on_surface_variant text-sm">Aucun départ planifié</p>
               ) : (
                 upcomingTrips.map((departure, i) => (
-                  <div key={i} className="flex items-center gap-4">
+                  <div key={i} className="flex items-center gap-4 hover:translate-x-0.5 transition-all duration-200 cursor-default">
                     <div className="bg-primary/10 text-primary font-black p-2 rounded-lg text-sm w-16 text-center border border-primary/20">
                       {departure.time}
                     </div>

@@ -2,6 +2,7 @@
 import Image from 'next/image';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { Search, Globe, Bell, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/LanguageContext';
@@ -13,12 +14,52 @@ interface HeaderProps {
   placeholder?: string;
 }
 
+/**
+ * Page-specific placeholder map for the global search bar.
+ * Returns contextual placeholder text based on current route.
+ */
+const ROUTE_PLACEHOLDERS: Record<string, { fr: string; en: string }> = {
+  '/dashboard': { fr: 'Rechercher dans le tableau de bord...', en: 'Search the dashboard...' },
+  '/companies': { fr: 'Rechercher une compagnie...', en: 'Search a company...' },
+  '/centres': { fr: 'Rechercher un centre...', en: 'Search a centre...' },
+  '/trips': { fr: 'Rechercher un trajet...', en: 'Search a trip...' },
+  '/buses': { fr: 'Rechercher un bus...', en: 'Search a bus...' },
+  '/employees': { fr: 'Rechercher un employé...', en: 'Search an employee...' },
+  '/drivers': { fr: 'Rechercher un conducteur...', en: 'Search a driver...' },
+  '/payments': { fr: 'Rechercher un paiement...', en: 'Search a payment...' },
+  '/reports': { fr: 'Rechercher un rapport...', en: 'Search a report...' },
+  '/reservations': { fr: 'Rechercher une réservation...', en: 'Search a reservation...' },
+  '/tickets': { fr: 'Rechercher un ticket...', en: 'Search a ticket...' },
+  '/tracking': { fr: 'Rechercher un véhicule...', en: 'Search a vehicle...' },
+  '/seats': { fr: 'Rechercher un siège...', en: 'Search a seat...' },
+  '/schedules': { fr: 'Rechercher un horaire...', en: 'Search a schedule...' },
+  '/offline-scans': { fr: 'Rechercher un scan...', en: 'Search a scan...' },
+  '/agencies': { fr: 'Rechercher une agence...', en: 'Search an agency...' },
+  '/monitoring': { fr: 'Rechercher dans le monitoring...', en: 'Search monitoring...' },
+  '/billings': { fr: 'Rechercher une facture...', en: 'Search an invoice...' },
+  '/messages': { fr: 'Rechercher un message...', en: 'Search a message...' },
+  '/notifications': { fr: 'Rechercher une notification...', en: 'Search a notification...' },
+  '/incidents': { fr: 'Rechercher un incident...', en: 'Search an incident...' },
+  '/complaints': { fr: 'Rechercher une réclamation...', en: 'Search a complaint...' },
+  '/reviews': { fr: 'Rechercher un avis...', en: 'Search a review...' },
+  '/subscriptions': { fr: 'Rechercher un abonnement...', en: 'Search a subscription...' },
+  '/scanner': { fr: 'Scannez un QR code...', en: 'Scan a QR code...' },
+  '/settings': { fr: 'Rechercher dans les paramètres...', en: 'Search settings...' },
+};
+
 export default function Header({ 
   title = "Super Admin", 
-  placeholder = "Rechercher..." 
+  placeholder 
 }: HeaderProps) {
   const { logout, user } = useAuth();
   const { language, setLanguage } = useTranslation();
+  const pathname = usePathname();
+
+  // Derive contextual placeholder from current route
+  const routeKey = Object.keys(ROUTE_PLACEHOLDERS).find(k => pathname?.startsWith(k));
+  const contextualPlaceholder = routeKey 
+    ? ROUTE_PLACEHOLDERS[routeKey][language] 
+    : placeholder || (language === 'fr' ? 'Rechercher...' : 'Search...');
 
   const toggleLanguage = () => {
     const newLang = language === 'fr' ? 'en' : 'fr';
@@ -31,8 +72,8 @@ export default function Header({
         <div className="relative w-full max-w-md">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
           <input 
-            className="w-full bg-surface_dim border border-charcoal_border rounded-full py-2 pl-10 pr-4 text-[14px] focus:border-primary focus:ring-0 outline-none placeholder:text-on_surface_variant/50 text-on_surface" 
-            placeholder={placeholder}
+            className="w-full bg-surface_dim border border-charcoal_border rounded-full py-2 pl-10 pr-4 text-[14px] focus:border-primary focus:ring-0 outline-none placeholder:text-on_surface_variant/50 text-on_surface transition-all" 
+            placeholder={contextualPlaceholder}
             type="text"
           />
         </div>
@@ -45,10 +86,10 @@ export default function Header({
           <button 
             onClick={toggleLanguage}
             className="flex items-center gap-1.5 hover:text-primary transition-all group px-2 py-1 rounded-lg bg-surface_container_high active:scale-95 click-feedback"
-            title="Changer de langue"
+            title={language === 'fr' ? 'Switch to English' : 'Passer en français'}
           >
-            <Globe size={18} className="group-hover:rotate-12 transition-transform duration-500" />
-            <span className="text-[11px] font-bold uppercase">{language}</span>
+            <Globe size={18} className={`group-hover:rotate-12 transition-transform duration-500 ${language === 'en' ? 'text-primary' : ''}`} />
+            <span className="text-[11px] font-bold uppercase">{language === 'fr' ? 'FR' : 'EN'}</span>
           </button>
           
           <NotificationCenter />

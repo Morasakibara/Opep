@@ -65,7 +65,7 @@ export default function SchedulesPage() {
           <h2 className="text-2xl font-bold text-on_surface">Horaires</h2>
           <p className="text-on_surface_variant">Planification des départs et fréquences.</p>
         </div>
-        <button className="px-5 py-3 bg-primary text-on_primary font-bold rounded-2xl text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2">
+        <button className="px-5 py-3 bg-primary text-on_primary font-bold rounded-2xl text-sm hover:brightness-110 transition-all active:scale-[0.97] flex items-center gap-2">
           <Plus size={16} /> Nouvel horaire
         </button>
       </div>
@@ -102,7 +102,7 @@ export default function SchedulesPage() {
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30">
           <div className="flex items-center gap-3"><AlertCircle className="text-error_red" size={24} /><p className="font-bold text-on_surface">{error}</p></div>
-          <button onClick={loadSchedules} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadSchedules} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -124,7 +124,7 @@ export default function SchedulesPage() {
           ) : (
             <div className="divide-y divide-charcoal_border">
               {filtered.map((schedule, i) => (
-                <div key={schedule.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group cursor-pointer"
+                <div key={schedule.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 hover:translate-x-0.5 transition-all group cursor-pointer"
                   style={{ animationDelay: `${i * 50}ms` }}>
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Clock size={22} className="text-primary" />

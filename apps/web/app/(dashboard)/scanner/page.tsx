@@ -117,7 +117,7 @@ export default function ScannerPage() {
                 <p className="text-sm font-bold text-on_surface mb-2">Caméra non active</p>
                 <p className="text-xs text-on_surface_variant mb-6">Activez la caméra pour scanner les QR codes.</p>
                 <button onClick={async () => { await startCamera('environment'); setCameraStarted(true); }}
-                  className="bg-primary text-on_primary px-8 py-3 rounded-xl font-bold hover:brightness-110 transition shadow-xl flex items-center gap-2">
+                  className="bg-primary text-on_primary px-8 py-3 rounded-xl font-bold hover:brightness-110 active:scale-[0.97] transition-all shadow-xl flex items-center gap-2">
                   <Camera size={20} /> Activer
                 </button>
               </div>
@@ -125,7 +125,7 @@ export default function ScannerPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface p-6 text-center">
                 <VideoOff size={48} className="text-on_surface_variant mb-4" />
                 <p className="text-sm font-bold text-error_red mb-2">{cameraError}</p>
-                <button onClick={async () => { await startCamera('environment'); }} className="mt-4 bg-primary text-on_primary px-6 py-2 rounded-xl font-bold flex items-center gap-2">
+                <button onClick={async () => { await startCamera('environment'); }} className="mt-4 bg-primary text-on_primary px-6 py-2 rounded-xl font-bold flex items-center gap-2 active:scale-[0.97] transition-all">
                   <RefreshCw size={16} /> Réessayer
                 </button>
               </div>
@@ -161,11 +161,11 @@ export default function ScannerPage() {
 
           <div className="flex gap-3">
             <button onClick={handleNextScan} disabled={lastResult.status === 'none' && !cameraError}
-              className="flex-1 bg-primary text-on_primary py-4 rounded-2xl font-bold hover:brightness-110 transition shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              className="flex-1 bg-primary text-on_primary py-4 rounded-2xl font-bold hover:brightness-110 active:scale-[0.97] transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
               <ScanLine size={20} /> Suivant
             </button>
             <button onClick={() => { stopCamera(); setTimeout(() => startCamera('environment'), 500); }}
-              className="px-4 py-4 bg-surface_container border border-charcoal_border text-on_surface rounded-2xl font-bold hover:bg-surface_container_high transition" title="Redémarrer">
+              className="px-4 py-4 bg-surface_container border border-charcoal_border text-on_surface rounded-2xl font-bold hover:bg-surface_container_high active:scale-[0.97] transition-all" title="Redémarrer">
               <RefreshCw size={20} />
             </button>
           </div>
@@ -208,7 +208,7 @@ export default function ScannerPage() {
                   ))}
                 </div>
               )}
-              <button onClick={handleNextScan} className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold hover:brightness-110 transition shadow-xl flex items-center justify-center gap-2">
+              <button onClick={handleNextScan} className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold hover:brightness-110 active:scale-[0.97] transition-all shadow-xl flex items-center justify-center gap-2">
                 <ScanLine size={20} /> Scanner suivant
               </button>
             </div>

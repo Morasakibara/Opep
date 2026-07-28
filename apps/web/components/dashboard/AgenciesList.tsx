@@ -55,7 +55,7 @@ export default function AgenciesList({ agencies = DEFAULT_AGENCIES, loading = fa
     <div className="glass-card rounded-2xl p-6 flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-[18px] font-bold text-on_surface">Nouvelles Agences</h3>
-        <button className="text-primary text-[14px] font-medium hover:underline flex items-center gap-1">
+        <button className="text-primary text-[14px] font-medium hover:underline flex items-center gap-1 active:scale-[0.92] transition-all">
           Voir tout <ExternalLink size={14} />
         </button>
       </div>
@@ -63,7 +63,7 @@ export default function AgenciesList({ agencies = DEFAULT_AGENCIES, loading = fa
         {agencies.map((agency, index) => (
           <div 
             key={index} 
-            className="flex items-center gap-4 p-3 rounded-xl bg-surface_container_low border border-charcoal_border hover:bg-surface_container_high transition-all cursor-pointer group"
+            className="flex items-center gap-4 p-3 rounded-xl bg-surface_container_low border border-charcoal_border hover:bg-surface_container_high hover:translate-x-0.5 transition-all cursor-pointer group active:scale-[0.98]"
           >
             <div className="relative w-12 h-12 rounded-lg bg-surface_container_highest flex items-center justify-center p-1.5 shadow-inner">
               <div className="w-full h-full rounded flex items-center justify-center text-primary text-lg font-bold">

@@ -64,7 +64,7 @@ export default function MessagesPage() {
           <h2 className="text-2xl font-bold text-on_surface">Messages</h2>
           <p className="text-on_surface_variant">Boîte de réception et communications internes.</p>
         </div>
-        <button className="px-5 py-3 bg-primary text-on_primary font-bold rounded-2xl text-sm hover:brightness-110 transition-all active:scale-95 flex items-center gap-2">
+        <button className="px-5 py-3 bg-primary text-on_primary font-bold rounded-2xl text-sm hover:brightness-110 transition-all active:scale-[0.97] flex items-center gap-2">
           <Send size={16} /> Nouveau message
         </button>
       </div>
@@ -94,7 +94,7 @@ export default function MessagesPage() {
             <AlertCircle className="text-error_red" size={24} />
             <p className="font-bold text-on_surface">{error}</p>
           </div>
-          <button onClick={loadMessages} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadMessages} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -118,7 +118,7 @@ export default function MessagesPage() {
           ) : (
             <div className="divide-y divide-charcoal_border">
               {filtered.map((msg, i) => (
-                <div key={msg.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group cursor-pointer"
+                <div key={msg.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 hover:translate-x-0.5 transition-all group cursor-pointer"
                   style={{ animationDelay: `${i * 50}ms` }}>
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
                     {msg.senderName?.[0] || '?'}

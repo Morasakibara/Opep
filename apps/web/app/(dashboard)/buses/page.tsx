@@ -74,7 +74,7 @@ export default function BusesPage() {
             <AlertCircle className="text-error_red" size={24} />
             <div><p className="font-bold text-on_surface">Erreur</p><p className="text-sm text-on_surface_variant">{error}</p></div>
           </div>
-          <button onClick={() => { setError(null); loadBuses(); }} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">
+          <button onClick={() => { setError(null); loadBuses(); }} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">
             Réessayer
           </button>
         </div>
@@ -86,7 +86,7 @@ export default function BusesPage() {
           <input type="text" placeholder="Rechercher par immatriculation, modèle..." value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)} className="input-field pl-10" />
         </div>
-        <select className="input-field max-w-[180px]">
+        <select className="input-field max-w-[180px] cursor-pointer">
           <option>Tous les types</option><option>VIP</option><option>Classique</option>
         </select>
       </div>
@@ -120,10 +120,10 @@ export default function BusesPage() {
             </div>
             <div className="px-6 py-4 bg-surface_container_low flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => setSeatConfigBus(bus.id)}
-                className="text-xs font-bold text-primary flex items-center gap-1">
+                className="text-xs font-bold text-primary flex items-center gap-1 active:scale-[0.92] transition-all">
                 <Settings size={14} /> Configurer les sièges
               </button>
-              <button onClick={() => setHistoryModal({ id: bus.id, model: bus.model })} className="text-xs font-bold text-on_surface_variant hover:text-on_surface">
+              <button onClick={() => setHistoryModal({ id: bus.id, model: bus.model })} className="text-xs font-bold text-on_surface_variant hover:text-on_surface active:scale-[0.92] transition-all">
                 Historique
               </button>
             </div>

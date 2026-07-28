@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -13,15 +14,24 @@ interface PageTransitionProps {
  * Uses a two-phase transition: fade-out → swap content → fade-in with scale.
  * The exit animation slides content up with reduced opacity and scale,
  * then the enter animation slides it back in from below with full opacity.
+ * Respects prefers-reduced-motion: when active, skips all animations.
  */
 export default function PageTransition({ children, className = '' }: PageTransitionProps) {
   const pathname = usePathname();
-  const [phase, setPhase] = useState<'entering' | 'visible' | 'leaving'>('entering');
+  const reduced = useReducedMotion();
+  const [phase, setPhase] = useState<'entering' | 'visible' | 'leaving'>(reduced ? 'visible' : 'entering');
   const [displayChildren, setDisplayChildren] = useState(children);
 
   // Handle route changes
   useEffect(() => {
     if (phase === 'visible') {
+      if (reduced) {
+        // Skip animation when reduced motion is preferred
+        setDisplayChildren(children);
+        setPhase('visible');
+        return;
+      }
+      
       // Start exit animation
       setPhase('leaving');
       
@@ -39,32 +49,42 @@ export default function PageTransition({ children, className = '' }: PageTransit
       }, 200); // Exit animation duration
 
       return () => clearTimeout(exitTimeout);
-    }    }, [pathname, phase]);
+    }    }, [pathname, phase, reduced]);
 
-  // Initial mount: skip exit, go straight to entering → visible
+  // Initial mount: skip exit, go straight to visible
   useEffect(() => {
+    if (reduced) {
+      setPhase('visible');
+      return;
+    }
     const mountTimeout = setTimeout(() => {
       setPhase('visible');
     }, 100);
     return () => clearTimeout(mountTimeout);
-  }, []);
+  }, [reduced]);
 
   function getAnimationClass() {
+    if (reduced) return '';
     switch (phase) {
       case 'leaving':
-        return 'opacity-0 translate-y-3 scale-[0.98] blur-[1px]';
+        return 'opacity-0 -translate-y-2 scale-[0.98] blur-[1px]';
       case 'entering':
-        return 'opacity-0 translate-y-6 scale-[0.97]';
+        return 'opacity-0 translate-y-4 scale-[0.98]';
       case 'visible':
       default:
-        return 'opacity-100 translate-y-0 scale-100';
+        return 'opacity-100 translate-y-0 scale-100 blur-0';
     }
   }
 
   return (
     <div
-      className={`transition-all duration-[400ms] ease-out ${
-        phase === 'leaving' ? 'duration-[200ms] ease-in' : 'duration-[400ms] ease-out'
+      className={`${
+        reduced ? '' :
+        `transition-all ${
+          phase === 'leaving'
+            ? 'duration-[180ms] ease-in'
+            : 'duration-[350ms] cubic-bezier(0.23, 1, 0.32, 1)'
+        }`
       } ${getAnimationClass()} ${className}`}
     >
       {displayChildren}
@@ -99,12 +119,17 @@ export function StaggeredItem({
   /** Animation style */
   animation?: 'slide-up' | 'scale-in' | 'fade-in';
 }) {
-  const [mounted, setMounted] = useState(false);
+  const reduced = useReducedMotion();
+  const [mounted, setMounted] = useState(reduced ? true : false);
 
   useEffect(() => {
+    if (reduced) {
+      setMounted(true);
+      return;
+    }
     const timer = setTimeout(() => setMounted(true), index * delay);
     return () => clearTimeout(timer);
-  }, [index, delay]);
+  }, [index, delay, reduced]);
 
   const getAnimClass = () => {
     if (!mounted) {
@@ -115,11 +140,9 @@ export function StaggeredItem({
       }
     }
     return 'opacity-100 translate-y-0 scale-100';
-  };
-
-  return (
+  };    return (
     <div
-      className={`transition-all duration-500 ease-out ${getAnimClass()} ${className}`}
+      className={`transition-all duration-[400ms] cubic-bezier(0.23, 1, 0.32, 1) ${getAnimClass()} ${className}`}
       style={{ transitionDelay: mounted ? '0ms' : `${index * delay}ms` }}
     >
       {children}

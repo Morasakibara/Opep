@@ -131,7 +131,7 @@ export default function BillingsPage() {
           ) : (
             <div className="divide-y divide-charcoal_border">
               {filtered.map((inv, i) => (
-                <div key={inv.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group cursor-pointer"
+                <div key={inv.id} data-row-id={inv.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group cursor-pointer"
                   style={{ animationDelay: `${i * 50}ms` }}>
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <FileText size={18} className="text-primary" />
@@ -159,11 +159,43 @@ export default function BillingsPage() {
                       )}
                     </div>
                   </div>
-                  <button className="p-2 hover:bg-surface_container_high rounded-lg transition-all flex-shrink-0" onClick={(e) => { e.stopPropagation(); toast.success('Téléchargement', `Facture ${inv.number} téléchargée`); }}>
-                    <Download size={16} className="text-on_surface_variant hover:text-primary transition-colors" />
+                  <button 
+                    className="p-2 hover:bg-surface_container_high rounded-lg transition-all flex-shrink-0 group/download active:scale-90" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      // Generate and download a CSV invoice
+                      const csvContent = [
+                        ['Facture', 'Compagnie', 'Montant', 'Statut', 'Période', 'Échéance'].join(','),
+                        [inv.number, inv.companyName, inv.amount, inv.status, inv.period, inv.dueDate].join(','),
+                      ].join('\n');
+                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${inv.number}.csv`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success('Téléchargement', `Facture ${inv.number} téléchargée`);
+                    }}
+                    title="Télécharger"
+                  >
+                    <Download size={16} className="text-on_surface_variant group-hover/download:text-primary transition-colors" />
                   </button>
-                  <button className="p-2 hover:bg-surface_container_high rounded-lg transition-all flex-shrink-0" onClick={(e) => { e.stopPropagation(); toast.info(`${inv.number}`, `${inv.companyName} - ${inv.amount?.toLocaleString()} FCFA`); }}>
-                    <ChevronRight size={16} className="text-on_surface_variant hover:text-primary transition-colors" />
+                  <button 
+                    className="p-2 hover:bg-surface_container_high rounded-lg transition-all flex-shrink-0 group/chevron active:scale-90"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      toast.info(`Facture ${inv.number}`, `${inv.companyName} - ${inv.amount?.toLocaleString()} FCFA`);
+                      // Scroll invoice row into view with highlight effect
+                      const row = e.currentTarget.closest('[data-row-id]');
+                      if (row) {
+                        row.classList.add('border-primary', 'border');
+                        setTimeout(() => row.classList.remove('border-primary', 'border'), 2000);
+                      }
+                    }}
+                    title="Détails"
+                  >
+                    <ChevronRight size={16} className="text-on_surface_variant group-hover/chevron:text-primary transition-colors" />
                   </button>
                 </div>
               ))}

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import { usersApi } from '@/services/api.service';
 import { isStaffRole, isAdminRole } from '@/lib/role.utils';
 
@@ -162,7 +163,7 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Personnel</h2>
           <p className="text-on_surface_variant">Gérez les employés et leurs accès à la plateforme.</p>
@@ -171,10 +172,10 @@ export default function EmployeesPage() {
           className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
           <UserPlus size={20} /> Ajouter
         </button>
-      </div>
+      </AnimatedMount>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-bottom duration-400">
+      <AnimatedMount animation="slide-up" durationMs={400} className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="glass-card rounded-2xl p-5 hover-lift cursor-default">
           <Users size={20} className="text-primary mb-2" />
           <p className="text-2xl font-bold text-on_surface">{employees.length}</p>
@@ -195,17 +196,18 @@ export default function EmployeesPage() {
           <p className="text-2xl font-bold text-on_surface">{totalCashiers}</p>
           <p className="text-xs text-on_surface_variant font-medium">Caissiers</p>
         </div>
-      </div>
+      </AnimatedMount>
 
       {error && (
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between border-error_red/30 animate-in fade-in">
           <div className="flex items-center gap-3"><AlertCircle className="text-error_red" size={24} /><p className="font-bold text-on_surface">{error}</p></div>
-          <button onClick={loadEmployees} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadEmployees} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
       {!error && (
-        <div className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+        <AnimatedMount animation="slide-up" durationMs={500}>
+        <div className="glass-card rounded-3xl overflow-hidden">
           {/* Search + Role Filter */}
           <div className="p-5 border-b border-charcoal_border flex flex-wrap items-center gap-3">
             <div className="relative flex-1 max-w-md">
@@ -216,7 +218,7 @@ export default function EmployeesPage() {
             <div className="flex gap-1.5 overflow-x-auto">
               {['all', 'AGENCY_MANAGER', 'CASHIER', 'CONTROLLER', 'DRIVER'].map((r) => (
                 <button key={r} onClick={() => setRoleFilter(r)}
-                  className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex-shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all active:scale-[0.97] flex-shrink-0 ${
                     roleFilter === r ? 'bg-primary text-on_primary' : 'bg-surface_container_high text-on_surface_variant hover:text-on_surface'
                   }`}
                 >
@@ -295,10 +297,10 @@ export default function EmployeesPage() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                          <button onClick={() => openEditModal(emp)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition">
+                          <button onClick={() => openEditModal(emp)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-all active:scale-[0.92]">
                             <Edit2 size={15} />
                           </button>
-                          <button onClick={() => handleDelete(emp.id, `${emp.firstName} ${emp.lastName}`)} className="p-2 hover:bg-error_red/10 text-error_red rounded-lg transition">
+                          <button onClick={() => handleDelete(emp.id, `${emp.firstName} ${emp.lastName}`)} className="p-2 hover:bg-error_red/10 text-error_red rounded-lg transition-all active:scale-[0.92]">
                             <Trash2 size={15} />
                           </button>
                         </div>
@@ -310,19 +312,20 @@ export default function EmployeesPage() {
             </div>
           )}
         </div>
+        </AnimatedMount>
       )}
 
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
           onClick={() => setShowModal(false)}>
-          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden animate-in zoom-in"
-            onClick={(e) => e.stopPropagation()}>
+          <AnimatedMount animation="zoom-in" onClick={(e) => e.stopPropagation()}>
+          <div className="glass-card rounded-3xl w-full max-w-lg overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex justify-between items-center">
               <h3 className="text-xl font-bold text-on_surface">
                 {editingEmployee ? 'Modifier' : 'Ajouter'} un employé
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-on_surface_variant hover:text-primary">
+              <button onClick={() => setShowModal(false)} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all">
                 <X size={24} />
               </button>
             </div>
@@ -370,6 +373,7 @@ export default function EmployeesPage() {
               </button>
             </div>
           </div>
+          </AnimatedMount>
         </div>
       )}
     </div>

@@ -120,7 +120,7 @@ export default function RoutesPage() {
           <p className="text-on_surface_variant">Gérez les lignes et trajets.</p>
         </div>
         <button onClick={openCreateModal}
-          className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+          className="bg-primary text-on_primary px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 active:scale-[0.97] transition-all shadow-lg shadow-primary/20">
           <Plus size={20} /> Ajouter
         </button>
       </div>
@@ -149,7 +149,7 @@ export default function RoutesPage() {
             <AlertCircle className="text-error_red" size={24} />
             <p className="font-bold text-on_surface">{error}</p>
           </div>
-          <button onClick={loadRoutes} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadRoutes} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -171,7 +171,7 @@ export default function RoutesPage() {
           ) : (
             <div className="divide-y divide-charcoal_border">
               {filtered.map((route, i) => (
-                <div key={route.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 transition-all group"
+                <div key={route.id} className="p-5 flex items-center gap-4 hover:bg-primary/5 hover:translate-x-0.5 transition-all group cursor-pointer"
                   style={{ animationDelay: `${i * 50}ms` }}>
                   <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center flex-shrink-0">
                     <Route size={22} className="text-secondary" />
@@ -189,10 +189,10 @@ export default function RoutesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => openEditModal(route)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition">
+                    <button onClick={() => openEditModal(route)} className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-all active:scale-[0.92]">
                       <Edit2 size={16} />
                     </button>
-                    <button onClick={() => handleDelete(route.id, `${route.departureCity} → ${route.arrivalCity}`)} className="p-2 hover:bg-error_red/10 text-error_red rounded-lg transition">
+                    <button onClick={() => handleDelete(route.id, `${route.departureCity} → ${route.arrivalCity}`)} className="p-2 hover:bg-error_red/10 text-error_red rounded-lg transition-all active:scale-[0.92]">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -213,7 +213,7 @@ export default function RoutesPage() {
               <h3 className="text-xl font-bold text-on_surface">
                 {editingRoute ? 'Modifier' : 'Ajouter'} une route
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-on_surface_variant hover:text-primary"><X size={24} /></button>
+              <button onClick={() => setShowModal(false)} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all"><X size={24} /></button>
             </div>
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -237,7 +237,7 @@ export default function RoutesPage() {
                 </div>
               </div>
               <button onClick={handleSave} disabled={saving || !formDeparture || !formArrival}
-                className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 transition disabled:opacity-70 flex items-center justify-center gap-2">
+                className="w-full bg-primary text-on_primary py-4 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.97] transition-all disabled:opacity-70 flex items-center justify-center gap-2">
                 {saving && <Loader2 size={20} className="animate-spin" />}
                 {editingRoute ? 'Enregistrer' : 'Créer la route'}
               </button>

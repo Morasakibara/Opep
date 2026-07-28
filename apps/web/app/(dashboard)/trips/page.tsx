@@ -134,7 +134,7 @@ export default function TripsPage() {
       <div className="flex gap-1 bg-surface_container_low p-1 rounded-xl w-fit">
         {(['trajets', 'lignes'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition ${activeTab === tab ? 'bg-surface_container text-primary shadow-sm' : 'text-on_surface_variant hover:text-on_surface'}`}>
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all active:scale-[0.97] ${activeTab === tab ? 'bg-surface_container text-primary shadow-sm' : 'text-on_surface_variant hover:text-on_surface'}`}>
             {tab === 'trajets' ? 'Trajets planifiés' : 'Lignes (Itinéraires)'}
           </button>
         ))}
@@ -146,7 +146,7 @@ export default function TripsPage() {
             <AlertCircle className="text-error_red" size={24} />
             <div><p className="font-bold text-on_surface">Erreur</p><p className="text-sm text-on_surface_variant">{error}</p></div>
           </div>
-          <button onClick={loadData} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition">Réessayer</button>
+          <button onClick={loadData} className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all">Réessayer</button>
         </div>
       )}
 
@@ -155,7 +155,7 @@ export default function TripsPage() {
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-on_surface_variant" />
           <input type="text" placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="input-field pl-10" />
         </div>
-        <button className="input-field max-w-[140px] flex items-center justify-center gap-2 font-bold text-on_surface_variant hover:text-on_surface transition">
+        <button className="input-field max-w-[140px] flex items-center justify-center gap-2 font-bold text-on_surface_variant hover:text-on_surface active:scale-[0.97] transition-all cursor-pointer">
           <Filter size={16} /> Filtres
         </button>
       </div>
@@ -187,7 +187,7 @@ export default function TripsPage() {
               </div>
               <div className="px-6 py-4 bg-surface_container_low flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <p className="text-xs font-bold text-on_surface_variant">{route.tripsCount} trajets</p>
-                <button onClick={() => { setActiveTab('trajets'); setSearchQuery(route.origin); }} className="text-xs font-bold text-primary flex items-center gap-1">
+                <button onClick={() => { setActiveTab('trajets'); setSearchQuery(route.origin); }} className="text-xs font-bold text-primary flex items-center gap-1 active:scale-[0.92] transition-all">
                   Détails <ChevronRight size={14} />
                 </button>
               </div>
@@ -244,7 +244,7 @@ export default function TripsPage() {
                         trip.status === 'Terminé' ? 'status-badge-success' : 'status-badge-default'
                       }`}>{trip.status}</span>
                     </td>
-                    <td className="px-6 py-5 text-right"><button className="p-2 hover:bg-surface_container_high rounded-lg transition"><MoreVertical size={18} className="text-on_surface_variant" /></button></td>
+                    <td className="px-6 py-5 text-right"><button className="p-2 hover:bg-surface_container_high rounded-lg transition-all active:scale-[0.92]"><MoreVertical size={18} className="text-on_surface_variant" /></button></td>
                   </tr>
                 ))}
               </tbody>
@@ -262,7 +262,7 @@ export default function TripsPage() {
               <h3 className="text-xl font-bold text-on_surface">
                 {modalType === 'trip' ? 'Planifier un trajet' : 'Nouvelle ligne'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-on_surface_variant hover:text-primary transition-colors p-1">
+              <button onClick={() => setShowModal(false)} className="text-on_surface_variant hover:text-primary active:scale-[0.92] transition-all p-1">
                 <X size={24} />
               </button>
             </div>

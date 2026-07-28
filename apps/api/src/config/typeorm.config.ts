@@ -4,6 +4,8 @@ import { join } from 'path';
 
 // Force NestJS build to compile migration files to dist/migrations/
 import '../migrations/1740000000000-CreateApiErrorsTable';
+import '../migrations/1790000000000-CreateNewModuleTables';
+import '../migrations/1795000000000-CreateSubscriptionsTable';
 
 [
   join(process.cwd(), '.env.local'),
@@ -27,8 +29,8 @@ export const dataSourceOptions: DataSourceOptions = {
   url: dbUrl,
   entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
   migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
-  synchronize: process.env.NODE_ENV === 'development',
-  // Auto-create tables in dev for DX; always false in production
+  synchronize: false,
+  // Tables are created via migration:run. Manual sync only for early prototyping.
   logging: process.env.NODE_ENV === 'development',
   // On s'assure que si l'URL est mal parsée, on a au moins les infos de base
   // Bien que l'URL soit la méthode recommandée par TypeORM

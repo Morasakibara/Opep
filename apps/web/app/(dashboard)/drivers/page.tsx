@@ -87,7 +87,7 @@ export default function DriversPage() {
         {stats.map((stat, i) => (
           <div
             key={i}
-            className="glass-card rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group"
+            className="glass-card rounded-2xl p-5 hover:border-primary/30 transition-all duration-300 group active:scale-[0.98]"
           >
             <div className="flex items-center justify-between mb-3">
               <stat.icon
@@ -113,7 +113,7 @@ export default function DriversPage() {
           </div>
           <button
             onClick={loadDrivers}
-            className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 transition"
+            className="px-4 py-2 bg-primary text-on_primary text-sm font-bold rounded-xl hover:brightness-110 active:scale-[0.97] transition-all"
           >
             Réessayer
           </button>
@@ -159,7 +159,7 @@ export default function DriversPage() {
               {filtered.map((driver, i) => (
                 <div
                   key={driver.id}
-                  className="group glass-card-hover rounded-2xl p-5 relative overflow-hidden animate-in fade-in"
+                  className="            group glass-card-hover rounded-2xl p-5 relative overflow-hidden animate-in fade-in"
                   style={{ animationDelay: `${i * 75}ms` }}
                 >
                   {/* Glass shine effect */}
@@ -181,7 +181,7 @@ export default function DriversPage() {
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <button className="p-2 hover:bg-surface_container_high rounded-lg transition opacity-0 group-hover:opacity-100">
+                      <button className="p-2 hover:bg-surface_container_high rounded-lg transition-all opacity-0 group-hover:opacity-100 active:scale-[0.92]">
                         <MoreVertical size={16} className="text-on_surface_variant" />
                       </button>
                     </div>

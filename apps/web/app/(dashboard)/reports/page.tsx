@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { reportsApi } from '@/services/api.service';
 import { PageSkeleton } from '@/components/layout/PageSkeleton';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 
 export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
@@ -44,25 +45,25 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-end animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300} className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold text-on_surface">Rapports & Statistiques</h2>
           <p className="text-on_surface_variant">Analysez les performances financières et opérationnelles.</p>
         </div>
         <button onClick={handleExport}
-          className="bg-primary text-on_primary px-4 py-2 rounded-xl text-sm font-bold hover:brightness-110 transition shadow-lg shadow-primary/20">
+          className="bg-primary text-on_primary px-4 py-2 rounded-xl text-sm font-bold hover:brightness-110 active:scale-[0.97] transition-all shadow-lg shadow-primary/20">
           Exporter le rapport
         </button>
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-bottom duration-500">
+      <AnimatedMount animation="slide-up" durationMs={500} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: "Chiffre d'affaires", value: `${(revenue / 1000).toFixed(0)} 000 FCFA`, trend: '+15.2%', up: true, color: 'text-primary' },
           { label: "Taux d'occupation", value: `${occupancy}%`, trend: '+5.4%', up: true, color: 'text-success_green' },
           { label: 'Tickets annulés', value: `${cancelledTickets}`, trend: '-2.1%', up: true, color: 'text-secondary' },
           { label: 'Nouveaux clients', value: `${newClients}`, trend: '+12.8%', up: true, color: 'text-tertiary' },
         ].map((kpi, i) => (
-          <div key={i} className="glass-card rounded-2xl p-6">
+          <div key={i} className="glass-card rounded-2xl p-6 active:scale-[0.98] transition-all cursor-default">
             <p className="text-sm font-medium text-on_surface_variant mb-1">{kpi.label}</p>
             <div className="flex items-end justify-between">
               <p className={`text-xl font-bold ${kpi.color}`}>{kpi.value}</p>
@@ -72,9 +73,9 @@ export default function ReportsPage() {
             </div>
           </div>
         ))}
-      </div>
+      </AnimatedMount>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in slide-in-from-bottom duration-700">
+      <AnimatedMount animation="slide-up" durationMs={700} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="glass-card p-8 rounded-3xl">
           <div className="flex justify-between items-center mb-8">
             <h3 className="font-bold text-on_surface">Évolution des revenus</h3>
@@ -101,7 +102,7 @@ export default function ReportsPage() {
           </div>
           <div className="space-y-6">
             {routeDistribution.map((route: any, i: number) => (
-              <div key={i}>
+              <div key={i} className="hover:translate-x-0.5 transition-all duration-200">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="font-bold text-on_surface_variant">{route.label}</span>
                   <span className="font-bold text-on_surface">{route.value}</span>
@@ -113,7 +114,7 @@ export default function ReportsPage() {
             ))}
           </div>
         </div>
-      </div>
+      </AnimatedMount>
     </div>
   );
 }

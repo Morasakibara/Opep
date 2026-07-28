@@ -6,6 +6,7 @@ import {
   MessageSquare, LogOut, Save, Loader2, CheckCircle2, Eye, EyeOff,
   Lock, KeyRound, Languages, Palette, Volume2,
 } from 'lucide-react';
+import { AnimatedMount } from '@/components/ui/AnimatedMount';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useTranslation } from '@/context/LanguageContext';
@@ -148,14 +149,14 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-12">
       {/* Page Header */}
-      <div className="animate-in slide-in-from-bottom duration-300">
+      <AnimatedMount animation="slide-up" durationMs={300}>
         <h2 className="text-2xl font-bold text-on_surface">Paramètres</h2>
         <p className="text-on_surface_variant">Gérez votre profil, vos préférences et votre compte.</p>
-      </div>
+      </AnimatedMount>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Navigation */}
-        <div className="lg:col-span-1 space-y-3 animate-in slide-in-from-bottom duration-400">
+        <AnimatedMount animation="slide-up" durationMs={400} className="lg:col-span-1 space-y-3">
           <div className="glass-card rounded-2xl overflow-hidden sticky top-24">
             <div className="p-6 border-b border-charcoal_border">
               <div className="flex items-center gap-4">
@@ -178,7 +179,7 @@ export default function SettingsPage() {
                 <a
                   key={item.label}
                   href={item.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface transition-all"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-on_surface_variant hover:bg-surface_container_high hover:text-on_surface hover:translate-x-0.5 transition-all active:scale-[0.97]"
                 >
                   <span className="text-primary">{item.icon}</span>
                   {item.label}
@@ -186,13 +187,14 @@ export default function SettingsPage() {
               ))}
             </nav>
           </div>
-        </div>
+        </AnimatedMount>
 
         {/* Right Column - Content */}
         <div className="lg:col-span-2 space-y-8">
 
           {/* ===== PROFILE SECTION ===== */}
-          <section id="profile" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-400">
+          <AnimatedMount animation="slide-up" durationMs={400}>
+          <section id="profile" className="glass-card rounded-3xl overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <User size={20} className="text-primary" />
@@ -248,9 +250,11 @@ export default function SettingsPage() {
               </div>
             </div>
           </section>
+          </AnimatedMount>
 
           {/* ===== NOTIFICATIONS SECTION ===== */}
-          <section id="notifications" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+          <AnimatedMount animation="slide-up" durationMs={500}>
+          <section id="notifications" className="glass-card rounded-3xl overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Bell size={20} className="text-primary" />
@@ -294,9 +298,11 @@ export default function SettingsPage() {
               </p>
             </div>
           </section>
+          </AnimatedMount>
 
           {/* ===== APPEARANCE SECTION ===== */}
-          <section id="appearance" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+          <AnimatedMount animation="slide-up" durationMs={500}>
+          <section id="appearance" className="glass-card rounded-3xl overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Palette size={20} className="text-primary" />
@@ -313,7 +319,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setTheme('light')}
-                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all active:scale-[0.97] ${
                       theme === 'light'
                         ? 'border-primary bg-primary/10'
                         : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
@@ -326,7 +332,7 @@ export default function SettingsPage() {
                   </button>
                   <button
                     onClick={() => setTheme('dark')}
-                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                    className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all active:scale-[0.97] ${
                       theme === 'dark'
                         ? 'border-primary bg-primary/10'
                         : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
@@ -346,7 +352,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setLanguage('fr')}
-                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all active:scale-[0.97] ${
                       language === 'fr'
                         ? 'border-primary bg-primary/10'
                         : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
@@ -365,7 +371,7 @@ export default function SettingsPage() {
                   </button>
                   <button
                     onClick={() => setLanguage('en')}
-                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all active:scale-[0.97] ${
                       language === 'en'
                         ? 'border-primary bg-primary/10'
                         : 'border-charcoal_border hover:border-primary/50 bg-surface_container_low'
@@ -386,9 +392,11 @@ export default function SettingsPage() {
               </div>
             </div>
           </section>
+          </AnimatedMount>
 
           {/* ===== SECURITY SECTION ===== */}
-          <section id="security" className="glass-card rounded-3xl overflow-hidden animate-in slide-in-from-bottom duration-500">
+          <AnimatedMount animation="slide-up" durationMs={500}>
+          <section id="security" className="glass-card rounded-3xl overflow-hidden">
             <div className="p-6 border-b border-charcoal_border flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <KeyRound size={20} className="text-primary" />
@@ -413,7 +421,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setShowCurrent(!showCurrent)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface active:scale-[0.92]"
                   >
                     {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -433,8 +441,8 @@ export default function SettingsPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowNew(!showNew)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+                    onClick={() => setShowNew(!showNew)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface active:scale-[0.92]"
                     >
                       {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -453,8 +461,8 @@ export default function SettingsPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on_surface_variant hover:text-on_surface active:scale-[0.92]"
                     >
                       {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -476,12 +484,13 @@ export default function SettingsPage() {
               </div>
             </div>
           </section>
+          </AnimatedMount>
 
           {/* ===== LOGOUT SECTION ===== */}
-          <div className="animate-in slide-in-from-bottom duration-600">
+          <AnimatedMount animation="slide-up" durationMs={600} className="w-full">
             <button
               onClick={logout}
-              className="w-full glass-card rounded-2xl p-6 flex items-center justify-between group hover:bg-error_red/5 border border-charcoal_border hover:border-error_red/30 transition-all"
+              className="w-full glass-card rounded-2xl p-6 flex items-center justify-between group hover:bg-error_red/5 border border-charcoal_border hover:border-error_red/30 transition-all active:scale-[0.97]"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-error_red/10 flex items-center justify-center group-hover:bg-error_red/20 transition-colors">
@@ -494,7 +503,7 @@ export default function SettingsPage() {
               </div>
               <LogOut size={20} className="text-error_red/50 group-hover:translate-x-1 transition-transform" />
             </button>
-          </div>
+          </AnimatedMount>
 
         </div>
       </div>
